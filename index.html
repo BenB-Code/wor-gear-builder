@@ -143,6 +143,8 @@
   .minis{display:flex;gap:3px}
   .mini{font-family:var(--mono);font-size:10px;padding:1px 6px;border-radius:4px;border:1px solid var(--border);color:var(--muted)}
   .mini.e{color:var(--t3);border-color:rgba(226,176,74,.4)}
+  .role{font-family:var(--mono);font-size:9px;letter-spacing:.06em;text-transform:uppercase;color:var(--faint);
+    border:1px solid var(--border-soft);border-radius:4px;padding:1px 5px;margin-left:6px;vertical-align:2px}
   .dots{display:flex;gap:4px}
   .dot{width:10px;height:10px;border-radius:50%;border:1.5px solid var(--faint)}
   .dot.fill{background:var(--t3);border-color:var(--t3)}
@@ -271,6 +273,18 @@
     cursor:pointer;text-decoration:underline dotted;padding:0;flex:0 0 auto}
   .toast button:focus-visible{outline:2px solid var(--t3);outline-offset:2px}
 
+  /* ── Tables empilées sur mobile ── */
+  @media(max-width:680px){
+    .rtable thead{display:none}
+    .rtable table,.rtable tbody{display:block;width:100%}
+    .rtable tr{display:block;border:1px solid var(--border-soft);border-radius:9px;background:var(--panel2);padding:10px 12px;margin:10px 0}
+    .rtable tr:hover td{background:none}
+    .rtable td{display:block;border:none;padding:4px 0}
+    .rtable td::before{content:attr(data-th);display:block;font-family:var(--display);font-variant:small-caps;letter-spacing:.04em;font-size:11.5px;color:var(--faint)}
+    .panel{padding:14px}
+    .transfo-row .cat{min-width:0;flex-basis:100%}
+  }
+
   /* ── Impression ── */
   #print-view{display:none}
   @media print{
@@ -309,6 +323,7 @@
     .row-body{padding-left:16px}
     .row-mains{display:none}
     .minis{display:none}
+    .role{display:none}
   }
 </style>
 </head>
@@ -357,6 +372,7 @@
       </select></label>
     </div>
     <div class="ap-grp"><span class="grp-label">Main(s) — en OR, automatiquement exclus des subs (aucun = tout main accepté)</span><div id="ap-mains"></div></div>
+    <div class="ap-grp"><span class="grp-label">Rôles — alimentent le filtre par rôle (optionnel, modifiable ensuite sur la carte)</span><div id="ap-arch"></div></div>
     <div class="ap-grp"><span class="grp-label">Sets — côté droit</span><div id="ap-sets-right"></div></div>
     <div class="ap-grp"><span class="grp-label">Sets — côté gauche</span><div id="ap-sets-left"></div></div>
     <div class="ap-actions">
@@ -464,8 +480,8 @@ const DPS_T1  = ["The Styx","The Doom","Hawk Eye","Fracture","Curse","Fatality",
 const RULES = {
   right: [
     {id:"RD1", name:"DPS scaler", arch:["dps"], sets:[...DPS_T23,"Undying Savage"],
-     mains:["ATK%","HP%","DEF%"], pool:["CC","CD","AS"], ess:["CC","CD","AS"], req:3,
-     note:"Tous les DPS, quel que soit le scaling (ATK, HP type Gluttony, DEF type Ghan/Trusk/Azhor). Trio offensif intégralement essentiel, 4ᵉ slot libre — priorité AS excédentaire > HP% > RR. Fusion des trois mains sans coût : le pool ne contient aucun d'eux."},
+     mains:["ATK%","HP%","DEF%"], pool:["fATK", "CC","CD","AS"], ess:["CC","CD","AS"], req:3,
+     note:"Ajouter le Flat correspondant au main. Tous les DPS, quel que soit le scaling (ATK, HP type Gluttony, DEF type Ghan/Trusk/Azhor). Trio offensif intégralement essentiel, 4ᵉ slot libre — priorité AS excédentaire > HP% > RR. Fusion des trois mains sans coût : le pool ne contient aucun d'eux."},
     {id:"RD2", name:"DPS amulette AS — quad parfait", arch:["dps"], sets:DPS_T23,
      mains:["AS"], pool:["fATK","ATK%","CC","CD"], ess:["fATK","ATK%","CC","CD"], req:4,
      note:"Pour les 1-2 héros full DPS qui veulent l'AS en main. Perfect roll ou rien : les quatre subs offensifs, tous essentiels. Ne matche de fait que des amulettes."},
@@ -535,6 +551,7 @@ const RULES = {
 const SECTIONS = ["right","left","t1"];
 const SECTION_LABEL = {right:"Côté droit · T2/T3", left:"Côté gauche · T2/T3", t1:"T1 · Quad transformation"};
 const ARCH_LABEL = {dps:"DPS", tank:"Tank", heal:"Heal", support:"Support", inspire:"Inspire"};
+const ARCHS = ["dps","tank","heal","support","inspire"];
 
 /* ══════════════ ÉTAT ══════════════ */
 const BUILTIN = [...RULES.right, ...RULES.left, ...RULES.t1];
@@ -546,7 +563,7 @@ let ENTERED = new Set();    // règles saisies dans le jeu
 let customSeq = 1;
 const KEY = "wor-tri-rules-v1";
 
-const UI = { view:"regles", seg:"pre", q:"", fSection:"all", fArch:"all",
+const UI = { view:"regles", seg:"pre", segTouched:false, q:"", fSection:"all", fArch:"all",
              open:new Set(), setsQ:"", setsTier:"all", pending:null };
 
 function getRule(id){ return BUILTIN.find(r=>r.id===id) || CUSTOM.find(r=>r.id===id) || null; }
@@ -613,6 +630,7 @@ async function restoreState(){
       if(Array.isArray(d.ess))  S[id].ess  = d.ess.filter(x=>S[id].pool.includes(x));
       if(Number.isInteger(d.req)) S[id].req = Math.min(4, Math.max(1, d.req));
     }
+    if(CUSTOM.length && !UI.segTouched) UI.seg = "perso";
     setSave("restauré","ok");
   }catch(e){ setSave("session seule","warn"); }
   renderView(); updateSidebar();
@@ -665,7 +683,7 @@ function ruleRow(r){
     <div class="row-head" role="button" tabindex="0" aria-expanded="${open}" data-toggle="${r.id}">
       <input type="checkbox" class="chk" data-entered="${r.id}" ${ENTERED.has(r.id)?"checked":""} title="saisie en jeu" aria-label="règle saisie en jeu">
       <span class="rc-id">${r.id}</span>
-      <span class="rc-name">${esc(r.name)}${custom?'<span class="custom-tag">perso</span>':''}${isModified(r.id)?'<span class="mod-dot" title="modifiée par rapport aux défauts"></span>':''}</span>
+      <span class="rc-name">${esc(r.name)}${custom?'<span class="custom-tag">perso</span>':''}${(r.arch||[]).map(a=>`<span class="role">${ARCH_LABEL[a]}</span>`).join("")}${isModified(r.id)?'<span class="mod-dot" title="modifiée par rapport aux défauts"></span>':''}</span>
       <span class="row-mains">${r.mains.join(" / ")||"—"}</span>
       <span class="row-right">
         <span class="minis">${minis}</span>
@@ -679,6 +697,7 @@ function ruleRow(r){
         <span class="k">Main(s)</span><span>${mains}</span>
         <span class="k">Subs</span><span>${chips}</span>
         <span class="k">Requis</span><span><span class="stepper"><button type="button" class="st-minus" data-rule="${r.id}" aria-label="réduire">−</button><span class="val">${st.req}</span><button type="button" class="st-plus" data-rule="${r.id}" aria-label="augmenter">+</button></span>${warn}</span>
+        ${custom?`<span class="k">Rôles</span><span>${ARCHS.map(a=>`<button type="button" class="fchip arch-tog${(r.arch||[]).includes(a)?' on':''}" data-archrule="${r.id}" data-arch="${a}">${ARCH_LABEL[a]}</button>`).join(" ")}</span>`:""}
       </div>
       ${r.note?`<div class="rb-note">${r.note}</div>`:""}
       <div class="rb-actions">
@@ -709,8 +728,8 @@ function viewRegles(){
       <div class="lede">Une pièce est conservée si elle satisfait au moins une règle ; tout le reste part au recyclage. Coche chaque règle une fois saisie dans le jeu.</div>
     </div>
     <div class="seg" role="tablist">
-      <button type="button" class="${UI.seg==='pre'?'on':''}" data-seg="pre" role="tab">Prédéfinies <span class="n">${nPre}</span></button>
       <button type="button" class="${UI.seg==='perso'?'on':''}" data-seg="perso" role="tab">Personnalisées <span class="n">${CUSTOM.length}</span></button>
+      <button type="button" class="${UI.seg==='pre'?'on':''}" data-seg="pre" role="tab">Prédéfinies <span class="n">${nPre}</span></button>
     </div>
     <div class="controls">
       <div class="search">
@@ -797,8 +816,8 @@ function setsTable(side){
     .filter(s=>UI.setsTier==="all"||String(s.t)===UI.setsTier)
     .filter(s=>!UI.setsQ || s.n.toLowerCase().includes(UI.setsQ.toLowerCase()));
   if(!rows.length) return `<p class="hint" style="margin:8px 0 16px">Aucun set ne correspond.</p>`;
-  return `<div class="tbl-wrap"><table><thead><tr><th>Set</th><th>Tier</th><th>Bonus</th><th>Source</th><th>Destin</th></tr></thead><tbody>
-    ${rows.map(s=>`<tr><td>${esc(s.n)}</td><td><span class="tier-badge b${s.t}">T${s.t}</span></td><td>${s.b}</td><td>${s.src}</td><td class="dest">${destCell(s)}</td></tr>`).join("")}
+  return `<div class="tbl-wrap rtable"><table><thead><tr><th>Set</th><th>Tier</th><th>Bonus</th><th>Source</th><th>Destin</th></tr></thead><tbody>
+    ${rows.map(s=>`<tr><td data-th="Set">${esc(s.n)}</td><td data-th="Tier"><span class="tier-badge b${s.t}">T${s.t}</span></td><td data-th="Bonus">${s.b}</td><td data-th="Source">${s.src}</td><td data-th="Destin" class="dest">${destCell(s)}</td></tr>`).join("")}
   </tbody></table></div>`;
 }
 function viewSets(){
@@ -852,12 +871,12 @@ function viewReference(){
     <div class="panel">
       <h4>Les budgets saturants</h4>
       <p class="hint" style="margin:0 0 8px">Trois attributs se remplissent puis deviennent des rolls morts. Tout le design des règles découle de leur arithmétique.</p>
-      <div class="tbl-wrap"><table>
+      <div class="tbl-wrap rtable"><table>
         <thead><tr><th>Attribut</th><th>Base</th><th>Cible</th><th>Roll moyen / pièce</th><th>Conséquence</th></tr></thead>
         <tbody>
-          <tr><td><span class="chip off">CC</span></td><td>0</td><td>~100 %</td><td>15 – 25</td><td>CC nécessaire en sub sur <b>les 5 pièces</b> (5 × 20 = 100 pile, aucune marge).</td></tr>
-          <tr><td><span class="chip off">AS</span></td><td>100</td><td>~450 <i>(coût exponentiel au-delà)</i></td><td>50 – 80</td><td>AS sur <b>les 5 pièces</b>, et il faut des rolls hauts : 5 × 65 = 425 en moyenne. Le bonus Warlord (+30) aide à boucler.</td></tr>
-          <tr><td><span class="chip util">HE</span></td><td>0</td><td>150 <i>(Pantheon inclus)</i></td><td>—</td><td>Rendements décroissants sévères au-delà de 150. Les bonus de set (+25/+30) financent une partie du budget.</td></tr>
+          <tr><td data-th="Attribut"><span class="chip off">CC</span></td><td data-th="Base">0</td><td data-th="Cible">~100 %</td><td data-th="Roll moyen / pièce">15 – 25</td><td data-th="Conséquence">CC nécessaire en sub sur <b>les 5 pièces</b> (5 × 20 = 100 pile, aucune marge).</td></tr>
+          <tr><td data-th="Attribut"><span class="chip off">AS</span></td><td data-th="Base">100</td><td data-th="Cible">~450 <i>(coût exponentiel au-delà)</i></td><td data-th="Roll moyen / pièce">50 – 80</td><td data-th="Conséquence">AS sur <b>les 5 pièces</b>, et il faut des rolls hauts : 5 × 65 = 425 en moyenne. Le bonus Warlord (+30) aide à boucler.</td></tr>
+          <tr><td data-th="Attribut"><span class="chip util">HE</span></td><td data-th="Base">0</td><td data-th="Cible">150 <i>(Pantheon inclus)</i></td><td data-th="Roll moyen / pièce">—</td><td data-th="Conséquence">Rendements décroissants sévères au-delà de 150. Les bonus de set (+25/+30) financent une partie du budget.</td></tr>
         </tbody>
       </table></div>
       <div class="panel note" style="margin:12px 0 0">
@@ -883,13 +902,13 @@ function viewReference(){
 
     <div class="panel">
       <h4>Politique par tier</h4>
-      <div class="tbl-wrap"><table>
+      <div class="tbl-wrap rtable"><table>
         <thead><tr><th>Tier</th><th>Rôle</th><th>Sévérité des règles</th></tr></thead>
         <tbody>
-          <tr><td><span class="tier-badge b3">T3</span></td><td>Pièces forgées (Gear Forge) — choisies, pas de flux aléatoire massif</td><td>Règles standard : filet de sécurité, req 2-3</td></tr>
-          <tr><td><span class="tier-badge b2">T2</span></td><td>Le farm réel du palier (GR 19-24)</td><td>Règles standard : trio requis, req 2-3</td></tr>
-          <tr><td><span class="tier-badge b1">T1</span></td><td><b>Matière à transformation</b> — une ressource très rare convertit une pièce T1 en set T2/T3</td><td><b>Quad parfait ou rien</b> (req 4). Tous les sets T1 sont transformables — tous sous règle</td></tr>
-          <tr><td><span class="tier-badge b0">T0</span></td><td>—</td><td>Aucune règle → recyclage intégral</td></tr>
+          <tr><td data-th="Tier"><span class="tier-badge b3">T3</span></td><td data-th="Rôle">Pièces forgées (Gear Forge) — choisies, pas de flux aléatoire massif</td><td data-th="Sévérité">Règles standard : filet de sécurité, req 2-3</td></tr>
+          <tr><td data-th="Tier"><span class="tier-badge b2">T2</span></td><td data-th="Rôle">Le farm réel du palier (GR 19-24)</td><td data-th="Sévérité">Règles standard : trio requis, req 2-3</td></tr>
+          <tr><td data-th="Tier"><span class="tier-badge b1">T1</span></td><td data-th="Rôle"><b>Matière à transformation</b> — une ressource très rare convertit une pièce T1 en set T2/T3</td><td data-th="Sévérité"><b>Quad parfait ou rien</b> (req 4). Tous les sets T1 sont transformables — tous sous règle</td></tr>
+          <tr><td data-th="Tier"><span class="tier-badge b0">T0</span></td><td data-th="Rôle">—</td><td data-th="Sévérité">Aucune règle → recyclage intégral</td></tr>
         </tbody>
       </table></div>
     </div>
@@ -963,6 +982,7 @@ function route(){
       const r = getRule(param);
       if(r){
         UI.seg = isCustom(param) ? "perso" : "pre";
+        UI.segTouched = true;
         UI.q = ""; UI.fSection = "all"; UI.fArch = "all";
         UI.open.add(param);
         UI.pending = param;
@@ -1017,17 +1037,19 @@ function printDoc(){
 }
 
 /* ══════════════ CRÉATION ══════════════ */
-const AP = { mains:new Set(), sets:new Set() };
+const AP = { mains:new Set(), sets:new Set(), arch:new Set() };
 function renderAddPanel(){
   document.getElementById("ap-mains").innerHTML = ALLSTATS.map(a=>
     `<button type="button" class="chip ${STAT[a]} pick${AP.mains.has(a)?' sel':''}" data-role="ap-main" data-stat="${a}">${a}</button>`).join("");
+  document.getElementById("ap-arch").innerHTML = ARCHS.map(a=>
+    `<button type="button" class="fchip${AP.arch.has(a)?' on':''}" data-role="ap-arch" data-arch="${a}">${ARCH_LABEL[a]}</button>`).join("");
   for(const side of ["right","left"]){
     document.getElementById("ap-sets-"+side).innerHTML = SIDE_SETS[side].map(n=>
       `<button type="button" class="chip set t${SETTIER[n]} pick${AP.sets.has(n)?' sel':''}" data-role="ap-set" data-set="${esc(n)}">${esc(n)}</button>`).join("");
   }
 }
 function openDlg(){
-  AP.mains.clear(); AP.sets.clear();
+  AP.mains.clear(); AP.sets.clear(); AP.arch.clear();
   document.getElementById("ap-name").value = "";
   document.getElementById("ap-section").value = UI.fSection!=="all" ? UI.fSection : "right";
   document.getElementById("ap-warn").textContent = "";
@@ -1042,7 +1064,7 @@ function createRule(){
   const id = "P"+customSeq++;
   const name = document.getElementById("ap-name").value.trim() || ("Règle "+id);
   const section = document.getElementById("ap-section").value;
-  CUSTOM.push({ id, name, section, sets:sortSets([...AP.sets]), mains:sortStats([...AP.mains]), arch:[] });
+  CUSTOM.push({ id, name, section, sets:sortSets([...AP.sets]), mains:sortStats([...AP.mains]), arch:ARCHS.filter(a=>AP.arch.has(a)) });
   S[id] = { pool:[], ess:[], req:3 };
   closeDlg();
   UI.seg = "perso"; UI.q=""; UI.fSection="all"; UI.fArch="all";
@@ -1072,7 +1094,7 @@ document.addEventListener("click", e=>{
 
   // segmented + filtres
   const seg = t.closest("[data-seg]");
-  if(seg){ UI.seg = seg.dataset.seg;
+  if(seg){ UI.seg = seg.dataset.seg; UI.segTouched = true;
     document.querySelectorAll("[data-seg]").forEach(b=>b.classList.toggle("on", b===seg));
     updateRuleList(); return; }
   const fs = t.closest("[data-fsection]");
@@ -1125,6 +1147,8 @@ document.addEventListener("click", e=>{
   if(apm){ AP.mains.has(apm.dataset.stat) ? AP.mains.delete(apm.dataset.stat) : AP.mains.add(apm.dataset.stat); renderAddPanel(); return; }
   const aps = t.closest('[data-role="ap-set"]');
   if(aps){ AP.sets.has(aps.dataset.set) ? AP.sets.delete(aps.dataset.set) : AP.sets.add(aps.dataset.set); renderAddPanel(); return; }
+  const apa = t.closest('[data-role="ap-arch"]');
+  if(apa){ AP.arch.has(apa.dataset.arch) ? AP.arch.delete(apa.dataset.arch) : AP.arch.add(apa.dataset.arch); renderAddPanel(); return; }
 
   // export pdf (sidebar)
   if(t.closest("#export-pdf")){
@@ -1179,6 +1203,16 @@ document.addEventListener("click", e=>{
         DELETED.delete(id);
         updateRuleList(); updateSidebar(); scheduleSave();
       }}});
+    }
+    return;
+  }
+  const at = t.closest(".arch-tog");
+  if(at){
+    const cr = CUSTOM.find(x=>x.id===at.dataset.archrule);
+    if(cr){
+      const a = at.dataset.arch;
+      cr.arch = (cr.arch||[]).includes(a) ? cr.arch.filter(x=>x!==a) : ARCHS.filter(x=>(cr.arch||[]).includes(x)||x===a);
+      rerenderRule(cr.id); scheduleSave();
     }
     return;
   }
