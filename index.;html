@@ -1,0 +1,1233 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tri d'équipement · Watcher of Realms</title>
+<!--
+  Watcher of Realms — gestionnaire de règles de tri d'équipement
+  Single-page app autonome : aucune dépendance, aucun réseau, données 100 % locales.
+  Persistance : window.storage (environnement Claude). Pour une publication hors Claude,
+  remplacer les appels window.storage.get/set (fonctions persist/restore) par localStorage.
+-->
+<style>
+  :root{
+    --bg:#14121a; --bg-side:#100e15; --panel:#1d1a24; --panel2:#262230;
+    --border:#35303f; --border-soft:#2a2632;
+    --ink:#ece7db; --muted:#9a92a6; --faint:#6f6880;
+    --t3:#e2b04a; --t2:#a678e8; --t1:#5f9fd6; --t0:#7a7580;
+    --off:#cf6054; --deff:#5f9fd6; --util:#6fbf8f;
+    --gold-dim:rgba(226,176,74,.14); --radius:12px;
+    --display:"Palatino Linotype","Iowan Old Style",Palatino,"Book Antiqua",Georgia,serif;
+    --body:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+    --mono:ui-monospace,"SF Mono","Cascadia Code",Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important;scroll-behavior:auto!important}}
+  html,body{height:100%}
+  body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.6}
+  ::selection{background:rgba(226,176,74,.25)}
+  button{font:inherit;color:inherit}
+
+  /* ── Structure ── */
+  .app{display:grid;grid-template-columns:242px 1fr;height:100vh}
+  aside.side{background:var(--bg-side);border-right:1px solid var(--border-soft);display:flex;flex-direction:column;
+    padding:18px 14px 14px;gap:6px;overflow-y:auto}
+  main#view{overflow-y:auto;padding:26px 30px 90px;scroll-behavior:smooth;
+    background-image:radial-gradient(ellipse 800px 380px at 55% -90px,rgba(226,176,74,.05),transparent)}
+  .wrap{max-width:1060px;margin:0 auto}
+
+  /* ── Sidebar ── */
+  .brand{display:flex;align-items:center;gap:10px;padding:2px 8px 14px}
+  .brand .diamond{color:var(--t3);font-size:17px}
+  .brand h1{font-family:var(--display);font-variant:small-caps;letter-spacing:.05em;font-weight:600;font-size:17px;line-height:1.15}
+  .brand .sub{color:var(--faint);font-size:11px;margin-top:1px}
+  nav.mainnav{display:flex;flex-direction:column;gap:2px}
+  .nav-btn{display:flex;align-items:center;gap:10px;appearance:none;background:none;border:none;border-left:2px solid transparent;
+    color:var(--muted);font-family:var(--display);font-variant:small-caps;letter-spacing:.05em;font-size:15px;
+    padding:9px 10px;border-radius:0 8px 8px 0;cursor:pointer;text-align:left;transition:color .15s,background .15s}
+  .nav-btn svg{flex:0 0 auto;opacity:.75}
+  .nav-btn:hover{color:var(--ink);background:rgba(255,255,255,.025)}
+  .nav-btn.active{color:var(--t3);border-left-color:var(--t3);background:var(--gold-dim)}
+  .nav-btn .count{margin-left:auto;font-family:var(--mono);font-size:10.5px;color:var(--faint);
+    border:1px solid var(--border-soft);border-radius:10px;padding:0 7px}
+  .nav-btn.active .count{color:var(--t3);border-color:rgba(226,176,74,.4)}
+  .nav-btn:focus-visible{outline:2px solid var(--t3);outline-offset:-2px}
+  .side-foot{margin-top:auto;display:flex;flex-direction:column;gap:10px;padding:14px 8px 2px;border-top:1px solid var(--border-soft)}
+  .prog-label{display:flex;justify-content:space-between;align-items:baseline;font-size:11.5px;color:var(--muted)}
+  .prog-label b{font-family:var(--mono);color:var(--t3);font-weight:600}
+  .prog-bar{height:5px;border-radius:3px;background:var(--panel2);overflow:hidden}
+  .prog-bar i{display:block;height:100%;background:linear-gradient(90deg,#b58a2e,var(--t3));border-radius:3px;transition:width .3s}
+  .side-btn{appearance:none;background:var(--panel);border:1px solid var(--border);color:var(--muted);
+    font-family:var(--mono);font-size:11.5px;padding:7px 10px;border-radius:8px;cursor:pointer;transition:all .15s;text-align:center}
+  .side-btn:hover{color:var(--t3);border-color:rgba(226,176,74,.45)}
+  .side-btn:focus-visible{outline:2px solid var(--t3);outline-offset:2px}
+  .save-line{display:flex;align-items:center;gap:7px;color:var(--faint);font-size:10.5px;min-height:15px}
+  .save-line .dot{width:6px;height:6px;border-radius:50%;background:var(--faint);flex:0 0 auto}
+  .save-line.ok .dot{background:var(--util)}
+  .save-line.warn .dot{background:var(--off)}
+
+  /* ── En-tête de vue ── */
+  .view-head{margin-bottom:14px}
+  .view-head h2{font-family:var(--display);font-variant:small-caps;letter-spacing:.06em;font-weight:600;font-size:23px}
+  .view-head .lede{color:var(--muted);font-size:13px;margin-top:3px;max-width:760px}
+  h3.grp-head{font-family:var(--display);font-variant:small-caps;letter-spacing:.05em;font-weight:600;font-size:15.5px;
+    color:var(--muted);margin:22px 0 8px;display:flex;align-items:center;gap:10px;position:sticky;top:-26px;
+    background:var(--bg);padding:6px 0;z-index:5}
+  h3.grp-head::after{content:"";flex:1;height:1px;background:linear-gradient(to right,var(--border),transparent)}
+  h3.grp-head .n{font-family:var(--mono);font-size:11px;color:var(--faint)}
+
+  /* ── Segmented + filtres + toolbar ── */
+  .seg{display:inline-flex;background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:3px;gap:3px}
+  .seg button{appearance:none;background:none;border:none;color:var(--muted);font-family:var(--display);font-variant:small-caps;
+    letter-spacing:.04em;font-size:14.5px;padding:6px 16px;border-radius:7px;cursor:pointer;transition:all .15s}
+  .seg button:hover{color:var(--ink)}
+  .seg button.on{background:var(--gold-dim);color:var(--t3)}
+  .seg button:focus-visible{outline:2px solid var(--t3);outline-offset:-2px}
+  .seg button .n{font-family:var(--mono);font-size:10.5px;opacity:.8;margin-left:5px}
+  .controls{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:14px 0 4px}
+  .search{position:relative;flex:1 1 220px;max-width:340px}
+  .search input{width:100%;background:var(--panel);border:1px solid var(--border);border-radius:9px;color:var(--ink);
+    padding:8px 12px 8px 32px;font:inherit;font-size:13.5px}
+  .search input::placeholder{color:var(--faint)}
+  .search svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);opacity:.5}
+  input:focus-visible,select:focus-visible{outline:2px solid var(--t3);outline-offset:1px}
+  .fchips{display:flex;gap:5px;flex-wrap:wrap}
+  .fchip{appearance:none;background:var(--panel);border:1px solid var(--border);color:var(--muted);
+    font-family:var(--mono);font-size:11.5px;padding:5px 12px;border-radius:20px;cursor:pointer;transition:all .15s}
+  .fchip:hover{color:var(--ink)}
+  .fchip.on{color:var(--t3);border-color:rgba(226,176,74,.5);background:var(--gold-dim)}
+  .fchip:focus-visible{outline:2px solid var(--t3);outline-offset:2px}
+  .toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:10px 0 2px}
+  .btn{appearance:none;background:var(--panel);border:1px solid var(--border);color:var(--ink);
+    font-family:var(--mono);font-size:12px;padding:7px 14px;border-radius:8px;cursor:pointer;transition:all .15s}
+  .btn:hover{border-color:rgba(226,176,74,.5);color:var(--t3)}
+  .btn:focus-visible{outline:2px solid var(--t3);outline-offset:2px}
+  .btn.primary{background:var(--gold-dim);border-color:rgba(226,176,74,.5);color:var(--t3);font-weight:600}
+  .btn.primary:hover{background:rgba(226,176,74,.22)}
+  .btn.danger:hover{border-color:var(--off);color:var(--off)}
+  .btn.arm{color:#fff!important;background:var(--off);border-color:var(--off)!important}
+  .hint{color:var(--faint);font-size:12px;margin:8px 0 0}
+  .hint b{color:var(--muted);font-weight:600}
+
+  /* ── Lignes de règles ── */
+  .rule-list{margin-top:4px}
+  .rule{background:var(--panel);border:1px solid var(--border-soft);border-radius:var(--radius);
+    border-left:3px solid var(--t3);margin:9px 0;transition:border-color .15s;overflow:hidden}
+  .rule:hover{border-color:var(--border);border-left-color:var(--t3)}
+  .rule.s-t1{border-left-color:var(--t1)}
+  .rule.s-t1:hover{border-left-color:var(--t1)}
+  .rule.perso{border-left-color:var(--t2)}
+  .rule.perso:hover{border-left-color:var(--t2)}
+  .rule.flash{animation:flash 1.6s ease}
+  @keyframes flash{0%,60%{box-shadow:0 0 0 2px rgba(226,176,74,.65)}100%{box-shadow:none}}
+  .row-head{display:flex;align-items:center;gap:11px;padding:11px 14px;cursor:pointer;flex-wrap:wrap}
+  .row-head:focus-visible{outline:2px solid var(--t3);outline-offset:-2px}
+  .chk{appearance:none;flex:0 0 auto;width:17px;height:17px;border:1.5px solid var(--faint);border-radius:5px;
+    background:transparent;cursor:pointer;position:relative;transition:all .15s}
+  .chk:hover{border-color:var(--t3)}
+  .chk:checked{background:var(--t3);border-color:var(--t3)}
+  .chk:checked::after{content:"✓";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+    color:#1c1608;font-size:12px;font-weight:700}
+  .chk:focus-visible{outline:2px solid var(--t3);outline-offset:2px}
+  .rc-id{font-family:var(--mono);font-size:11px;font-weight:600;color:var(--t3);background:var(--gold-dim);
+    border:1px solid rgba(226,176,74,.35);border-radius:5px;padding:2px 8px;flex:0 0 auto}
+  .s-t1 .rc-id{color:#8fbde4;background:rgba(95,159,214,.1);border-color:rgba(95,159,214,.35)}
+  .perso .rc-id{color:#c4a3f0;background:rgba(166,120,232,.12);border-color:rgba(166,120,232,.4)}
+  .rc-name{font-family:var(--display);font-variant:small-caps;letter-spacing:.03em;font-size:16px;font-weight:600}
+  .custom-tag{font-family:var(--mono);font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:#c4a3f0;
+    border:1px solid rgba(166,120,232,.4);border-radius:4px;padding:1px 6px;margin-left:8px;vertical-align:2px}
+  .mod-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--t3);margin-left:7px;vertical-align:1px}
+  .row-mains{font-family:var(--mono);font-size:11.5px;color:var(--muted);margin-left:2px}
+  .row-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+  .minis{display:flex;gap:3px}
+  .mini{font-family:var(--mono);font-size:10px;padding:1px 6px;border-radius:4px;border:1px solid var(--border);color:var(--muted)}
+  .mini.e{color:var(--t3);border-color:rgba(226,176,74,.4)}
+  .dots{display:flex;gap:4px}
+  .dot{width:10px;height:10px;border-radius:50%;border:1.5px solid var(--faint)}
+  .dot.fill{background:var(--t3);border-color:var(--t3)}
+  .s-t1 .dot.fill{background:var(--t1);border-color:var(--t1)}
+  .perso .dot.fill{background:var(--t2);border-color:var(--t2)}
+  .chev{flex:0 0 auto;transition:transform .2s;opacity:.55}
+  .rule.open .chev{transform:rotate(180deg)}
+  .row-body{display:none;padding:2px 16px 14px 45px;border-top:1px dashed var(--border-soft)}
+  .rule.open .row-body{display:block}
+  .rb-grid{display:grid;grid-template-columns:auto 1fr;gap:7px 16px;font-size:13.5px;margin-top:10px}
+  .rb-grid .k{color:var(--faint);font-family:var(--display);font-variant:small-caps;letter-spacing:.04em;font-size:13px;white-space:nowrap;padding-top:2px}
+  .chip{display:inline-block;font-family:var(--mono);font-size:11.5px;padding:2px 8px;border-radius:5px;
+    border:1px solid var(--border);background:var(--panel2);color:var(--ink);margin:2px 3px 2px 0;white-space:nowrap}
+  .chip.off{border-color:rgba(207,96,84,.5);color:#e8968c}
+  .chip.deff{border-color:rgba(95,159,214,.5);color:#93c1e8}
+  .chip.util{border-color:rgba(111,191,143,.5);color:#9ed9b4}
+  .chip.set{font-family:var(--body);font-size:12px;background:transparent}
+  .chip.set.t3{border-color:rgba(226,176,74,.55);color:var(--t3)}
+  .chip.set.t2{border-color:rgba(166,120,232,.55);color:#c4a3f0}
+  .chip.set.t1{border-color:rgba(95,159,214,.5);color:#8fbde4}
+  .chip.set.t0{border-color:rgba(122,117,128,.45);color:var(--t0)}
+  button.chip{cursor:pointer;transition:opacity .12s,border-color .12s,background .12s}
+  button.chip:focus-visible{outline:2px solid var(--t3);outline-offset:2px}
+  .chip.stateoff{opacity:.28;border-style:dashed;background:transparent}
+  .chip.ess{border-width:1.5px;font-weight:700}
+  .chip.ess.off{background:rgba(207,96,84,.14)}
+  .chip.ess.deff{background:rgba(95,159,214,.14)}
+  .chip.ess.util{background:rgba(111,191,143,.14)}
+  .main-or{font-family:var(--mono);font-size:12px;color:var(--ink)}
+  .main-or .sep{color:var(--faint);padding:0 4px}
+  .stepper{display:inline-flex;align-items:center;gap:2px;border:1px solid var(--border);border-radius:6px;background:var(--panel2);vertical-align:middle}
+  .stepper button{appearance:none;background:none;border:none;color:var(--muted);font-family:var(--mono);font-size:14px;
+    width:24px;height:24px;cursor:pointer;line-height:1}
+  .stepper button:hover{color:var(--t3)}
+  .stepper button:focus-visible{outline:2px solid var(--t3);outline-offset:-2px;border-radius:4px}
+  .stepper .val{font-family:var(--mono);font-size:13px;color:var(--ink);min-width:16px;text-align:center}
+  .rc-warn{color:var(--off);font-family:var(--mono);font-size:11px;margin-left:8px}
+  .rb-note{margin-top:12px;padding-top:10px;border-top:1px dashed var(--border-soft);color:var(--muted);font-size:12.5px}
+  .rb-actions{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+  .sbtn{appearance:none;background:var(--panel2);border:1px solid var(--border);color:var(--muted);font-family:var(--mono);
+    font-size:11px;padding:4px 11px;border-radius:6px;cursor:pointer;transition:all .15s}
+  .sbtn:hover{color:var(--t3);border-color:rgba(226,176,74,.4)}
+  .sbtn:focus-visible{outline:2px solid var(--t3);outline-offset:2px}
+  .sbtn.ok{color:var(--util);border-color:rgba(111,191,143,.5)}
+  .sbtn.del:hover{color:var(--off);border-color:rgba(207,96,84,.4)}
+  .deleted-line{color:var(--faint);font-size:12px;margin:10px 0;font-family:var(--mono)}
+  .deleted-line button{appearance:none;background:none;border:none;color:var(--t1);cursor:pointer;font:inherit;
+    text-decoration:underline dotted;padding:0}
+  .deleted-line button:focus-visible{outline:2px solid var(--t3);outline-offset:2px}
+  .empty{border:1px dashed var(--border);border-radius:var(--radius);padding:38px 20px;text-align:center;color:var(--muted);margin:18px 0}
+  .empty p{margin-bottom:14px;font-size:13.5px}
+
+  /* ── Panneaux, tables, référence ── */
+  .panel{background:var(--panel);border:1px solid var(--border-soft);border-radius:var(--radius);padding:18px 20px;margin:14px 0}
+  .panel.note{border-left:3px solid var(--t3);background:linear-gradient(to right,var(--gold-dim),var(--panel) 55%)}
+  .panel h4{font-family:var(--display);font-variant:small-caps;letter-spacing:.05em;font-size:16px;font-weight:600;margin-bottom:8px}
+  table{width:100%;border-collapse:collapse;font-size:13.5px;margin:8px 0}
+  th{font-family:var(--display);font-variant:small-caps;letter-spacing:.04em;font-weight:600;text-align:left;
+    color:var(--muted);padding:8px 10px;border-bottom:1px solid var(--border);white-space:nowrap}
+  td{padding:8px 10px;border-bottom:1px solid var(--border-soft);vertical-align:top}
+  tr:hover td{background:rgba(255,255,255,.015)}
+  .tbl-wrap{overflow-x:auto}
+  .tier-badge{display:inline-block;font-family:var(--mono);font-size:11px;font-weight:600;padding:1px 8px;border-radius:4px}
+  .tier-badge.b3{background:rgba(226,176,74,.15);color:var(--t3);border:1px solid rgba(226,176,74,.4)}
+  .tier-badge.b2{background:rgba(166,120,232,.13);color:#c4a3f0;border:1px solid rgba(166,120,232,.4)}
+  .tier-badge.b1{background:rgba(95,159,214,.12);color:#8fbde4;border:1px solid rgba(95,159,214,.4)}
+  .tier-badge.b0{background:rgba(122,117,128,.12);color:var(--t0);border:1px solid rgba(122,117,128,.4)}
+  .dest{font-size:12.5px}
+  .ruleref{appearance:none;cursor:pointer;font-family:var(--mono);font-size:11px;color:var(--t3);background:var(--gold-dim);
+    border:1px solid rgba(226,176,74,.3);border-radius:4px;padding:1px 6px;margin:1px 4px 1px 0;white-space:nowrap;transition:all .15s}
+  .ruleref.t1r{color:#8fbde4;background:rgba(95,159,214,.1);border-color:rgba(95,159,214,.3)}
+  .ruleref:hover{border-color:var(--t3);text-decoration:underline}
+  .ruleref.t1r:hover{border-color:var(--t1)}
+  .ruleref:focus-visible{outline:2px solid var(--t3);outline-offset:2px}
+  .recycle{color:var(--off);font-style:italic}
+  .arrow{color:var(--faint);font-family:var(--mono)}
+  .transfo{display:grid;grid-template-columns:1fr;gap:8px;margin-top:8px}
+  .transfo-row{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;background:var(--panel2);
+    border:1px solid var(--border-soft);border-radius:8px;padding:10px 14px;font-size:13px}
+  .transfo-row .cat{font-family:var(--display);font-variant:small-caps;font-size:12.5px;color:var(--faint);min-width:150px}
+  .transfo-row .big-arrow{font-family:var(--mono);color:var(--t3);font-size:15px}
+  .strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px;margin:14px 0}
+  .stat-card{background:var(--panel);border:1px solid var(--border-soft);border-radius:var(--radius);padding:13px 16px}
+  .stat-card .num{font-family:var(--display);font-size:25px;color:var(--t3);line-height:1.1}
+  .stat-card .lbl{color:var(--muted);font-size:11.5px;margin-top:3px}
+  ul.clean{list-style:none;padding-left:0}
+  ul.clean li{padding:5px 0 5px 20px;position:relative}
+  ul.clean li::before{content:"◆";position:absolute;left:0;top:6px;font-size:9px;color:var(--t3)}
+  details.acc{border:1px solid var(--border-soft);border-radius:9px;background:var(--panel2);margin:7px 0;overflow:hidden}
+  details.acc summary{cursor:pointer;padding:10px 14px;font-weight:600;font-size:13.5px;list-style:none;display:flex;align-items:center;gap:8px}
+  details.acc summary::before{content:"›";font-family:var(--mono);color:var(--t3);transition:transform .15s}
+  details.acc[open] summary::before{transform:rotate(90deg)}
+  details.acc summary::-webkit-details-marker{display:none}
+  details.acc summary:focus-visible{outline:2px solid var(--t3);outline-offset:-2px}
+  details.acc .acc-body{padding:0 14px 12px 32px;color:var(--muted);font-size:13px}
+  .footer-note{margin-top:34px;padding-top:14px;border-top:1px solid var(--border-soft);color:var(--faint);font-size:12px}
+
+  /* ── Dialogue de création ── */
+  .overlay{position:fixed;inset:0;background:rgba(10,8,14,.7);backdrop-filter:blur(3px);z-index:80;
+    display:flex;align-items:flex-start;justify-content:center;padding:6vh 16px;overflow-y:auto}
+  .overlay[hidden]{display:none}
+  .dlg{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:22px 24px;
+    width:min(860px,100%);animation:pop .18s ease}
+  @keyframes pop{from{transform:translateY(8px);opacity:0}to{transform:none;opacity:1}}
+  .dlg h3{font-family:var(--display);font-variant:small-caps;letter-spacing:.05em;font-size:19px;font-weight:600;margin-bottom:12px}
+  .ap-row{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:12px}
+  .ap-row label{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:13px}
+  .ap-row input[type=text]{background:var(--panel2);border:1px solid var(--border);border-radius:7px;color:var(--ink);padding:7px 11px;font:inherit;min-width:230px}
+  .ap-row select{background:var(--panel2);border:1px solid var(--border);border-radius:7px;color:var(--ink);padding:7px 9px;font:inherit}
+  .ap-grp{margin:10px 0}
+  .grp-label{display:block;font-family:var(--display);font-variant:small-caps;letter-spacing:.04em;font-size:13px;color:var(--faint);margin-bottom:5px}
+  .chip.pick{cursor:pointer}
+  .chip.pick:not(.sel){opacity:.32;border-style:dashed;background:transparent}
+  .ap-actions{display:flex;align-items:center;gap:10px;margin-top:16px;flex-wrap:wrap}
+  .ap-warn{color:var(--off);font-family:var(--mono);font-size:12px}
+  .ap-hint{color:var(--faint);font-size:12px;margin-top:10px}
+
+  /* ── Toasts ── */
+  #toasts{position:fixed;right:18px;bottom:18px;display:flex;flex-direction:column;gap:8px;z-index:100;max-width:min(380px,90vw)}
+  .toast{background:var(--panel2);border:1px solid var(--border);border-left:3px solid var(--t3);border-radius:10px;
+    padding:11px 14px;font-size:13px;display:flex;align-items:center;gap:12px;box-shadow:0 8px 24px rgba(0,0,0,.45);
+    animation:tin .2s ease}
+  @keyframes tin{from{transform:translateY(8px);opacity:0}to{transform:none;opacity:1}}
+  .toast.out{opacity:0;transform:translateY(6px);transition:all .25s}
+  .toast button{appearance:none;background:none;border:none;color:var(--t3);font-family:var(--mono);font-size:12px;
+    cursor:pointer;text-decoration:underline dotted;padding:0;flex:0 0 auto}
+  .toast button:focus-visible{outline:2px solid var(--t3);outline-offset:2px}
+
+  /* ── Impression ── */
+  #print-view{display:none}
+  @media print{
+    .app,#toasts,.overlay{display:none!important}
+    body{background:#fff!important}
+    #print-view{display:block;color:#111;font-family:Georgia,"Times New Roman",serif;font-size:11pt;line-height:1.45}
+    #print-view h1{font-size:16pt;font-variant:small-caps;letter-spacing:.04em;margin:0 0 2pt;font-weight:600}
+    #print-view .pv-meta{font-size:9pt;color:#555;margin-bottom:12pt}
+    #print-view h2{font-size:12.5pt;font-variant:small-caps;letter-spacing:.03em;border-bottom:1pt solid #999;
+      margin:14pt 0 8pt;padding-bottom:2pt;break-after:avoid;font-weight:600}
+    #print-view .pv-rule{break-inside:avoid;border-left:2.5pt solid #b58a2e;padding:3pt 0 3pt 10pt;margin:0 0 9pt}
+    #print-view .pv-rule.t1{border-left-color:#4a7fae}
+    #print-view .pv-rule.perso{border-left-color:#7d57b5}
+    #print-view .pv-title{font-weight:bold;font-size:11.5pt}
+    #print-view .pv-mod{font-size:8pt;color:#8a6d1f;font-weight:normal;margin-left:8pt;text-transform:uppercase;letter-spacing:.07em}
+    #print-view .pv-line{margin:1.5pt 0}
+    #print-view .pv-k{color:#555;font-size:8.5pt;text-transform:uppercase;letter-spacing:.05em}
+    #print-view .pv-warn{color:#a33;font-size:9.5pt;font-weight:normal}
+    #print-view .pv-foot{margin-top:14pt;padding-top:6pt;border-top:1pt solid #999;font-size:9pt;color:#444}
+    @page{margin:14mm}
+  }
+
+  /* ── Responsive ── */
+  @media(max-width:920px){
+    .app{grid-template-columns:1fr;height:auto;min-height:100vh}
+    aside.side{flex-direction:row;flex-wrap:wrap;align-items:center;border-right:none;border-bottom:1px solid var(--border-soft);
+      padding:12px 14px;gap:10px;position:sticky;top:0;z-index:40;overflow:visible}
+    .brand{padding:0;margin-right:6px}
+    nav.mainnav{flex-direction:row;gap:4px;overflow-x:auto}
+    .nav-btn{border-left:none;border-bottom:2px solid transparent;border-radius:8px 8px 0 0;padding:7px 11px}
+    .nav-btn.active{border-left:none;border-bottom-color:var(--t3)}
+    .side-foot{margin:0 0 0 auto;border-top:none;padding:0;flex-direction:row;align-items:center;gap:12px}
+    .prog-wrap{min-width:120px}
+    .save-line{display:none}
+    main#view{padding:20px 14px 70px;overflow:visible}
+    .row-body{padding-left:16px}
+    .row-mains{display:none}
+    .minis{display:none}
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <aside class="side">
+    <div class="brand">
+      <span class="diamond">◆</span>
+      <div><h1>Tri d'équipement</h1><div class="sub">Watcher of Realms</div></div>
+    </div>
+    <nav class="mainnav" id="mainnav">
+      <button class="nav-btn" data-nav="regles">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 4h12M2 8h12M2 12h12"/><circle cx="6" cy="4" r="1.7" fill="var(--bg-side)"/><circle cx="11" cy="8" r="1.7" fill="var(--bg-side)"/><circle cx="5" cy="12" r="1.7" fill="var(--bg-side)"/></svg>
+        Règles <span class="count" id="nav-count-rules">21</span></button>
+      <button class="nav-btn" data-nav="sets">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2" y="2" width="5" height="5" rx="1"/><rect x="9" y="2" width="5" height="5" rx="1"/><rect x="2" y="9" width="5" height="5" rx="1"/><rect x="9" y="9" width="5" height="5" rx="1"/></svg>
+        Sets &amp; transfo <span class="count">45</span></button>
+      <button class="nav-btn" data-nav="reference">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 2.5h7a3 3 0 0 1 3 3V14H6a3 3 0 0 1-3-3V2.5Z"/><path d="M6 5.5h4M6 8h4"/></svg>
+        Référence</button>
+    </nav>
+    <div class="side-foot">
+      <div class="prog-wrap">
+        <div class="prog-label"><span>Saisie en jeu</span><b id="prog-num">0/21</b></div>
+        <div class="prog-bar"><i id="prog-fill" style="width:0%"></i></div>
+      </div>
+      <button class="side-btn" id="export-pdf">Exporter en PDF</button>
+      <div class="save-line" id="save-line"><span class="dot"></span><span id="save-status">local</span></div>
+    </div>
+  </aside>
+  <main id="view" tabindex="-1"></main>
+</div>
+
+<div id="toasts" aria-live="polite"></div>
+
+<div class="overlay" id="dlg-overlay" hidden>
+  <div class="dlg" role="dialog" aria-modal="true" aria-labelledby="dlg-title">
+    <h3 id="dlg-title">Nouvelle règle</h3>
+    <div class="ap-row">
+      <label>Nom <input type="text" id="ap-name" placeholder="ex. Bruiser HP% spécial" maxlength="60"></label>
+      <label>Section <select id="ap-section">
+        <option value="right">T2/T3 — côté droit</option>
+        <option value="left">T2/T3 — côté gauche</option>
+        <option value="t1">T1 — transformation</option>
+      </select></label>
+    </div>
+    <div class="ap-grp"><span class="grp-label">Main(s) — en OR, automatiquement exclus des subs (aucun = tout main accepté)</span><div id="ap-mains"></div></div>
+    <div class="ap-grp"><span class="grp-label">Sets — côté droit</span><div id="ap-sets-right"></div></div>
+    <div class="ap-grp"><span class="grp-label">Sets — côté gauche</span><div id="ap-sets-left"></div></div>
+    <div class="ap-actions">
+      <button class="btn primary" id="ap-create">Créer la règle</button>
+      <button class="btn" id="ap-cancel">Annuler</button>
+      <span class="ap-warn" id="ap-warn"></span>
+    </div>
+    <div class="ap-hint">Le pool de subs, les essentiels et le nombre requis se règlent ensuite directement sur la carte créée.</div>
+  </div>
+</div>
+
+<div id="print-view" aria-hidden="true"></div>
+
+<script>
+"use strict";
+/* ══════════════ RÉFÉRENTIEL ══════════════ */
+const STAT = {
+  "CC":"off","CD":"off","AS":"off","fATK":"off","ATK%":"off",
+  "fHP":"deff","HP%":"deff","fDEF":"deff","DEF%":"deff",
+  "RR":"util","HE":"util"
+};
+const ALLSTATS = ["fATK","ATK%","CC","CD","AS","fHP","HP%","fDEF","DEF%","RR","HE"];
+const SETTIER = {
+  "Infernal Roar":2,"Soulbound Arcana":2,"Ageless Wrath":2,"Cataclysm":3,"Hell's Lament":3,
+  "Undying Savage":2,"Tempered Will":3,"Unshaken Will":3,"Wings of Grace":3,"Invigoration":2,"Morale":3,
+  "Wicked Vengeance":3,"Warlord":2,"Light's Grace":3,"Astral Guardian":3,"Immortal Warrior":2,
+  "The Styx":1,"The Doom":1,"Hawk Eye":1,"Fracture":1,"Curse":1,"Fatality":1,
+  "The Glacier":1,"Guardian":1,"Mana Spring":1,"Annihilating Might":1,"Salvation":1,"Life Force":1,
+  "Asclepius":1,"The Insight":1,"The Wisdom":1,"Night Terror":1,"Calamity":1,"Whirlwind":1,
+  "Lifegiver":0,"Iron Fortress":0,"Wrathful Onslaught":0,"Savage Strike":0,"Deadly Aim":0,"Vitality":0,"Juggernaut":0,
+  "Occult Shield":0,"Twisted Blade":0,"Rapidity":0,"The Tempest":0
+};
+const SIDE_SETS = {
+  right: ["Wings of Grace","Cataclysm","Hell's Lament","Tempered Will","Unshaken Will","Morale",
+          "Infernal Roar","Soulbound Arcana","Ageless Wrath","Undying Savage","Invigoration",
+          "Asclepius","The Insight","The Wisdom","The Glacier","Night Terror","Fracture","Curse",
+          "The Doom","Hawk Eye","Mana Spring","The Styx","Fatality","Guardian",
+          "Occult Shield","Twisted Blade","Rapidity","The Tempest"],
+  left:  ["Astral Guardian","Light's Grace","Wicked Vengeance","Immortal Warrior","Warlord",
+          "Salvation","Life Force","Calamity","Whirlwind","Annihilating Might",
+          "Lifegiver","Iron Fortress","Wrathful Onslaught","Savage Strike","Deadly Aim","Vitality","Juggernaut"]
+};
+// Catalogue des sets pour la vue Sets & transfo
+const SETS = [
+  {n:"Astral Guardian",t:3,side:"left",b:"HP +30 %, DEF +15 %",src:"Gear Forge",refs:["LG3"]},
+  {n:"Light's Grace",t:3,side:"left",b:"Healing Effect +30, Rage Regen +10 %",src:"Gear Forge",refs:["LG2"]},
+  {n:"Wicked Vengeance",t:3,side:"left",b:"Crit.DMG +40 %, ATK +10 %",src:"Gear Forge",refs:["LG1"]},
+  {n:"Immortal Warrior",t:2,side:"left",b:"HP +25 %, DEF +10 %",src:"GR1 · 19-24",refs:["LG3"]},
+  {n:"Warlord",t:2,side:"left",b:"ATK +25 %, ATK Spd +30",src:"GR1 · 19-24",refs:["LG1","LG2"]},
+  {n:"Salvation",t:1,side:"left",b:"Healing Effect +25",src:"GR1 · 13-24",refs:["TL2"],to:"Light's Grace"},
+  {n:"Life Force",t:1,side:"left",b:"HP +25 %",src:"GR1 · 13-24",refs:["TL3"],to:"Immortal W. / Astral G."},
+  {n:"Calamity",t:1,side:"left",b:"ATK +25 %",src:"GR1 · 13-24",refs:["TL1"],to:"Warlord / Wicked V."},
+  {n:"Whirlwind",t:1,side:"left",b:"ATK Spd +75",src:"GR1 · 13-24",refs:["TL1"],to:"Warlord / Wicked V."},
+  {n:"Annihilating Might",t:1,side:"left",b:"Crit.DMG +35 %",src:"GR1 · 13-24",refs:["TL1"],to:"Calamity / Whirlwind / Warlord / Wicked V."},
+  {n:"Lifegiver",t:0,side:"left",b:"Healing Effect +10",src:"GR1 · 6-12"},
+  {n:"Iron Fortress",t:0,side:"left",b:"DEF +15 %",src:"GR1 · 6-12"},
+  {n:"Wrathful Onslaught",t:0,side:"left",b:"Rage Regen +15 %",src:"GR1 · 6-12"},
+  {n:"Savage Strike",t:0,side:"left",b:"ATK +10 %",src:"GR1 · 6-12"},
+  {n:"Deadly Aim",t:0,side:"left",b:"Crit.Rate +10 %",src:"GR1 · 6-12"},
+  {n:"Vitality",t:0,side:"left",b:"HP +1000",src:"GR1 · 1-5"},
+  {n:"Juggernaut",t:0,side:"left",b:"ATK +200",src:"GR1 · 1-5"},
+  {n:"Wings of Grace",t:3,side:"right",b:"HE +30 · ATK +12 % pour le héros et l'allié à l'ATK la plus haute",src:"Gear Forge",refs:["RD4","RD5","RD6","RD7"]},
+  {n:"Cataclysm",t:3,side:"right",b:"Crit de basic ATK → DMG +10 % (8 s, ×5)",src:"Gear Forge",refs:["RD1","RD2","RD8"]},
+  {n:"Hell's Lament",t:3,side:"right",b:"À l'ultime : DMG +35 %, Crit.DMG +50 % (20 s)",src:"Gear Forge",refs:["RD1","RD2","RD8"]},
+  {n:"Tempered Will",t:3,side:"right",b:"DMG Reduction +15 % · DEF +5 % par ennemi bloqué (×4)",src:"Gear Forge",refs:["RD3"]},
+  {n:"Unshaken Will",t:3,side:"right",b:"HP +20 % au déploiement · récupère 5 % Max HP quand attaqué (1×/5 s)",src:"Gear Forge",refs:["RD3"]},
+  {n:"Morale",t:3,side:"right",b:"Présence : tous les alliés +4 % DMG (non cumulable)",src:"Gear Forge",refs:["RD4","RD5","RD6","RD7"]},
+  {n:"Infernal Roar",t:2,side:"right",b:"Basic ATK DMG +40 %",src:"GR3 · 19-24",refs:["RD1","RD2","RD8"]},
+  {n:"Soulbound Arcana",t:2,side:"right",b:"Après l'ultime : DMG +10 % permanent (×5)",src:"GR3 · 19-24",refs:["RD1","RD2","RD8"]},
+  {n:"Ageless Wrath",t:2,side:"right",b:"Crit.DMG +30 % · +1 % par crit (×30)",src:"GR2 · 19-24",refs:["RD1","RD2","RD8"]},
+  {n:"Undying Savage",t:2,side:"right",b:"Shield/soin reçu → Max HP +1 % et DMG +4 % (×10)",src:"GR2 · 19-24",refs:["RD1","RD3"]},
+  {n:"Invigoration",t:2,side:"right",b:"HE +25 · le héros et 1 allié aléatoire gagnent 10 % ATK",src:"GR2 · 19-24",refs:["RD4","RD5","RD6","RD7"]},
+  {n:"Asclepius",t:1,side:"right",b:"Max HP +10 %, HE +20",src:"GR3 · 14-24",refs:["TD4","TD5","TD6"],to:"Invigoration / Morale / Wings of G."},
+  {n:"The Insight",t:1,side:"right",b:"Crit.Rate +15 % · DMG bonus mono-cible",src:"GR3 · 14-24",refs:["TD1","TD2","TD7"],to:"T2/3 DPS"},
+  {n:"The Wisdom",t:1,side:"right",b:"Après l'ultime : DMG +35 % (10 s)",src:"GR3 · 14-24",refs:["TD1","TD2","TD7"],to:"T2/3 DPS"},
+  {n:"The Glacier",t:1,side:"right",b:"ATK bonus = 6 % Max HP au déploiement",src:"GR2 · 14-24",refs:["TD3"],to:"Unshaken W. / Tempered W."},
+  {n:"Night Terror",t:1,side:"right",b:"DMG +25 % pendant 3 s après un crit",src:"GR2 · 14-24",refs:["TD1","TD2","TD7"],to:"T2/3 DPS"},
+  {n:"Fracture",t:1,side:"right",b:"Crit.DMG +45 % si HP > 70 %",src:"GR2 · 14-24",refs:["TD1","TD2","TD7"],to:"T2/3 DPS"},
+  {n:"Curse",t:1,side:"right",b:"DMG +6 % par ennemi à portée (×5)",src:"GR2 · 14-24",refs:["TD1","TD2","TD7"],to:"T2/3 DPS"},
+  {n:"The Doom",t:1,side:"right",b:"Single-Target DMG +18 %",src:"GR3 · 10-24",refs:["TD1","TD2","TD7"],to:"T2/3 DPS"},
+  {n:"Hawk Eye",t:1,side:"right",b:"5 basic ATK → DMG +25 % (6 s)",src:"GR3 · 10-24",refs:["TD1","TD2","TD7"],to:"T2/3 DPS"},
+  {n:"Mana Spring",t:1,side:"right",b:"Rage Regen (Auto) +3",src:"GR3 · 10-24",refs:["TD4","TD5","TD6"],to:"Invigoration / Morale / Wings of G."},
+  {n:"The Styx",t:1,side:"right",b:"AOE DMG +18 %",src:"GR2 · 10-24",refs:["TD1","TD2","TD7"],to:"T2/3 DPS"},
+  {n:"Fatality",t:1,side:"right",b:"ATK +3 % · ignore 12 % DEF/M.RES",src:"GR2 · 10-24",refs:["TD1","TD2","TD7"],to:"T2/3 DPS"},
+  {n:"Guardian",t:1,side:"right",b:"DMG Taken −15 %",src:"GR2 · 10-24",refs:["TD3"],to:"Unshaken W. / Tempered W."},
+  {n:"Occult Shield",t:0,side:"right",b:"DMG Taken −10 %",src:"GR3 · 1-9"},
+  {n:"Twisted Blade",t:0,side:"right",b:"DMG +10 %",src:"GR3 · 1-9"},
+  {n:"Rapidity",t:0,side:"right",b:"Cost −1",src:"GR2 · 1-9"},
+  {n:"The Tempest",t:0,side:"right",b:"Rage Regen (ATK) +2",src:"GR2 · 1-9"}
+];
+const TRANSFO = [
+  ["Heal / Utility · gauche","Salvation","Light's Grace"],
+  ["Heal / Utility · droite","Mana Spring / Asclepius","Invigoration / Morale / Wings of Grace"],
+  ["DPS · gauche","Annihilating Might","Calamity / Whirlwind / Warlord / Wicked Vengeance"],
+  ["DPS · gauche","Calamity / Whirlwind","Warlord / Wicked Vengeance"],
+  ["DPS · droite","The Styx / The Doom / Hawk Eye / Fracture / Curse / Fatality / The Insight / The Wisdom / Night Terror","Ageless Wrath / Infernal Roar / Soulbound Arcana / Cataclysm / Hell's Lament"],
+  ["Tank · gauche","Life Force","Immortal Warrior / Astral Guardian"],
+  ["Tank · droite","The Glacier / Guardian","Unshaken Will / Tempered Will"]
+];
+
+/* ══════════════ RÈGLES PAR DÉFAUT ══════════════ */
+const DPS_T23 = ["Infernal Roar","Soulbound Arcana","Ageless Wrath","Cataclysm","Hell's Lament"];
+const DPS_T1  = ["The Styx","The Doom","Hawk Eye","Fracture","Curse","Fatality","The Insight","The Wisdom","Night Terror"];
+
+const RULES = {
+  right: [
+    {id:"RD1", name:"DPS scaler", arch:["dps"], sets:[...DPS_T23,"Undying Savage"],
+     mains:["ATK%","HP%","DEF%"], pool:["CC","CD","AS"], ess:["CC","CD","AS"], req:3,
+     note:"Tous les DPS, quel que soit le scaling (ATK, HP type Gluttony, DEF type Ghan/Trusk/Azhor). Trio offensif intégralement essentiel, 4ᵉ slot libre — priorité AS excédentaire > HP% > RR. Fusion des trois mains sans coût : le pool ne contient aucun d'eux."},
+    {id:"RD2", name:"DPS amulette AS — quad parfait", arch:["dps"], sets:DPS_T23,
+     mains:["AS"], pool:["fATK","ATK%","CC","CD"], ess:["fATK","ATK%","CC","CD"], req:4,
+     note:"Pour les 1-2 héros full DPS qui veulent l'AS en main. Perfect roll ou rien : les quatre subs offensifs, tous essentiels. Ne matche de fait que des amulettes."},
+    {id:"RD3", name:"Tank", arch:["tank"], sets:["Tempered Will","Unshaken Will","Undying Savage"],
+     mains:["HP%"], pool:["DEF%","RR","AS","fDEF"], ess:["DEF%","RR"], req:3,
+     note:"DEF% + RR imposés — RR monétisé via Rage Regen (Attacked), DEF% en survie prioritaire (synergie Tempered Will). 3ᵉ sub : AS ou fDEF, le flat n'étant qu'un bouche-trou, jamais essentiel. Undying Savage sert aussi les bruisers → présent dans RD1 et RD3."},
+    {id:"RD4", name:"Inspire", arch:["inspire"], sets:["Wings of Grace","Invigoration","Morale"],
+     mains:["ATK%"], pool:["fATK","HP%","AS"], ess:[], req:2,
+     note:"Les inspirateurs buffent sur leur propre ATK. Les trois héros purs veulent fATK + HP% ; les hybrides (heal ATK-based, contrôle de foule) prennent l'AS en plus. Aucun essentiel : les deux profils divergent, req 2 sur 3 les couvre tous les deux."},
+    {id:"RD5", name:"Heal ATK-scaling", arch:["heal"], sets:["Wings of Grace","Invigoration","Morale"],
+     mains:["ATK%"], pool:["HE","RR","AS","fATK","HP%"], ess:["HE","RR"], req:3,
+     note:"Main = stat de scaling, HE en sub (plafond 150, financé en partie par les +25/+30 des sets) — HE et RR essentiels, 3ᵉ sub au choix. Complémentaire de RD4 sur les mêmes sets : une pièce matche l'un ou l'autre selon son profil."},
+    {id:"RD6", name:"Heal HP-scaling / Support", arch:["heal","support"], sets:["Wings of Grace","Invigoration","Morale"],
+     mains:["HP%"], pool:["HE","RR","AS","DEF%"], ess:["RR"], req:3,
+     note:"Les heals HP n'ont pas besoin d'ATK — pool sans stat d'attaque. DEF% remplace le flat HP comme sub de survie (HP% étant le main). RR seul essentiel : couvre le heal HP (HE+RR+X) comme le support pur (RR+AS+DEF%)."},
+    {id:"RD7", name:"Support RR-main", arch:["support"], sets:["Wings of Grace","Invigoration","Morale"],
+     mains:["RR"], pool:["HP%","DEF%","AS","HE"], ess:[], req:2,
+     note:"Pour les supports/CC qui cyclent leurs skills : RR en main + survie, HP% avant DEF%. Volontairement souple (req 2, sans essentiel) — ces pièces sont rares et les porteurs peu exigeants."},
+    {id:"RD8", name:"DPS main CD — quad parfait", arch:["dps"], sets:DPS_T23,
+     mains:["CD"], pool:["fATK","ATK%","CC","AS"], ess:["fATK","ATK%","CC","AS"], req:4,
+     note:"Le pendant de RD2 pour l'unique héros à main CD. Quad offensif complet — fATK + ATK% + CC + AS — tous essentiels, sans exception."}
+  ],
+  left: [
+    {id:"LG1", name:"DPS gauche", arch:["dps"], sets:["Wicked Vengeance","Warlord"],
+     mains:["fATK","fHP"], pool:["CC","CD","AS","ATK%"], ess:["CC","AS"], req:3,
+     note:"Mains fATK/fHP = sélecteur arme/torse (mains fixes du slot gauche) — fusion sans coût, le pool est sans plats. CC et AS essentiels : les deux budgets saturants exigent les 5 pièces. 3ᵉ sub : CD ou ATK%."},
+    {id:"LG2", name:"Inspire / Heal gauche", arch:["inspire","heal"], sets:["Light's Grace","Warlord"],
+     mains:["fATK","fHP"], pool:["ATK%","HP%","HE","RR","AS"], ess:[], req:3,
+     note:"Warlord (ATK +25 %, AS +30) sert les heals ATK et les inspirateurs autant que les DPS — d'où sa présence dans LG1 et LG2, à toi d'arbitrer au build. Sans essentiel : couvre inspire (ATK%+HP%+AS), heal ATK (HE+RR+ATK%), heal HP (HE+RR+HP%)."},
+    {id:"LG3", name:"Tank / Support gauche", arch:["tank","support"], sets:["Astral Guardian","Immortal Warrior"],
+     mains:["fATK","fHP"], pool:["HP%","DEF%","RR","AS","HE"], ess:["RR"], req:3,
+     note:"RR essentiel comme côté droit. HE dans le pool pour les supports qui portent les sets tank en survie ; HP% avant DEF%, les deux avant tout flat."}
+  ],
+  t1: [
+    {id:"TD1", name:"DPS droite → transfo", arch:["dps"], sets:DPS_T1,
+     mains:["ATK%","HP%","DEF%"], pool:["CC","CD","AS","fATK"], ess:["CC","CD","AS","fATK"], req:4,
+     note:"Quad offensif parfait, tous scalings. Destination : Ageless Wrath / Infernal Roar / Soulbound Arcana / Cataclysm / Hell's Lament. Si tu veux accepter les quads trio+HP%, ajoute HP% au pool et retire fATK des essentiels."},
+    {id:"TD2", name:"DPS AS droite → transfo", arch:["dps"], sets:DPS_T1,
+     mains:["AS"], pool:["fATK","ATK%","CC","CD"], ess:["fATK","ATK%","CC","CD"], req:4,
+     note:"Le jackpot : un quad AS-main T1 transformé en Hell's Lament pour un des héros AS-main. Mêmes sets que TD1."},
+    {id:"TD3", name:"Tank droite → transfo", arch:["tank"], sets:["The Glacier","Guardian"],
+     mains:["HP%"], pool:["DEF%","RR","AS","fDEF"], ess:["DEF%","RR","AS","fDEF"], req:4,
+     note:"Destination : Unshaken Will / Tempered Will. fDEF en 4ᵉ faute de mieux — flat HP écarté selon ta préférence, HP% étant le main."},
+    {id:"TD4", name:"Heal ATK droite → transfo", arch:["heal"], sets:["Mana Spring","Asclepius"],
+     mains:["ATK%"], pool:["HE","RR","AS","HP%"], ess:["HE","RR","AS","HP%"], req:4,
+     note:"Destination : Invigoration / Morale / Wings of Grace. Le quad heal-ATK parfait : HE+RR+AS+HP%, survie incluse."},
+    {id:"TD5", name:"Heal HP / Support droite → transfo", arch:["heal","support"], sets:["Mana Spring","Asclepius"],
+     mains:["HP%"], pool:["HE","RR","AS","DEF%"], ess:["HE","RR","AS","DEF%"], req:4,
+     note:"Version HP-scaling / support pur, sans stat d'attaque — DEF% en survie à la place du flat HP."},
+    {id:"TD6", name:"Inspire droite → transfo", arch:["inspire"], sets:["Mana Spring","Asclepius"],
+     mains:["ATK%"], pool:["fATK","HP%","AS","RR"], ess:["fATK","HP%","AS","RR"], req:4,
+     note:"Trio inspire (fATK+HP%+AS) + RR forcé en 4ᵉ — cohérent avec les destinations support (Invigoration / Morale / Wings of Grace)."},
+    {id:"TD7", name:"DPS CD droite → transfo", arch:["dps"], sets:DPS_T1,
+     mains:["CD"], pool:["fATK","ATK%","CC","AS"], ess:["fATK","ATK%","CC","AS"], req:4,
+     note:"Le pendant T1 de RD8 : un quad CD-main transformé en set T2/3 pour l'unique héros à main CD. Mêmes sets que TD1."},
+    {id:"TL1", name:"DPS gauche → transfo", arch:["dps"], sets:["Annihilating Might","Calamity","Whirlwind"],
+     mains:["fATK","fHP"], pool:["CC","CD","AS","ATK%"], ess:["CC","CD","AS","ATK%"], req:4,
+     note:"Destinations : Annihilating Might → Calamity / Whirlwind / Warlord / Wicked Vengeance ; Calamity et Whirlwind → Warlord / Wicked Vengeance. Un Whirlwind quad peut aussi être porté tel quel : +75 AS de set, le plus gros financeur du budget 450."},
+    {id:"TL2", name:"Heal gauche → transfo", arch:["heal","inspire"], sets:["Salvation"],
+     mains:["fATK","fHP"], pool:["HE","RR","AS","HP%","ATK%"], ess:["RR","AS","HP%"], req:4,
+     note:"Destination : Light's Grace. Essentiels = le tronc commun (RR+AS+HP%), 4ᵉ sub au choix : HE (quad heal pur) ou ATK% (quad heal-inspire)."},
+    {id:"TL3", name:"Tank gauche → transfo", arch:["tank"], sets:["Life Force"],
+     mains:["fATK","fHP"], pool:["HP%","DEF%","RR","AS"], ess:["HP%","DEF%","RR","AS"], req:4,
+     note:"Destination : Immortal Warrior / Astral Guardian."}
+  ]
+};
+const SECTIONS = ["right","left","t1"];
+const SECTION_LABEL = {right:"Côté droit · T2/T3", left:"Côté gauche · T2/T3", t1:"T1 · Quad transformation"};
+const ARCH_LABEL = {dps:"DPS", tank:"Tank", heal:"Heal", support:"Support", inspire:"Inspire"};
+
+/* ══════════════ ÉTAT ══════════════ */
+const BUILTIN = [...RULES.right, ...RULES.left, ...RULES.t1];
+const DEFAULTS = Object.fromEntries(BUILTIN.map(r=>[r.id,{pool:[...r.pool],ess:[...r.ess],req:r.req}]));
+let S = JSON.parse(JSON.stringify(DEFAULTS));
+let DELETED = new Set();
+let CUSTOM = [];            // {id, name, section, sets, mains, arch:[]}
+let ENTERED = new Set();    // règles saisies dans le jeu
+let customSeq = 1;
+const KEY = "wor-tri-rules-v1";
+
+const UI = { view:"regles", seg:"pre", q:"", fSection:"all", fArch:"all",
+             open:new Set(), setsQ:"", setsTier:"all", pending:null };
+
+function getRule(id){ return BUILTIN.find(r=>r.id===id) || CUSTOM.find(r=>r.id===id) || null; }
+function sectionOf(id){
+  for(const sec of SECTIONS) if(RULES[sec].some(r=>r.id===id)) return sec;
+  const c = CUSTOM.find(r=>r.id===id); return c ? c.section : "right";
+}
+function isCustom(id){ return CUSTOM.some(r=>r.id===id); }
+function activeAll(){ return [...BUILTIN.filter(r=>!DELETED.has(r.id)), ...CUSTOM]; }
+function activeList(sec){ return [...RULES[sec].filter(r=>!DELETED.has(r.id)), ...CUSTOM.filter(r=>r.section===sec)]; }
+function isModified(id){
+  const d = DEFAULTS[id]; if(!d) return false;
+  const a = S[id];
+  return a.req!==d.req || a.pool.join()!==d.pool.join() || a.ess.join()!==d.ess.join();
+}
+function sortStats(arr){ return ALLSTATS.filter(x=>arr.includes(x)); }
+function sortSets(arr){ return [...arr].sort((a,b)=>(SETTIER[b]??0)-(SETTIER[a]??0) || a.localeCompare(b)); }
+function esc(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+
+/* ══════════════ PERSISTANCE ══════════════ */
+let saveTimer = null;
+function setSave(txt, cls){
+  const line = document.getElementById("save-line");
+  const st = document.getElementById("save-status");
+  if(st) st.textContent = txt;
+  if(line){ line.className = "save-line" + (cls?" "+cls:""); }
+}
+function payload(){ return JSON.stringify({v:3, rules:S, deleted:[...DELETED], custom:CUSTOM, seq:customSeq, entered:[...ENTERED]}); }
+async function persist(){
+  if(!window.storage || !window.storage.set){ setSave("session seule","warn"); return; }
+  try{ await window.storage.set(KEY, payload()); setSave("enregistré","ok"); }
+  catch(e){ setSave("session seule","warn"); }
+}
+function scheduleSave(){ clearTimeout(saveTimer); saveTimer = setTimeout(persist, 600); }
+async function restoreState(){
+  if(!window.storage || !window.storage.get) { setSave("session seule","warn"); return; }
+  try{
+    const r = await window.storage.get(KEY);
+    if(!r || !r.value) { setSave("prêt","ok"); return; }
+    const data = JSON.parse(r.value);
+    const rules = (data && data.v>=2) ? (data.rules||{}) : (data||{});
+    if(data && data.v>=2){
+      if(Array.isArray(data.custom)){
+        for(const c of data.custom){
+          if(!c || typeof c.id!=="string" || getRule(c.id)) continue;
+          CUSTOM.push({
+            id:c.id, name:String(c.name||c.id).slice(0,60),
+            section:SECTIONS.includes(c.section)?c.section:"right",
+            sets:Array.isArray(c.sets)?c.sets.filter(x=>SETTIER[x]!==undefined):[],
+            mains:Array.isArray(c.mains)?c.mains.filter(x=>ALLSTATS.includes(x)):[],
+            arch:Array.isArray(c.arch)?c.arch.filter(a=>ARCH_LABEL[a]):[]
+          });
+          S[c.id] = {pool:[],ess:[],req:3};
+        }
+      }
+      if(Array.isArray(data.deleted)) data.deleted.forEach(id=>{ if(DEFAULTS[id]) DELETED.add(id); });
+      if(Array.isArray(data.entered)) data.entered.forEach(id=>ENTERED.add(id));
+      if(Number.isInteger(data.seq)) customSeq = Math.max(customSeq, data.seq);
+    }
+    for(const id in rules){
+      if(!S[id]) continue;
+      const d = rules[id], rule = getRule(id);
+      if(Array.isArray(d.pool)) S[id].pool = d.pool.filter(x=>ALLSTATS.includes(x) && !(rule && rule.mains.includes(x)));
+      if(Array.isArray(d.ess))  S[id].ess  = d.ess.filter(x=>S[id].pool.includes(x));
+      if(Number.isInteger(d.req)) S[id].req = Math.min(4, Math.max(1, d.req));
+    }
+    setSave("restauré","ok");
+  }catch(e){ setSave("session seule","warn"); }
+  renderView(); updateSidebar();
+}
+
+/* ══════════════ TOASTS ══════════════ */
+function toast(msg, opts={}){
+  const box = document.getElementById("toasts");
+  const el = document.createElement("div");
+  el.className = "toast";
+  el.innerHTML = `<span>${msg}</span>` + (opts.action?`<button type="button">${esc(opts.action.label)}</button>`:"");
+  if(opts.action){
+    el.querySelector("button").addEventListener("click", ()=>{ opts.action.fn(); dismiss(); });
+  }
+  box.appendChild(el);
+  let gone = false;
+  function dismiss(){ if(gone) return; gone = true; el.classList.add("out"); setTimeout(()=>el.remove(), 280); }
+  setTimeout(dismiss, opts.ttl||5500);
+}
+
+/* ══════════════ COMPOSANTS ══════════════ */
+function setChip(name){ const t=SETTIER[name]??0; return `<span class="chip set t${t}">${esc(name)}</span>`; }
+function gauge(req){
+  let d=""; for(let i=0;i<4;i++) d+=`<span class="dot${i<req?' fill':''}"></span>`;
+  return `<span class="dots" aria-label="${req} subs requis sur 4">${d}</span>`;
+}
+function copyText(r){
+  const st=S[r.id];
+  return `${r.id} · ${r.name}\nSets : ${r.sets.join(", ")}\nAttribut(s) principal(aux) : ${r.mains.join(" / ")||"—"}\nPool de secondaires : ${sortStats(st.pool).join(", ")||"—"}\nNombre requis : ${st.req}\nEssentiels : ${sortStats(st.ess).join(", ")||"—"}`;
+}
+function ruleClass(r){
+  if(isCustom(r.id)) return "perso";
+  return sectionOf(r.id)==="t1" ? "s-t1" : "";
+}
+function ruleRow(r){
+  const st = S[r.id];
+  const open = UI.open.has(r.id);
+  const mains = r.mains.length ? r.mains.map(m=>`<span class="main-or">${m}</span>`).join('<span class="main-or sep">/</span>') : '<span class="main-or">—</span>';
+  const minis = sortStats(st.pool).map(a=>`<span class="mini${st.ess.includes(a)?' e':''}">${st.ess.includes(a)?"★":""}${a}</span>`).join("");
+  const chips = ALLSTATS.filter(a=>!r.mains.includes(a)).map(a=>{
+    const inPool = st.pool.includes(a), inEss = st.ess.includes(a);
+    const state = inEss ? "ess" : (inPool ? "" : "stateoff");
+    return `<button type="button" class="chip ${STAT[a]} ${state} tog" data-rule="${r.id}" data-stat="${a}" aria-pressed="${inPool}" title="${a} : ${inEss?'essentiel':(inPool?'dans le pool':'hors pool')}">${inEss?"★ "+a:a}</button>`;
+  }).join("");
+  let warn = "";
+  if(st.ess.length > st.req) warn = `<span class="rc-warn">★ &gt; requis</span>`;
+  else if(st.req > st.pool.length) warn = `<span class="rc-warn">requis &gt; pool</span>`;
+  const custom = isCustom(r.id);
+  return `<article class="rule ${ruleClass(r)}${open?' open':''}" id="card-${r.id}">
+    <div class="row-head" role="button" tabindex="0" aria-expanded="${open}" data-toggle="${r.id}">
+      <input type="checkbox" class="chk" data-entered="${r.id}" ${ENTERED.has(r.id)?"checked":""} title="saisie en jeu" aria-label="règle saisie en jeu">
+      <span class="rc-id">${r.id}</span>
+      <span class="rc-name">${esc(r.name)}${custom?'<span class="custom-tag">perso</span>':''}${isModified(r.id)?'<span class="mod-dot" title="modifiée par rapport aux défauts"></span>':''}</span>
+      <span class="row-mains">${r.mains.join(" / ")||"—"}</span>
+      <span class="row-right">
+        <span class="minis">${minis}</span>
+        ${gauge(st.req)}
+        <svg class="chev" width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6l5 5 5-5"/></svg>
+      </span>
+    </div>
+    <div class="row-body">
+      <div class="rc-sets" style="margin-top:10px">${r.sets.map(setChip).join("")}</div>
+      <div class="rb-grid">
+        <span class="k">Main(s)</span><span>${mains}</span>
+        <span class="k">Subs</span><span>${chips}</span>
+        <span class="k">Requis</span><span><span class="stepper"><button type="button" class="st-minus" data-rule="${r.id}" aria-label="réduire">−</button><span class="val">${st.req}</span><button type="button" class="st-plus" data-rule="${r.id}" aria-label="augmenter">+</button></span>${warn}</span>
+      </div>
+      ${r.note?`<div class="rb-note">${r.note}</div>`:""}
+      <div class="rb-actions">
+        <button type="button" class="sbtn rc-copy" data-rule="${r.id}">copier</button>
+        ${custom?"":`<button type="button" class="sbtn rc-reset" data-rule="${r.id}">défauts</button>`}
+        <button type="button" class="sbtn del rc-del" data-rule="${r.id}">supprimer</button>
+      </div>
+    </div>
+  </article>`;
+}
+
+/* ══════════════ VUE : RÈGLES ══════════════ */
+function matchFilters(r){
+  if(UI.fSection!=="all" && sectionOf(r.id)!==UI.fSection) return false;
+  if(UI.fArch!=="all" && !(r.arch||[]).includes(UI.fArch)) return false;
+  if(UI.q){
+    const q = UI.q.toLowerCase();
+    const hay = (r.id+" "+r.name+" "+r.sets.join(" ")+" "+r.mains.join(" ")+" "+(r.arch||[]).map(a=>ARCH_LABEL[a]).join(" ")).toLowerCase();
+    if(!hay.includes(q)) return false;
+  }
+  return true;
+}
+function viewRegles(){
+  const nPre = BUILTIN.filter(r=>!DELETED.has(r.id)).length;
+  return `<div class="wrap">
+    <div class="view-head">
+      <h2>Règles de tri</h2>
+      <div class="lede">Une pièce est conservée si elle satisfait au moins une règle ; tout le reste part au recyclage. Coche chaque règle une fois saisie dans le jeu.</div>
+    </div>
+    <div class="seg" role="tablist">
+      <button type="button" class="${UI.seg==='pre'?'on':''}" data-seg="pre" role="tab">Prédéfinies <span class="n">${nPre}</span></button>
+      <button type="button" class="${UI.seg==='perso'?'on':''}" data-seg="perso" role="tab">Personnalisées <span class="n">${CUSTOM.length}</span></button>
+    </div>
+    <div class="controls">
+      <div class="search">
+        <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5 14 14"/></svg>
+        <input type="search" id="rule-q" placeholder="Chercher une règle, un set… ( / )" value="${esc(UI.q)}">
+      </div>
+      <div class="fchips" id="f-section">
+        ${[["all","Toutes"],["right","Droite T2/3"],["left","Gauche T2/3"],["t1","T1"]].map(([v,l])=>
+          `<button type="button" class="fchip${UI.fSection===v?' on':''}" data-fsection="${v}">${l}</button>`).join("")}
+      </div>
+      <div class="fchips" id="f-arch">
+        ${[["all","Tous rôles"],["dps","DPS"],["tank","Tank"],["heal","Heal"],["support","Support"],["inspire","Inspire"]].map(([v,l])=>
+          `<button type="button" class="fchip${UI.fArch===v?' on':''}" data-farch="${v}">${l}</button>`).join("")}
+      </div>
+    </div>
+    <div class="toolbar">
+      <button type="button" class="btn primary" id="add-open">＋ Nouvelle règle</button>
+      <button type="button" class="btn" id="copy-all">Copier tout</button>
+      <button type="button" class="btn" id="toggle-all">Tout déplier</button>
+      <button type="button" class="btn danger" id="reset-all">Réinitialiser tout</button>
+    </div>
+    <div class="hint">Clic sur un sub : <b>hors pool</b> → <b>pool</b> → <b>★ essentiel</b> · le stepper règle le nombre requis · la copie reflète l'état courant.</div>
+    <div class="rule-list" id="rule-list"></div>
+    <details class="acc" style="margin-top:22px">
+      <summary>Recyclage d'office — ce qu'aucune règle ne couvre</summary>
+      <div class="acc-body"><b style="color:var(--ink)">T0 intégral</b> · gauche : Vitality, Juggernaut, Lifegiver, Iron Fortress, Wrathful Onslaught, Savage Strike, Deadly Aim · droite : Occult Shield, Twisted Blade, Rapidity, The Tempest — et toute pièce T2/T3 qui ne matche aucune règle active.</div>
+    </details>
+  </div>`;
+}
+function updateRuleList(){
+  const el = document.getElementById("rule-list");
+  if(!el) return;
+  let html = "";
+  if(UI.seg === "perso"){
+    const list = CUSTOM.filter(matchFilters);
+    if(!CUSTOM.length){
+      html = `<div class="empty"><p>Aucune règle personnalisée pour l'instant.<br>Les règles créées ici vivent à part des ${BUILTIN.length} prédéfinies — supprimables sans filet, exportées et sauvegardées comme les autres.</p>
+        <button type="button" class="btn primary" id="add-open-empty">＋ Créer ta première règle</button></div>`;
+    } else if(!list.length){
+      html = `<div class="empty"><p>Aucune règle personnalisée ne correspond aux filtres.</p></div>`;
+    } else {
+      for(const sec of SECTIONS){
+        const rows = list.filter(r=>r.section===sec);
+        if(!rows.length) continue;
+        html += `<h3 class="grp-head">${SECTION_LABEL[sec]} <span class="n">${rows.length}</span></h3>` + rows.map(ruleRow).join("");
+      }
+    }
+  } else {
+    const list = BUILTIN.filter(r=>!DELETED.has(r.id)).filter(matchFilters);
+    if(!list.length){
+      html = `<div class="empty"><p>Aucune règle ne correspond aux filtres.</p></div>`;
+    } else {
+      for(const sec of SECTIONS){
+        const rows = list.filter(r=>sectionOf(r.id)===sec);
+        if(!rows.length) continue;
+        html += `<h3 class="grp-head">${SECTION_LABEL[sec]} <span class="n">${rows.length}</span></h3>` + rows.map(ruleRow).join("");
+      }
+    }
+    const dels = BUILTIN.filter(r=>DELETED.has(r.id));
+    if(dels.length){
+      html += `<div class="deleted-line">Supprimées : ${dels.map(r=>`<button type="button" class="restore" data-rule="${r.id}">${r.id} — restaurer</button>`).join(" · ")}</div>`;
+    }
+  }
+  el.innerHTML = html;
+  const tg = document.getElementById("toggle-all");
+  if(tg) tg.textContent = UI.open.size ? "Tout replier" : "Tout déplier";
+}
+function rerenderRule(id){
+  const el = document.getElementById("card-"+id);
+  if(!el){ updateRuleList(); return; }
+  const r = getRule(id);
+  if(!r){ updateRuleList(); return; }
+  el.outerHTML = ruleRow(r);
+}
+
+/* ══════════════ VUE : SETS ══════════════ */
+function destCell(s){
+  if(!s.refs) return `<span class="recycle">Recyclage</span>`;
+  const refs = s.refs.map(id=>`<button type="button" class="ruleref${id[0]==="T"?" t1r":""}" data-goto="${id}">${id}</button>`).join("");
+  return refs + (s.to?` <span class="arrow">→</span> ${esc(s.to)}`:"");
+}
+function setsTable(side){
+  const rows = SETS.filter(s=>s.side===side)
+    .filter(s=>UI.setsTier==="all"||String(s.t)===UI.setsTier)
+    .filter(s=>!UI.setsQ || s.n.toLowerCase().includes(UI.setsQ.toLowerCase()));
+  if(!rows.length) return `<p class="hint" style="margin:8px 0 16px">Aucun set ne correspond.</p>`;
+  return `<div class="tbl-wrap"><table><thead><tr><th>Set</th><th>Tier</th><th>Bonus</th><th>Source</th><th>Destin</th></tr></thead><tbody>
+    ${rows.map(s=>`<tr><td>${esc(s.n)}</td><td><span class="tier-badge b${s.t}">T${s.t}</span></td><td>${s.b}</td><td>${s.src}</td><td class="dest">${destCell(s)}</td></tr>`).join("")}
+  </tbody></table></div>`;
+}
+function viewSets(){
+  return `<div class="wrap">
+    <div class="view-head">
+      <h2>Sets &amp; transformation</h2>
+      <div class="lede">Chaque set, son bonus, sa source et son destin : couvert par une règle (cliquable), gardé en quad parfait pour transformation, ou recyclé d'office.</div>
+    </div>
+    <div class="controls">
+      <div class="search">
+        <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5 14 14"/></svg>
+        <input type="search" id="sets-q" placeholder="Chercher un set…" value="${esc(UI.setsQ)}">
+      </div>
+      <div class="fchips" id="f-tier">
+        ${[["all","Tous"],["3","T3"],["2","T2"],["1","T1"],["0","T0"]].map(([v,l])=>
+          `<button type="button" class="fchip${UI.setsTier===v?' on':''}" data-ftier="${v}">${l}</button>`).join("")}
+      </div>
+    </div>
+    <h3 class="grp-head">Côté gauche — arme &amp; torse <span class="n">mains fixes : arme = fATK, torse = fHP</span></h3>
+    <div id="tbl-left">${setsTable("left")}</div>
+    <p class="hint">Un Whirlwind quad (+75 AS de bonus de set) a deux débouchés : porté tel quel pour boucler un budget 450 difficile, ou transformé en Warlord / Wicked Vengeance. Décision au moment de dépenser la ressource, pas au tri.</p>
+    <h3 class="grp-head">Côté droit — bracelet, amulette &amp; anneau <span class="n">bonus à 3 pièces, mains libres</span></h3>
+    <div id="tbl-right">${setsTable("right")}</div>
+    <h3 class="grp-head">Transformation T1 → T2/T3</h3>
+    <p class="hint" style="margin-bottom:6px">La ressource de transformation est très rare : elle n'est dépensée que sur des pièces T1 <b>quad parfaites</b> — d'où la sévérité maximale des règles TD/TL.</p>
+    <div class="transfo">
+      ${TRANSFO.map(([cat,from,to])=>`<div class="transfo-row"><span class="cat">${cat}</span><span>${from}</span><span class="big-arrow">→</span><span>${to}</span></div>`).join("")}
+    </div>
+  </div>`;
+}
+function updateSetsTables(){
+  const l = document.getElementById("tbl-left"), r = document.getElementById("tbl-right");
+  if(l) l.innerHTML = setsTable("left");
+  if(r) r.innerHTML = setsTable("right");
+}
+
+/* ══════════════ VUE : RÉFÉRENCE ══════════════ */
+function viewReference(){
+  return `<div class="wrap">
+    <div class="view-head">
+      <h2>Référence &amp; doctrine</h2>
+      <div class="lede">Les contraintes qui fondent les règles : budgets saturants, doctrine par archétype, politique par tier, mécanique de l'outil in-game, et les points encore ouverts.</div>
+    </div>
+    <div class="strip">
+      <div class="stat-card"><div class="num">21</div><div class="lbl">règles par défaut (8 droite T2/3 · 3 gauche T2/3 · 10 transfo T1)</div></div>
+      <div class="stat-card"><div class="num">16</div><div class="lbl">sets T2/T3 couverts par les règles</div></div>
+      <div class="stat-card"><div class="num">18</div><div class="lbl">sets T1 — tous transformables, tous sous règle quad</div></div>
+      <div class="stat-card"><div class="num">11</div><div class="lbl">sets recyclés d'office (T0 intégral)</div></div>
+    </div>
+
+    <div class="panel">
+      <h4>Les budgets saturants</h4>
+      <p class="hint" style="margin:0 0 8px">Trois attributs se remplissent puis deviennent des rolls morts. Tout le design des règles découle de leur arithmétique.</p>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>Attribut</th><th>Base</th><th>Cible</th><th>Roll moyen / pièce</th><th>Conséquence</th></tr></thead>
+        <tbody>
+          <tr><td><span class="chip off">CC</span></td><td>0</td><td>~100 %</td><td>15 – 25</td><td>CC nécessaire en sub sur <b>les 5 pièces</b> (5 × 20 = 100 pile, aucune marge).</td></tr>
+          <tr><td><span class="chip off">AS</span></td><td>100</td><td>~450 <i>(coût exponentiel au-delà)</i></td><td>50 – 80</td><td>AS sur <b>les 5 pièces</b>, et il faut des rolls hauts : 5 × 65 = 425 en moyenne. Le bonus Warlord (+30) aide à boucler.</td></tr>
+          <tr><td><span class="chip util">HE</span></td><td>0</td><td>150 <i>(Pantheon inclus)</i></td><td>—</td><td>Rendements décroissants sévères au-delà de 150. Les bonus de set (+25/+30) financent une partie du budget.</td></tr>
+        </tbody>
+      </table></div>
+      <div class="panel note" style="margin:12px 0 0">
+        <b>Le goulot : 2 slots discrétionnaires par pièce.</b><br>
+        5 pièces × 4 secondaires = 20 slots. CC + AS partout en consomment 10. Sur les 10 restants, priorité :
+        <b>AS excédentaire</b> (marge pour plus tard) &gt; <b>HP%</b> &gt; <b>RR</b>. Le DEF% ne vaut rien en sub DPS — exclu de tous les pools offensifs.
+      </div>
+    </div>
+
+    <div class="panel">
+      <h4>La doctrine</h4>
+      <ul class="clean">
+        <li><b>Le main = la stat de scaling.</b> ATK% pour les ATK-scalers, HP% pour les HP-scalers (Gluttony…), DEF% pour les DEF-scalers (Ghan, Trusk, Azhor). Même règle, même trio de subs.</li>
+        <li><b>Trio offensif obligatoire en subs DPS : CC + CD + AS.</b> Aucune stat non offensive en requis sur une règle DPS. Le 4ᵉ slot est libre — c'est là que HP%/RR atterrissent naturellement.</li>
+        <li><b>ATK% prime sur CD.</b> L'ATK est soustraite de la DEF/M.RES de la cible <i>avant</i> application du crit damage ; plus la DEF ennemie monte, plus l'écart se creuse.</li>
+        <li><b>AS ou CD en main : quad parfait ou rien.</b> Un ou deux héros pour l'AS, un seul pour le CD. La pièce porte les quatre autres subs offensifs — fATK + ATK% + CC + CD (main AS) ou fATK + ATK% + CC + AS (main CD) — sans exception.</li>
+        <li><b>Inspire : maximiser fATK, ATK%, HP%, AS.</b> Trois héros purs (ATK + survie), les hybrides (heal ATK-based, contrôle de foule) prennent l'AS en plus.</li>
+        <li><b>Heals = scalers.</b> Main = stat de scaling (ATK% ou HP%), HE en sub. Les heals HP n'ont pas besoin d'ATK.</li>
+        <li><b>Supports : RR + survie.</b> HP% toujours meilleur que DEF%, et DEF% meilleur que les flats — le flat HP sort des pools au profit du DEF%.</li>
+        <li><b>Tanks : HP% en main, RR essentiel</b> — monétisé via Rage Regen (Attacked), sans besoin d'AS. DEF% valide en sub (synergie Tempered Will).</li>
+      </ul>
+    </div>
+
+    <div class="panel">
+      <h4>Politique par tier</h4>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>Tier</th><th>Rôle</th><th>Sévérité des règles</th></tr></thead>
+        <tbody>
+          <tr><td><span class="tier-badge b3">T3</span></td><td>Pièces forgées (Gear Forge) — choisies, pas de flux aléatoire massif</td><td>Règles standard : filet de sécurité, req 2-3</td></tr>
+          <tr><td><span class="tier-badge b2">T2</span></td><td>Le farm réel du palier (GR 19-24)</td><td>Règles standard : trio requis, req 2-3</td></tr>
+          <tr><td><span class="tier-badge b1">T1</span></td><td><b>Matière à transformation</b> — une ressource très rare convertit une pièce T1 en set T2/T3</td><td><b>Quad parfait ou rien</b> (req 4). Tous les sets T1 sont transformables — tous sous règle</td></tr>
+          <tr><td><span class="tier-badge b0">T0</span></td><td>—</td><td>Aucune règle → recyclage intégral</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+
+    <div class="panel">
+      <h4>Mécanique de l'outil &amp; pièges neutralisés</h4>
+      <ul class="clean">
+        <li><b>Le OR des mains exclut du pool de subs.</b> Piège principal du schéma. Les seules fusions multi-mains utilisées sont celles où le pool ne contient aucun des mains sélectionnés — coût d'exclusion nul (ex. mains ATK%/HP%/DEF% avec pool CC, CD, AS).</li>
+        <li><b>fATK / fHP en main = sélecteur de slot gauche.</b> Arme = toujours fATK, torse = toujours fHP. C'est le seul moyen de cibler un slot, l'outil n'ayant pas de champ dédié.</li>
+        <li><b>Essentiels renseignés partout, et éditables.</b> Les défauts supposent un ET (tous les essentiels présents sur la pièce). Chaque sub se cycle au clic — hors pool → pool → ★ essentiel — et le nombre requis s'ajuste au stepper ; la copie suit l'état courant.</li>
+        <li><b>Pas de détection variant / exclusive / tier / enhancement.</b> Et c'est assumé : une pièce Unrivalled Power ou Exclusive aux stats pourries doit dégager comme les autres. Aucun lock préalable requis.</li>
+      </ul>
+    </div>
+
+    <div class="panel">
+      <h4>Points ouverts</h4>
+      <details class="acc"><summary>Cumul des règles : OR ou priorité ?</summary><div class="acc-body">Le système suppose un OR de conservation : une pièce est gardée dès qu'elle matche au moins une règle. Si l'outil évalue en priorité descendante avec arrêt au premier match, l'ordre de saisie compte — dans ce cas, saisir les règles T1 (les plus strictes) en premier.</div></details>
+      <details class="acc"><summary>Essentiels multiples : ET ou OU ?</summary><div class="acc-body">Les défauts supposent le ET (tous les essentiels présents). Si l'outil se révèle en OU, resserre les règles concernées en réduisant leur pool — l'éditeur rend l'ajustement immédiat, carte par carte.</div></details>
+      <details class="acc"><summary>Main CC : volontairement non couvert</summary><div class="acc-body">Aucun héros identifié — les pièces à main CC partent au recyclage. Le main CD est traité en quad strict (RD8 / TD7), même logique que l'AS.</div></details>
+      <details class="acc"><summary>Héros AS-immunes</summary><div class="acc-body">Vierna, Zelus, Osiren, Dolores (et Xaris hors invocations) n'exploitent pas l'AS. Leurs pièces idéales — CC + CD sans AS — ne passent pas RD1 : assumé, pas de règle dédiée. Leurs builds prendront des pièces RD1 avec un roll AS mort.</div></details>
+      <details class="acc"><summary>Morale, set de présence</summary><div class="acc-body">Le porteur importe peu, seul le bonus compte. Si les règles RD4–RD7 se révèlent trop strictes pour équiper trois pièces Morale sur un porteur sacrifiable, baisse leur req à 2 — ou accepte de l'équiper avec les rebuts.</div></details>
+      <details class="acc"><summary>Whirlwind (+75 AS)</summary><div class="acc-body">Couvert par TL1. Un quad Whirlwind a deux débouchés — porté tel quel pour boucler un budget 450 difficile, ou transformé en Warlord / Wicked Vengeance. Décision au moment de dépenser la ressource, pas au tri.</div></details>
+      <details class="acc"><summary>Plafond de règles in-game</summary><div class="acc-body">21 règles par défaut. Si l'outil plafonne en dessous, sacrifier dans l'ordre : TD6 puis TD5 (niches Mana Spring / Asclepius, remplaçables par un contrôle manuel de ces drops), puis TD7 (un seul héros concerné).</div></details>
+      <details class="acc"><summary>Rage Regen Efficiency</summary><div class="acc-body">Toujours un seul RR dans la liste d'attributs — si une distinction RR / RR Efficiency apparaît dans l'outil, à signaler : plusieurs règles (RD3, RD5, RD6, LG3, TD3-TD6) y sont sensibles.</div></details>
+    </div>
+
+    <div class="footer-note">
+      Construit sur : schéma de règles à 6 champs (nom, sets, mains OR, pool de subs, nombre requis, essentiels) · budgets CC 100 / AS 450 / HE 150 ·
+      doctrine « main = scaling, trio CC+CD+AS, rien de non-offensif en requis DPS » · politique T1 = quad transformation uniquement ·
+      tables de sets et de transformation fournies (wiki corrigé). Toute évolution de patch sur les sets invalide potentiellement la partition — à re-vérifier après chaque grosse MàJ.
+    </div>
+  </div>`;
+}
+
+/* ══════════════ ROUTEUR + RENDU ══════════════ */
+function renderView(){
+  const main = document.getElementById("view");
+  document.querySelectorAll(".nav-btn").forEach(b=>b.classList.toggle("active", b.dataset.nav===UI.view));
+  if(UI.view==="sets"){ main.innerHTML = viewSets(); }
+  else if(UI.view==="reference"){ main.innerHTML = viewReference(); }
+  else { main.innerHTML = viewRegles(); updateRuleList(); }
+  main.scrollTop = 0;
+  if(UI.pending){
+    const id = UI.pending; UI.pending = null;
+    const el = document.getElementById("card-"+id);
+    if(el){
+      el.classList.add("flash");
+      el.scrollIntoView({behavior:"smooth", block:"center"});
+      setTimeout(()=>el.classList.remove("flash"), 1700);
+    }
+  }
+  updateSidebar();
+}
+function updateSidebar(){
+  const total = activeAll().length;
+  const done = activeAll().filter(r=>ENTERED.has(r.id)).length;
+  const nc = document.getElementById("nav-count-rules");
+  if(nc) nc.textContent = total;
+  const pn = document.getElementById("prog-num");
+  if(pn) pn.textContent = done+"/"+total;
+  const pf = document.getElementById("prog-fill");
+  if(pf) pf.style.width = (total? Math.round(done/total*100):0)+"%";
+}
+function route(){
+  const h = location.hash.replace(/^#\/?/, "");
+  const [view, param] = h.split("/");
+  if(view==="sets" || view==="reference"){ UI.view = view; }
+  else {
+    UI.view = "regles";
+    if(param){
+      const r = getRule(param);
+      if(r){
+        UI.seg = isCustom(param) ? "perso" : "pre";
+        UI.q = ""; UI.fSection = "all"; UI.fArch = "all";
+        UI.open.add(param);
+        UI.pending = param;
+      }
+    }
+  }
+  renderView();
+}
+function goto(hash){
+  if(("#"+hash)===location.hash){ route(); } else { location.hash = hash; }
+}
+
+/* ══════════════ COPIE / EXPORT ══════════════ */
+function doCopy(txt, btn){
+  const ok = ()=>{ if(!btn) return; const t=btn.textContent; btn.classList.add("ok"); btn.textContent="copié ✓";
+    setTimeout(()=>{btn.textContent=t; btn.classList.remove("ok");},1500); };
+  const fb = ()=>{ const ta=document.createElement("textarea"); ta.value=txt; document.body.appendChild(ta);
+    ta.select(); try{document.execCommand("copy"); ok();}catch(_){} document.body.removeChild(ta); };
+  if(navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(txt).then(ok).catch(fb); }
+  else fb();
+}
+function printRule(r, sec){
+  const st = S[r.id];
+  let warn = "";
+  if(st.ess.length > st.req) warn = ' <span class="pv-warn">⚠ essentiels &gt; requis</span>';
+  else if(st.req > st.pool.length) warn = ' <span class="pv-warn">⚠ requis &gt; pool</span>';
+  const tags = (isCustom(r.id)?'<span class="pv-mod">perso</span>':'') + (isModified(r.id)?'<span class="pv-mod">modifié</span>':'') + (ENTERED.has(r.id)?'<span class="pv-mod">✓ saisie</span>':'');
+  const cls = isCustom(r.id) ? " perso" : (sec==="t1" ? " t1" : "");
+  return `<div class="pv-rule${cls}">
+    <div class="pv-title">${r.id} · ${esc(r.name)}${tags}${warn}</div>
+    <div class="pv-line"><span class="pv-k">Sets</span> — ${r.sets.join(", ")}</div>
+    <div class="pv-line"><span class="pv-k">Main(s)</span> — ${r.mains.join(" / ")||"—"}</div>
+    <div class="pv-line"><span class="pv-k">Pool</span> — ${sortStats(st.pool).join(", ")||"—"} &nbsp;·&nbsp; <span class="pv-k">Requis</span> ${st.req} &nbsp;·&nbsp; <span class="pv-k">Essentiels</span> — ${sortStats(st.ess).join(", ")||"—"}</div>
+  </div>`;
+}
+function printDoc(){
+  const d = new Date().toLocaleDateString("fr-FR",{day:"numeric",month:"long",year:"numeric"});
+  const n = {right:activeList("right").length, left:activeList("left").length, t1:activeList("t1").length};
+  const total = n.right + n.left + n.t1;
+  const mod = activeAll().filter(r=>isModified(r.id)).length;
+  const done = activeAll().filter(r=>ENTERED.has(r.id)).length;
+  let body = "";
+  for(const sec of SECTIONS){
+    const list = activeList(sec);
+    if(!list.length) continue;
+    body += `<h2>${SECTION_LABEL[sec]}</h2>` + list.map(r=>printRule(r, sec)).join("");
+  }
+  return `<h1>Watcher of Realms — Règles de tri d'équipement</h1>
+  <div class="pv-meta">État exporté le ${d} · ${total} règles (${n.right} droite T2/3 · ${n.left} gauche T2/3 · ${n.t1} transfo T1)${CUSTOM.length?` · ${CUSTOM.length} perso`:""}${mod?` · ${mod} modifiée(s)`:""}${DELETED.size?` · ${DELETED.size} défaut(s) supprimé(s)`:""} · ${done}/${total} saisies en jeu</div>
+  ${body}
+  <div class="pv-foot">Recyclage d'office : T0 intégral (gauche : Vitality, Juggernaut, Lifegiver, Iron Fortress, Wrathful Onslaught, Savage Strike, Deadly Aim · droite : Occult Shield, Twisted Blade, Rapidity, The Tempest) — et toute pièce T2/T3 qui ne matche aucune règle. Doctrine : main = stat de scaling · trio CC+CD+AS en subs DPS · budgets CC 100 / AS 450 / HE 150 · HP% &gt; DEF% &gt; flats en survie.</div>`;
+}
+
+/* ══════════════ CRÉATION ══════════════ */
+const AP = { mains:new Set(), sets:new Set() };
+function renderAddPanel(){
+  document.getElementById("ap-mains").innerHTML = ALLSTATS.map(a=>
+    `<button type="button" class="chip ${STAT[a]} pick${AP.mains.has(a)?' sel':''}" data-role="ap-main" data-stat="${a}">${a}</button>`).join("");
+  for(const side of ["right","left"]){
+    document.getElementById("ap-sets-"+side).innerHTML = SIDE_SETS[side].map(n=>
+      `<button type="button" class="chip set t${SETTIER[n]} pick${AP.sets.has(n)?' sel':''}" data-role="ap-set" data-set="${esc(n)}">${esc(n)}</button>`).join("");
+  }
+}
+function openDlg(){
+  AP.mains.clear(); AP.sets.clear();
+  document.getElementById("ap-name").value = "";
+  document.getElementById("ap-section").value = UI.fSection!=="all" ? UI.fSection : "right";
+  document.getElementById("ap-warn").textContent = "";
+  renderAddPanel();
+  document.getElementById("dlg-overlay").hidden = false;
+  document.getElementById("ap-name").focus();
+}
+function closeDlg(){ document.getElementById("dlg-overlay").hidden = true; }
+function createRule(){
+  if(AP.sets.size === 0){ document.getElementById("ap-warn").textContent = "choisis au moins un set"; return; }
+  while(getRule("P"+customSeq)) customSeq++;
+  const id = "P"+customSeq++;
+  const name = document.getElementById("ap-name").value.trim() || ("Règle "+id);
+  const section = document.getElementById("ap-section").value;
+  CUSTOM.push({ id, name, section, sets:sortSets([...AP.sets]), mains:sortStats([...AP.mains]), arch:[] });
+  S[id] = { pool:[], ess:[], req:3 };
+  closeDlg();
+  UI.seg = "perso"; UI.q=""; UI.fSection="all"; UI.fArch="all";
+  UI.open.add(id); UI.pending = id;
+  if(UI.view!=="regles"){ goto("/regles/"+id); } else { renderView(); }
+  scheduleSave();
+  toast(`Règle <b>${id}</b> créée — règle son pool et son requis sur la carte.`);
+}
+
+/* ══════════════ INTERACTIONS ══════════════ */
+function armed(btn, label){
+  if(btn.classList.contains("arm")) return true;
+  btn.classList.add("arm");
+  const prev = btn.textContent;
+  btn.textContent = label;
+  setTimeout(()=>{ btn.classList.remove("arm"); btn.textContent = prev; }, 3000);
+  return false;
+}
+document.addEventListener("click", e=>{
+  const t = e.target;
+
+  // navigation
+  const nav = t.closest(".nav-btn");
+  if(nav){ goto("/"+nav.dataset.nav); return; }
+  const ref = t.closest("[data-goto]");
+  if(ref){ goto("/regles/"+ref.dataset.goto); return; }
+
+  // segmented + filtres
+  const seg = t.closest("[data-seg]");
+  if(seg){ UI.seg = seg.dataset.seg;
+    document.querySelectorAll("[data-seg]").forEach(b=>b.classList.toggle("on", b===seg));
+    updateRuleList(); return; }
+  const fs = t.closest("[data-fsection]");
+  if(fs){ UI.fSection = fs.dataset.fsection;
+    document.querySelectorAll("[data-fsection]").forEach(b=>b.classList.toggle("on", b===fs));
+    updateRuleList(); return; }
+  const fa = t.closest("[data-farch]");
+  if(fa){ UI.fArch = fa.dataset.farch;
+    document.querySelectorAll("[data-farch]").forEach(b=>b.classList.toggle("on", b===fa));
+    updateRuleList(); return; }
+  const ft = t.closest("[data-ftier]");
+  if(ft){ UI.setsTier = ft.dataset.ftier;
+    document.querySelectorAll("[data-ftier]").forEach(b=>b.classList.toggle("on", b===ft));
+    updateSetsTables(); return; }
+
+  // toolbar
+  if(t.closest("#add-open") || t.closest("#add-open-empty")){ openDlg(); return; }
+  const ca = t.closest("#copy-all");
+  if(ca){
+    const parts = [];
+    for(const sec of SECTIONS){
+      const list = activeList(sec);
+      if(!list.length) continue;
+      parts.push("══ "+SECTION_LABEL[sec].toUpperCase()+" ══");
+      list.forEach(r=>parts.push(copyText(r)));
+    }
+    doCopy(parts.join("\n\n"), ca); return;
+  }
+  const ta2 = t.closest("#toggle-all");
+  if(ta2){
+    if(UI.open.size){ UI.open.clear(); } else { activeAll().forEach(r=>UI.open.add(r.id)); }
+    updateRuleList(); return;
+  }
+  const ra = t.closest("#reset-all");
+  if(ra){
+    if(!armed(ra, "sûr ? tout revient aux défauts")) return;
+    S = JSON.parse(JSON.stringify(DEFAULTS));
+    DELETED = new Set(); CUSTOM = []; ENTERED = new Set();
+    UI.open.clear();
+    renderView(); scheduleSave();
+    toast("Tout est revenu aux défauts.");
+    return;
+  }
+
+  // dialogue
+  if(t.closest("#ap-cancel")){ closeDlg(); return; }
+  if(t.closest("#ap-create")){ createRule(); return; }
+  if(t.id === "dlg-overlay"){ closeDlg(); return; }
+  const apm = t.closest('[data-role="ap-main"]');
+  if(apm){ AP.mains.has(apm.dataset.stat) ? AP.mains.delete(apm.dataset.stat) : AP.mains.add(apm.dataset.stat); renderAddPanel(); return; }
+  const aps = t.closest('[data-role="ap-set"]');
+  if(aps){ AP.sets.has(aps.dataset.set) ? AP.sets.delete(aps.dataset.set) : AP.sets.add(aps.dataset.set); renderAddPanel(); return; }
+
+  // export pdf (sidebar)
+  if(t.closest("#export-pdf")){
+    document.getElementById("print-view").innerHTML = printDoc();
+    toast("Boîte d'impression ouverte — choisis « Enregistrer en PDF ». Si rien ne s'ouvre, ouvre le fichier dans ton navigateur.", {ttl:7000});
+    try{ window.print(); }catch(_){}
+    return;
+  }
+
+  // cartes de règles
+  const tog = t.closest(".tog");
+  if(tog){
+    const id=tog.dataset.rule, a=tog.dataset.stat, st=S[id];
+    if(st.ess.includes(a)){ st.ess=st.ess.filter(x=>x!==a); st.pool=st.pool.filter(x=>x!==a); }
+    else if(st.pool.includes(a)){ st.ess=[...st.ess,a]; }
+    else { st.pool=[...st.pool,a]; }
+    st.pool=sortStats(st.pool); st.ess=sortStats(st.ess);
+    rerenderRule(id); scheduleSave(); return;
+  }
+  const minus = t.closest(".st-minus"), plus = t.closest(".st-plus");
+  if(minus||plus){
+    const id=(minus||plus).dataset.rule, st=S[id];
+    st.req = Math.min(4, Math.max(1, st.req + (plus?1:-1)));
+    rerenderRule(id); scheduleSave(); return;
+  }
+  const rst = t.closest(".rc-reset");
+  if(rst){
+    const id=rst.dataset.rule;
+    S[id] = JSON.parse(JSON.stringify(DEFAULTS[id]));
+    rerenderRule(id); scheduleSave(); return;
+  }
+  const cp = t.closest(".rc-copy");
+  if(cp){ doCopy(copyText(getRule(cp.dataset.rule)), cp); return; }
+  const del = t.closest(".rc-del");
+  if(del){
+    const id = del.dataset.rule;
+    if(isCustom(id)){
+      const idx = CUSTOM.findIndex(r=>r.id===id);
+      const snapRule = CUSTOM[idx], snapState = S[id];
+      CUSTOM.splice(idx,1); delete S[id];
+      UI.open.delete(id);
+      updateRuleList(); updateSidebar(); scheduleSave();
+      toast(`Règle perso <b>${id}</b> supprimée.`, {action:{label:"annuler", fn(){
+        CUSTOM.splice(Math.min(idx, CUSTOM.length), 0, snapRule); S[id]=snapState;
+        updateRuleList(); updateSidebar(); scheduleSave();
+      }}});
+    } else {
+      DELETED.add(id);
+      UI.open.delete(id);
+      updateRuleList(); updateSidebar(); scheduleSave();
+      toast(`Règle <b>${id}</b> supprimée — restaurable en bas de liste.`, {action:{label:"annuler", fn(){
+        DELETED.delete(id);
+        updateRuleList(); updateSidebar(); scheduleSave();
+      }}});
+    }
+    return;
+  }
+  const rest = t.closest(".restore");
+  if(rest){ DELETED.delete(rest.dataset.rule); updateRuleList(); updateSidebar(); scheduleSave(); return; }
+
+  // repli/dépli d'une carte (après tous les contrôles internes)
+  const head = t.closest(".row-head");
+  if(head && !t.closest("input")){
+    const id = head.dataset.toggle;
+    UI.open.has(id) ? UI.open.delete(id) : UI.open.add(id);
+    rerenderRule(id);
+    const tg = document.getElementById("toggle-all");
+    if(tg) tg.textContent = UI.open.size ? "Tout replier" : "Tout déplier";
+    return;
+  }
+});
+document.addEventListener("change", e=>{
+  const chk = e.target.closest("[data-entered]");
+  if(chk){
+    const id = chk.dataset.entered;
+    chk.checked ? ENTERED.add(id) : ENTERED.delete(id);
+    updateSidebar(); scheduleSave();
+  }
+});
+document.addEventListener("input", e=>{
+  if(e.target.id === "rule-q"){ UI.q = e.target.value; updateRuleList(); }
+  if(e.target.id === "sets-q"){ UI.setsQ = e.target.value; updateSetsTables(); }
+});
+document.addEventListener("keydown", e=>{
+  if(e.key === "Escape"){ closeDlg(); return; }
+  if(e.key === "/" && UI.view==="regles" && !e.target.closest("input,select,textarea")){
+    const q = document.getElementById("rule-q");
+    if(q){ e.preventDefault(); q.focus(); }
+  }
+  const head = e.target.closest && e.target.closest(".row-head");
+  if(head && (e.key===" "||e.key==="Enter") && !e.target.closest("input,button")){
+    e.preventDefault();
+    const id = head.dataset.toggle;
+    UI.open.has(id) ? UI.open.delete(id) : UI.open.add(id);
+    rerenderRule(id);
+  }
+});
+window.addEventListener("hashchange", route);
+
+/* ══════════════ DÉMARRAGE ══════════════ */
+try{ if(!location.hash) history.replaceState(null,"","#/regles"); }catch(_){}
+route();
+restoreState();
+</script>
+</body>
+</html>
