@@ -7,7 +7,7 @@
 <!--
   Watcher of Realms — gestionnaire de règles de tri d'équipement
   SPA autonome : aucune dépendance, données 100 % locales. Seule exception réseau, au clic
-  « Partager » : le raccourcisseur da.gd (repli automatique sur le lien long si injoignable).
+  « Partager » : raccourcisseur TinyURL (secours da.gd, repli lien long si tout est injoignable).
   Persistance : stockage Claude quand disponible, sinon bascule automatique sur localStorage (PC & mobile).
   Partage / sauvegarde : export & import JSON par onglet (bouton « exporter » sur la barre d'onglets,
   « Importer des règles » dans le menu). Un lien de partage #/import=… est décodé au chargement (utile une fois hébergé).
@@ -2152,24 +2152,27 @@ function rand36(n){
   return Array.from(a).map(b=>(b%36).toString(36)).join("");
 }
 async function shortenShare(longUrl){
-  // API da.gd (CORS ouvert, sans clé) : GET /shorten?url=…[&shorturl=slug] → texte brut « https://da.gd/slug ».
-  // Le fragment #/import=… est conservé dans la redirection (vérifié sur le header Location).
-  const opts = (typeof AbortSignal!=="undefined" && AbortSignal.timeout) ? {signal:AbortSignal.timeout(4500)} : {};
-  const call = async q=>{
-    const res = await fetch("https://da.gd/shorten?url=" + encodeURIComponent(longUrl) + q, opts);
-    if(!res.ok) throw new Error("short-http-"+res.status);
-    const txt = (await res.text()).trim();
-    if(!/^https:\/\/da\.gd\/[A-Za-z0-9-]+$/.test(txt)) throw new Error("short-bad");
-
-    return txt;
-  };
-  // Slug marqué « WoR-xxxxxx » — da.gd tronque les slugs à 10 caractères, il reste donc 6 caractères
-  // d'aléa (~2,2 milliards de combinaisons) : 3 essais en cas de collision (HTTP 400 « already taken »).
+  const opts = ms=> (typeof AbortSignal!=="undefined" && AbortSignal.timeout) ? {signal:AbortSignal.timeout(ms)} : {};
+  // 1) TinyURL (sans clé) : redirection 301 DIRECTE — pas de page interstitielle, contrairement à
+  //    da.gd qui en impose une sur tout lien de moins d'une heure (anti-phishing, non désactivable).
+  //    CORS OK (l'ACAO n'est renvoyé que si la requête porte un header Origin — c'est le cas de fetch),
+  //    fragment #/import=… conservé, alias perso ; collision d'alias → 422, on retente avec un autre aléa.
+  //    Timeout large : le premier hit (DNS+TLS à froid) peut dépasser 5 s, et on retente même sur erreur.
   for(let i=0; i<3; i++){
-    try{ return await call("&shorturl=WoR-"+rand36(6)); }catch(_){}
+    try{
+      const res = await fetch("https://tinyurl.com/api-create.php?url=" + encodeURIComponent(longUrl) + "&alias=WoR-"+rand36(6), opts(8000));
+      if(!res.ok) continue;
+      const txt = (await res.text()).trim();
+      if(/^https:\/\/tinyurl\.com\/[A-Za-z0-9-]+$/.test(txt)) return txt;
+    }catch(_){}
   }
+  // 2) Secours : da.gd (CORS * — couvre aussi file:// ; interstitiel la 1re heure, mais lien valide).
+  const res = await fetch("https://da.gd/shorten?url=" + encodeURIComponent(longUrl), opts(4500));
+  if(!res.ok) throw new Error("short-http-"+res.status);
+  const txt = (await res.text()).trim();
+  if(!/^https:\/\/da\.gd\/[A-Za-z0-9-]+$/.test(txt)) throw new Error("short-bad");
 
-  return call(""); // slug aléatoire da.gd (sans préfixe) avant que l'appelant ne replie sur le lien long
+  return txt;
 }
 function b64uEncode(str){ return btoa(unescape(encodeURIComponent(str))).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,""); }
 function b64uDecode(b){ b = String(b).replace(/-/g,"+").replace(/_/g,"/"); while(b.length % 4) b += "="; return decodeURIComponent(escape(atob(b))); }
