@@ -7,8 +7,9 @@
 <!--
   Watcher of Realms — gestionnaire de règles de tri d'équipement
   SPA autonome : aucune dépendance, aucun réseau, données 100 % locales.
-  Persistance : window.storage (environnement Claude). Pour une publication hors Claude,
-  remplacer les appels window.storage.get/set (fonctions persist/restoreState) par localStorage.
+  Persistance : stockage Claude quand disponible, sinon bascule automatique sur localStorage (PC & mobile).
+  Partage / sauvegarde : export & import JSON par onglet (bouton « exporter » sur la barre d'onglets,
+  « Importer des règles » dans le menu). Un lien de partage #/import=… est décodé au chargement (utile une fois hébergé).
 -->
 <style>
   :root{
@@ -17,7 +18,7 @@
     --ink:#ece7db; --muted:#9a92a6; --faint:#6f6880;
     --t3:#e2b04a; --t2:#a678e8; --t1:#5f9fd6; --t0:#7a7580;
     --off:#cf6054; --deff:#5f9fd6; --util:#6fbf8f;
-    --gold-dim:rgba(226,176,74,.14); --radius:12px;
+    --acc:#e2b04a; --acc-bd:rgba(226,176,74,.5); --acc-dim:rgba(226,176,74,.14); --acc-glow:rgba(226,176,74,.05); --radius:12px;
     --display:"Palatino Linotype","Iowan Old Style",Palatino,"Book Antiqua",Georgia,serif;
     --body:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
     --mono:ui-monospace,"SF Mono","Cascadia Code",Menlo,Consolas,monospace;
@@ -28,9 +29,9 @@
     --ink:#2c2735; --muted:#6a6276; --faint:#948da1;
     --t3:#a1720e; --t2:#7a3fd4; --t1:#2f6ea8; --t0:#8a8492;
     --off:#b23a2e; --deff:#2f6ea8; --util:#2e7d4f;
-    --gold-dim:rgba(161,114,14,.12);
+    --acc:#a1720e; --acc-bd:rgba(161,114,14,.45); --acc-dim:rgba(161,114,14,.12); --acc-glow:rgba(161,114,14,.06);
   }
-  body.light main#view{background-image:radial-gradient(ellipse 800px 380px at 55% -90px,rgba(161,114,14,.06),transparent)}
+  body.light main#view{background-image:radial-gradient(ellipse 800px 380px at 55% -90px,var(--acc-glow),transparent)}
   body.light .chip.off{color:#a63a2e}
   body.light .chip.deff{color:#2f6ea8}
   body.light .chip.util{color:#2e7d4f}
@@ -43,24 +44,61 @@
   body.light .chk:checked::after{color:#fff}
   body.light .toast{box-shadow:0 8px 24px rgba(60,50,30,.18)}
   body.light .overlay{background:rgba(50,42,60,.35)}
+  /* ── Accents au choix (or par défaut) ── */
+  body[data-acc="vert"]{--acc:#5cc492;--acc-bd:rgba(92,196,146,.5);--acc-dim:rgba(92,196,146,.13);--acc-glow:rgba(92,196,146,.05)}
+  body[data-acc="bleu"]{--acc:#6db2ef;--acc-bd:rgba(109,178,239,.5);--acc-dim:rgba(109,178,239,.13);--acc-glow:rgba(109,178,239,.06)}
+  body[data-acc="violet"]{--acc:#b691f0;--acc-bd:rgba(182,145,240,.5);--acc-dim:rgba(182,145,240,.13);--acc-glow:rgba(182,145,240,.06)}
+  body[data-acc="rouge"]{--acc:#d46a7c;--acc-bd:rgba(212,106,124,.5);--acc-dim:rgba(212,106,124,.13);--acc-glow:rgba(212,106,124,.06)}
+  body.light[data-acc="vert"]{--acc:#1e7d4f;--acc-bd:rgba(30,125,79,.45);--acc-dim:rgba(30,125,79,.11);--acc-glow:rgba(30,125,79,.06)}
+  body.light[data-acc="bleu"]{--acc:#2264a8;--acc-bd:rgba(34,100,168,.45);--acc-dim:rgba(34,100,168,.11);--acc-glow:rgba(34,100,168,.06)}
+  body.light[data-acc="violet"]{--acc:#6a3fc4;--acc-bd:rgba(106,63,196,.45);--acc-dim:rgba(106,63,196,.11);--acc-glow:rgba(106,63,196,.06)}
+  body.light[data-acc="rouge"]{--acc:#8e2c48;--acc-bd:rgba(142,44,72,.45);--acc-dim:rgba(142,44,72,.11);--acc-glow:rgba(142,44,72,.06)}
+  body[data-density="compact"] .row-head{padding:8px 12px;gap:9px}
+  body[data-density="compact"] .rule{margin:6px 0}
+  body[data-density="compact"] .panel{padding:12px 14px;margin:12px 0}
+  body[data-density="compact"] .view-head{margin-bottom:14px}
+  body[data-density="compact"] h3.grp-head{margin:18px 0 7px}
+  body[data-density="compact"] .controls{padding:8px 10px;gap:9px 14px;margin:12px 0 8px}
+  body[data-density="compact"] .cov-card,body[data-density="compact"] .stat-card{padding:9px 12px}
+  body[data-density="compact"] .piece-grid{gap:7px}
+  body[data-density="compact"] .rb-grid{gap:5px 13px}
+  .acc-row{display:flex;align-items:center;gap:8px;padding:0 8px}
+  .acc-dot{appearance:none;width:20px;height:20px;border-radius:50%;border:2px solid var(--border);cursor:pointer;padding:0;flex:0 0 auto;transition:transform .12s,border-color .12s,box-shadow .12s}
+  .acc-dot:hover{transform:scale(1.12)}
+  .acc-dot.on{border-color:var(--ink);box-shadow:0 0 0 3px var(--acc-dim)}
+  .acc-dot:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+  /* ── Groupes de contrôles étiquetés & rangées scrollables ── */
+  .ctl{display:flex;flex-direction:column;gap:5px;min-width:0;max-width:100%}
+  .ctl-label{font-family:var(--mono);font-size:9.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--faint);display:inline-flex;align-items:center;gap:4px}
+  .ctl-label svg{opacity:.65;flex:0 0 auto}
+  .arch-wrap{display:inline-flex;align-items:center;gap:2px}
+  .arch-del{appearance:none;border:none;background:none;color:var(--faint);cursor:pointer;font-size:10px;padding:0 3px;line-height:1}
+  .arch-del:hover{color:var(--off)}
+  .arch-input{width:140px;font-size:13px;padding:4px 9px}
+  .tabs-main{display:flex;align-items:center;gap:6px;width:100%;min-width:0}
+  .tabs-scroll{flex:1 1 auto;display:flex;align-items:center;gap:6px;overflow-x:auto;min-width:0;padding-bottom:3px;scrollbar-width:thin;scrollbar-color:var(--border) transparent}
+  .fchips>.chip{flex:0 0 auto;margin:2px 0}
+  .fchips::-webkit-scrollbar,.tabs-scroll::-webkit-scrollbar{height:5px}
+  .fchips::-webkit-scrollbar-thumb,.tabs-scroll::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+  .fchips::-webkit-scrollbar-track,.tabs-scroll::-webkit-scrollbar-track{background:transparent}
   *{box-sizing:border-box;margin:0;padding:0}
   @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important;scroll-behavior:auto!important}}
   html,body{height:100%}
   body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.6}
-  ::selection{background:rgba(226,176,74,.25)}
+  ::selection{background:var(--acc-dim)}
   button{font:inherit;color:inherit}
 
   /* ── Structure ── */
   .app{display:grid;grid-template-columns:242px 1fr;height:100vh}
   aside.side{background:var(--bg-side);border-right:1px solid var(--border-soft);display:flex;flex-direction:column;
     padding:18px 14px 14px;gap:6px;overflow-y:auto}
-  main#view{overflow-y:auto;padding:26px 30px 90px;scroll-behavior:smooth;
-    background-image:radial-gradient(ellipse 800px 380px at 55% -90px,rgba(226,176,74,.05),transparent)}
+  main#view{overflow-y:auto;overflow-x:hidden;padding:26px 30px 90px;scroll-behavior:smooth;
+    background-image:radial-gradient(ellipse 800px 380px at 55% -90px,var(--acc-glow),transparent)}
   .wrap{max-width:1060px;margin:0 auto}
 
   /* ── Sidebar ── */
   .brand{display:flex;align-items:center;gap:10px;padding:2px 8px 14px}
-  .brand .diamond{color:var(--t3);font-size:17px}
+  .brand .diamond{color:var(--acc);font-size:17px}
   .brand h1{font-family:var(--display);font-variant:small-caps;letter-spacing:.05em;font-weight:600;font-size:17px;line-height:1.15}
   .brand .sub{color:var(--faint);font-size:11px;margin-top:1px}
   nav.mainnav{display:flex;flex-direction:column;gap:2px}
@@ -69,80 +107,80 @@
     padding:9px 10px;border-radius:0 8px 8px 0;cursor:pointer;text-align:left;transition:color .15s,background .15s}
   .nav-btn svg{flex:0 0 auto;opacity:.75}
   .nav-btn:hover{color:var(--ink);background:rgba(255,255,255,.025)}
-  .nav-btn.active{color:var(--t3);border-left-color:var(--t3);background:var(--gold-dim)}
+  .nav-btn.active{color:var(--acc);border-left-color:var(--acc);background:var(--acc-dim)}
   .nav-btn .count{margin-left:auto;font-family:var(--mono);font-size:10.5px;color:var(--faint);
     border:1px solid var(--border-soft);border-radius:10px;padding:0 7px}
-  .nav-btn.active .count{color:var(--t3);border-color:rgba(226,176,74,.4)}
-  .nav-btn:focus-visible{outline:2px solid var(--t3);outline-offset:-2px}
+  .nav-btn.active .count{color:var(--acc);border-color:var(--acc-bd)}
+  .nav-btn:focus-visible{outline:2px solid var(--acc);outline-offset:-2px}
   .side-foot{margin-top:auto;display:flex;flex-direction:column;gap:10px;padding:14px 8px 2px;border-top:1px solid var(--border-soft)}
   .prog-label{display:flex;justify-content:space-between;align-items:baseline;font-size:11.5px;color:var(--muted)}
-  .prog-label b{font-family:var(--mono);color:var(--t3);font-weight:600}
+  .prog-label b{font-family:var(--mono);color:var(--acc);font-weight:600}
   .prog-bar{height:5px;border-radius:3px;background:var(--panel2);overflow:hidden}
-  .prog-bar i{display:block;height:100%;background:linear-gradient(90deg,#b58a2e,var(--t3));border-radius:3px;transition:width .3s}
+  .prog-bar i{display:block;height:100%;background:var(--acc);border-radius:3px;transition:width .3s}
   .side-btn{appearance:none;background:var(--panel);border:1px solid var(--border);color:var(--muted);
     font-family:var(--mono);font-size:11.5px;padding:7px 10px;border-radius:8px;cursor:pointer;transition:all .15s;text-align:center}
-  .side-btn:hover{color:var(--t3);border-color:rgba(226,176,74,.45)}
-  .side-btn:focus-visible{outline:2px solid var(--t3);outline-offset:2px}
+  .side-btn:hover{color:var(--acc);border-color:var(--acc-bd)}
+  .side-btn:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
   .save-line{display:flex;align-items:center;gap:7px;color:var(--faint);font-size:10.5px;min-height:15px}
   .save-line .dot{width:6px;height:6px;border-radius:50%;background:var(--faint);flex:0 0 auto}
   .save-line.ok .dot{background:var(--util)}
   .save-line.warn .dot{background:var(--off)}
 
   /* ── En-tête de vue ── */
-  .view-head{margin-bottom:14px}
+  .view-head{margin-bottom:20px}
   .view-head h2{font-family:var(--display);font-variant:small-caps;letter-spacing:.06em;font-weight:600;font-size:23px}
   .view-head .lede{color:var(--muted);font-size:13px;margin-top:3px;max-width:760px}
   h3.grp-head{font-family:var(--display);font-variant:small-caps;letter-spacing:.05em;font-weight:600;font-size:15.5px;
-    color:var(--muted);margin:22px 0 8px;display:flex;align-items:center;gap:10px;position:sticky;top:-26px;
+    color:var(--muted);margin:26px 0 10px;display:flex;align-items:center;gap:10px;position:sticky;top:-26px;
     background:var(--bg);padding:6px 0;z-index:5}
   h3.grp-head::after{content:"";flex:1;height:1px;background:linear-gradient(to right,var(--border),transparent)}
   h3.grp-head .n{font-family:var(--mono);font-size:11px;color:var(--faint)}
 
   /* ── Onglets de jeux de règles ── */
-  .tabs{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:4px}
-  .tab-btn{appearance:none;background:var(--panel);border:1px solid var(--border);border-bottom:2px solid transparent;
+  .tabs{display:flex;flex-direction:column;align-items:stretch;gap:7px;margin-bottom:8px}
+  .tab-btn{appearance:none;background:var(--panel);border:1px solid var(--border);
     color:var(--muted);font-family:var(--display);font-variant:small-caps;letter-spacing:.04em;font-size:14.5px;
-    padding:7px 14px;border-radius:9px;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:7px}
+    padding:7px 14px;border-radius:9px;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:7px;flex:0 0 auto;white-space:nowrap}
   .tab-btn:hover{color:var(--ink)}
-  .tab-btn.on{color:var(--t3);border-color:rgba(226,176,74,.5);background:var(--gold-dim)}
-  .tab-btn:focus-visible{outline:2px solid var(--t3);outline-offset:2px}
+  .tab-btn.on{color:var(--acc);border-color:var(--acc-bd);background:var(--acc-dim)}
+  .tab-btn:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
   .tab-btn .n{font-family:var(--mono);font-size:10.5px;opacity:.8}
   .tab-add{appearance:none;background:none;border:1px dashed var(--border);color:var(--faint);width:32px;height:32px;
     border-radius:9px;cursor:pointer;font-size:15px;line-height:1;transition:all .15s}
-  .tab-add:hover{color:var(--t3);border-color:rgba(226,176,74,.5)}
-  .tab-add:focus-visible{outline:2px solid var(--t3);outline-offset:2px}
-  .tab-rename{background:var(--panel2);border:1px solid rgba(226,176,74,.5);border-radius:9px;color:var(--ink);
+  .tab-add:hover{color:var(--acc);border-color:var(--acc-bd)}
+  .tab-add:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+  .tab-rename{background:var(--panel2);border:1px solid var(--acc-bd);border-radius:9px;color:var(--ink);
     font:inherit;font-size:14px;padding:6px 10px;width:190px}
-  .tab-tools{display:flex;gap:6px;margin-left:auto}
+  .tab-tools{display:flex;gap:6px;flex-wrap:wrap}
 
   /* ── Segmented + filtres + toolbar ── */
   .seg{display:inline-flex;background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:3px;gap:3px}
   .seg button{appearance:none;background:none;border:none;color:var(--muted);font-family:var(--display);font-variant:small-caps;
     letter-spacing:.04em;font-size:14px;padding:5px 14px;border-radius:7px;cursor:pointer;transition:all .15s}
   .seg button:hover{color:var(--ink)}
-  .seg button.on{background:var(--gold-dim);color:var(--t3)}
-  .seg button:focus-visible{outline:2px solid var(--t3);outline-offset:-2px}
-  .controls{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:14px 0 4px}
-  .search{position:relative;flex:1 1 220px;max-width:340px}
+  .seg button.on{background:var(--acc-dim);color:var(--acc)}
+  .seg button:focus-visible{outline:2px solid var(--acc);outline-offset:-2px}
+  .controls{display:flex;flex-wrap:wrap;align-items:flex-end;gap:12px 18px;margin:16px 0 10px;background:var(--panel);border:1px solid var(--border-soft);border-radius:12px;padding:11px 14px}
+  .search{position:relative;width:min(360px,100%);min-width:200px}
   .search input{width:100%;background:var(--panel);border:1px solid var(--border);border-radius:9px;color:var(--ink);
     padding:8px 12px 8px 32px;font:inherit;font-size:13.5px}
   .search input::placeholder{color:var(--faint)}
   .search svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);opacity:.5}
-  input:focus-visible,select:focus-visible{outline:2px solid var(--t3);outline-offset:1px}
+  input:focus-visible,select:focus-visible{outline:2px solid var(--acc);outline-offset:1px}
   select{background:var(--panel2);border:1px solid var(--border);border-radius:7px;color:var(--ink);padding:6px 9px;font:inherit;font-size:13px}
-  .fchips{display:flex;gap:5px;flex-wrap:wrap}
+  .fchips{display:flex;gap:5px;flex-wrap:nowrap;overflow-x:auto;max-width:100%;padding-bottom:3px;scrollbar-width:thin;scrollbar-color:var(--border) transparent}
   .fchip{appearance:none;background:var(--panel);border:1px solid var(--border);color:var(--muted);
-    font-family:var(--mono);font-size:11.5px;padding:5px 12px;border-radius:20px;cursor:pointer;transition:all .15s}
+    font-family:var(--mono);font-size:11.5px;padding:5px 12px;border-radius:20px;cursor:pointer;transition:all .15s;flex:0 0 auto;white-space:nowrap}
   .fchip:hover{color:var(--ink)}
-  .fchip.on{color:var(--t3);border-color:rgba(226,176,74,.5);background:var(--gold-dim)}
-  .fchip:focus-visible{outline:2px solid var(--t3);outline-offset:2px}
+  .fchip.on{color:var(--acc);border-color:var(--acc-bd);background:var(--acc-dim)}
+  .fchip:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
   .toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:10px 0 2px}
   .btn{appearance:none;background:var(--panel);border:1px solid var(--border);color:var(--ink);
     font-family:var(--mono);font-size:12px;padding:7px 14px;border-radius:8px;cursor:pointer;transition:all .15s}
-  .btn:hover{border-color:rgba(226,176,74,.5);color:var(--t3)}
-  .btn:focus-visible{outline:2px solid var(--t3);outline-offset:2px}
-  .btn.primary{background:var(--gold-dim);border-color:rgba(226,176,74,.5);color:var(--t3);font-weight:600}
-  .btn.primary:hover{background:rgba(226,176,74,.22)}
+  .btn:hover{border-color:var(--acc-bd);color:var(--acc)}
+  .btn:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+  .btn.primary{background:var(--acc-dim);border-color:var(--acc-bd);color:var(--acc);font-weight:600}
+  .btn.primary:hover{background:var(--acc-dim);border-color:var(--acc)}
   .btn.danger:hover{border-color:var(--off);color:var(--off)}
   .btn.arm{color:#fff!important;background:var(--off);border-color:var(--off)!important}
   .hint{color:var(--faint);font-size:12px;margin:8px 0 0}
@@ -151,23 +189,23 @@
   /* ── Lignes de règles ── */
   .rule-list{margin-top:4px}
   .rule{background:var(--panel);border:1px solid var(--border-soft);border-radius:var(--radius);
-    border-left:3px solid var(--t3);margin:9px 0;transition:border-color .15s;overflow:hidden}
-  .rule:hover{border-color:var(--border);border-left-color:var(--t3)}
+    border-left:3px solid var(--acc);margin:9px 0;transition:border-color .15s;overflow:hidden}
+  .rule:hover{border-color:var(--border);border-left-color:var(--acc)}
   .rule.s-t1{border-left-color:var(--t1)}
   .rule.s-t1:hover{border-left-color:var(--t1)}
   .rule.flash{animation:flash 1.6s ease}
-  @keyframes flash{0%,60%{box-shadow:0 0 0 2px rgba(226,176,74,.65)}100%{box-shadow:none}}
+  @keyframes flash{0%,60%{box-shadow:0 0 0 2px var(--acc)}100%{box-shadow:none}}
   .row-head{display:flex;align-items:center;gap:11px;padding:11px 14px;cursor:pointer;flex-wrap:wrap}
-  .row-head:focus-visible{outline:2px solid var(--t3);outline-offset:-2px}
+  .row-head:focus-visible{outline:2px solid var(--acc);outline-offset:-2px}
   .chk{appearance:none;flex:0 0 auto;width:17px;height:17px;border:1.5px solid var(--faint);border-radius:5px;
     background:transparent;cursor:pointer;position:relative;transition:all .15s}
-  .chk:hover{border-color:var(--t3)}
-  .chk:checked{background:var(--t3);border-color:var(--t3)}
+  .chk:hover{border-color:var(--acc)}
+  .chk:checked{background:var(--acc);border-color:var(--acc)}
   .chk:checked::after{content:"✓";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
     color:#1c1608;font-size:12px;font-weight:700}
-  .chk:focus-visible{outline:2px solid var(--t3);outline-offset:2px}
-  .rc-id{font-family:var(--mono);font-size:11px;font-weight:600;color:var(--t3);background:var(--gold-dim);
-    border:1px solid rgba(226,176,74,.35);border-radius:5px;padding:2px 8px;flex:0 0 auto}
+  .chk:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+  .rc-id{font-family:var(--mono);font-size:11px;font-weight:600;color:var(--acc);background:var(--acc-dim);
+    border:1px solid var(--acc-bd);border-radius:5px;padding:2px 8px;flex:0 0 auto}
   .s-t1 .rc-id{color:#8fbde4;background:rgba(95,159,214,.1);border-color:rgba(95,159,214,.35)}
   .rc-name{font-family:var(--display);font-variant:small-caps;letter-spacing:.03em;font-size:16px;font-weight:600}
   .role{font-family:var(--mono);font-size:9px;letter-spacing:.06em;text-transform:uppercase;color:var(--faint);
@@ -176,11 +214,16 @@
   .row-right{margin-left:auto;display:flex;align-items:center;gap:10px}
   .minis{display:flex;gap:3px}
   .mini{font-family:var(--mono);font-size:10px;padding:1px 6px;border-radius:4px;border:1px solid var(--border);color:var(--muted)}
-  .mini.e{color:var(--t3);border-color:rgba(226,176,74,.4)}
+  .mini.e{color:var(--acc);border-color:var(--acc-bd)}
   .dots{display:flex;gap:4px}
   .dot{width:10px;height:10px;border-radius:50%;border:1.5px solid var(--faint)}
-  .dot.fill{background:var(--t3);border-color:var(--t3)}
+  .dot.fill{background:var(--acc);border-color:var(--acc)}
   .s-t1 .dot.fill{background:var(--t1);border-color:var(--t1)}
+  .drag{cursor:grab;color:var(--faint);font-size:13px;line-height:1;flex:0 0 auto;user-select:none;padding:2px 3px 2px 0}
+  .drag:hover{color:var(--acc)}
+  .rule.dragging{opacity:.45}
+  .rule.drop-before{box-shadow:0 -3px 0 0 var(--acc)}
+  .rule.drop-after{box-shadow:0 3px 0 0 var(--acc)}
   .chev{flex:0 0 auto;transition:transform .2s;opacity:.55}
   .rule.open .chev{transform:rotate(180deg)}
   .row-body{display:none;padding:2px 16px 14px 45px;border-top:1px dashed var(--border-soft)}
@@ -199,7 +242,7 @@
   .chip.set.t0{border-color:rgba(122,117,128,.45);color:var(--t0)}
   .chip.set.t4{border-color:rgba(79,184,201,.55);color:#7fd4e0}
   button.chip{cursor:pointer;transition:opacity .12s,border-color .12s,background .12s}
-  button.chip:focus-visible{outline:2px solid var(--t3);outline-offset:2px}
+  button.chip:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
   .chip.stateoff{opacity:.28;border-style:dashed;background:transparent}
   .chip.ess{border-width:1.5px;font-weight:700}
   .chip.ess.off{background:rgba(207,96,84,.14)}
@@ -212,15 +255,15 @@
   .stepper{display:inline-flex;align-items:center;gap:2px;border:1px solid var(--border);border-radius:6px;background:var(--panel2);vertical-align:middle}
   .stepper button{appearance:none;background:none;border:none;color:var(--muted);font-family:var(--mono);font-size:14px;
     width:24px;height:24px;cursor:pointer;line-height:1}
-  .stepper button:hover{color:var(--t3)}
-  .stepper button:focus-visible{outline:2px solid var(--t3);outline-offset:-2px;border-radius:4px}
+  .stepper button:hover{color:var(--acc)}
+  .stepper button:focus-visible{outline:2px solid var(--acc);outline-offset:-2px;border-radius:4px}
   .stepper .val{font-family:var(--mono);font-size:13px;color:var(--ink);min-width:16px;text-align:center}
   .rc-warn{color:var(--off);font-family:var(--mono);font-size:11px;margin-left:8px}
   .rb-actions{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
   .sbtn{appearance:none;background:var(--panel2);border:1px solid var(--border);color:var(--muted);font-family:var(--mono);
     font-size:11px;padding:4px 11px;border-radius:6px;cursor:pointer;transition:all .15s}
-  .sbtn:hover{color:var(--t3);border-color:rgba(226,176,74,.4)}
-  .sbtn:focus-visible{outline:2px solid var(--t3);outline-offset:2px}
+  .sbtn:hover{color:var(--acc);border-color:var(--acc-bd)}
+  .sbtn:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
   .sbtn.ok{color:var(--util);border-color:rgba(111,191,143,.5)}
   .sbtn.del:hover{color:var(--off);border-color:rgba(207,96,84,.4)}
   .empty{border:1px dashed var(--border);border-radius:var(--radius);padding:38px 20px;text-align:center;color:var(--muted);margin:18px 0}
@@ -229,7 +272,7 @@
   /* ── Testeur ── */
   .cov-strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin:14px 0}
   .cov-card{background:var(--panel);border:1px solid var(--border-soft);border-radius:var(--radius);padding:12px 15px}
-  .cov-card .num{font-family:var(--display);font-size:23px;color:var(--t3);line-height:1.15}
+  .cov-card .num{font-family:var(--display);font-size:23px;color:var(--acc);line-height:1.15}
   .cov-card .num.bad{color:var(--off)}
   .cov-card .lbl{color:var(--muted);font-size:11.5px;margin-top:2px}
   .covbar{display:flex;align-items:center;gap:8px}
@@ -242,7 +285,7 @@
   .piece{background:var(--panel);border:1px solid var(--border-soft);border-left:3px solid var(--util);border-radius:10px;overflow:hidden}
   .piece.rej{border-left-color:var(--off);opacity:.82}
   .p-head{display:flex;align-items:center;gap:7px;padding:9px 11px 6px;cursor:pointer;flex-wrap:wrap}
-  .p-head:focus-visible{outline:2px solid var(--t3);outline-offset:-2px}
+  .p-head:focus-visible{outline:2px solid var(--acc);outline-offset:-2px}
   .p-slot{font-family:var(--display);font-variant:small-caps;font-size:12.5px;color:var(--faint)}
   .p-main{font-family:var(--mono);font-size:11px;color:var(--ink);margin-left:auto}
   .p-subs{display:flex;gap:4px;flex-wrap:wrap;padding:0 11px 9px}
@@ -259,8 +302,16 @@
 
   /* ── Panneaux, tables, référence ── */
   .panel{background:var(--panel);border:1px solid var(--border-soft);border-radius:var(--radius);padding:18px 20px;margin:14px 0}
-  .panel.note{border-left:3px solid var(--t3);background:linear-gradient(to right,var(--gold-dim),var(--panel) 55%)}
+  .panel.note{border-left:3px solid var(--acc);background:linear-gradient(to right,var(--acc-dim),var(--panel) 55%)}
+  .panel a{color:var(--acc);text-decoration:underline dotted;text-underline-offset:2px}
+  .panel a:hover{text-decoration:underline solid}
   .panel h4{font-family:var(--display);font-variant:small-caps;letter-spacing:.05em;font-size:16px;font-weight:600;margin-bottom:8px}
+  details.panel>summary.p-sum{cursor:pointer;font-family:var(--display);font-variant:small-caps;letter-spacing:.05em;font-size:16px;font-weight:600;list-style:none;display:flex;align-items:center;gap:9px}
+  .p-sum::before{content:"›";font-family:var(--mono);color:var(--acc);transition:transform .15s;font-weight:400}
+  details[open]>.p-sum::before{transform:rotate(90deg)}
+  .p-sum::-webkit-details-marker{display:none}
+  .p-sum:focus-visible{outline:2px solid var(--acc);outline-offset:-2px}
+  details.panel>summary.p-sum+*{margin-top:11px}
   table{width:100%;border-collapse:collapse;font-size:13.5px;margin:8px 0}
   th{font-family:var(--display);font-variant:small-caps;letter-spacing:.04em;font-weight:600;text-align:left;
     color:var(--muted);padding:8px 10px;border-bottom:1px solid var(--border);white-space:nowrap}
@@ -274,32 +325,32 @@
   .tier-badge.b0{background:rgba(122,117,128,.12);color:var(--t0);border:1px solid rgba(122,117,128,.4)}
   .tier-badge.b4{background:rgba(79,184,201,.13);color:#7fd4e0;border:1px solid rgba(79,184,201,.4)}
   .dest{font-size:12.5px}
-  .ruleref{appearance:none;cursor:pointer;font-family:var(--mono);font-size:11px;color:var(--t3);background:var(--gold-dim);
-    border:1px solid rgba(226,176,74,.3);border-radius:4px;padding:1px 6px;margin:1px 4px 1px 0;white-space:nowrap;transition:all .15s}
+  .ruleref{appearance:none;cursor:pointer;font-family:var(--mono);font-size:11px;color:var(--acc);background:var(--acc-dim);
+    border:1px solid var(--acc-bd);border-radius:4px;padding:1px 6px;margin:1px 4px 1px 0;white-space:nowrap;transition:all .15s}
   .ruleref.t1r{color:#8fbde4;background:rgba(95,159,214,.1);border-color:rgba(95,159,214,.3)}
-  .ruleref:hover{border-color:var(--t3);text-decoration:underline}
+  .ruleref:hover{border-color:var(--acc);text-decoration:underline}
   .ruleref.t1r:hover{border-color:var(--t1)}
-  .ruleref:focus-visible{outline:2px solid var(--t3);outline-offset:2px}
+  .ruleref:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
   .recycle{color:var(--off);font-style:italic}
   .arrow{color:var(--faint);font-family:var(--mono)}
   .transfo{display:grid;grid-template-columns:1fr;gap:8px;margin-top:8px}
   .transfo-row{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;background:var(--panel2);
     border:1px solid var(--border-soft);border-radius:8px;padding:10px 14px;font-size:13px}
   .transfo-row .cat{font-family:var(--display);font-variant:small-caps;font-size:12.5px;color:var(--faint);min-width:150px}
-  .transfo-row .big-arrow{font-family:var(--mono);color:var(--t3);font-size:15px}
+  .transfo-row .big-arrow{font-family:var(--mono);color:var(--acc);font-size:15px}
   .strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px;margin:14px 0}
   .stat-card{background:var(--panel);border:1px solid var(--border-soft);border-radius:var(--radius);padding:13px 16px}
-  .stat-card .num{font-family:var(--display);font-size:25px;color:var(--t3);line-height:1.1}
+  .stat-card .num{font-family:var(--display);font-size:25px;color:var(--acc);line-height:1.1}
   .stat-card .lbl{color:var(--muted);font-size:11.5px;margin-top:3px}
   ul.clean{list-style:none;padding-left:0}
   ul.clean li{padding:5px 0 5px 20px;position:relative}
-  ul.clean li::before{content:"◆";position:absolute;left:0;top:6px;font-size:9px;color:var(--t3)}
+  ul.clean li::before{content:"◆";position:absolute;left:0;top:6px;font-size:9px;color:var(--acc)}
   details.acc{border:1px solid var(--border-soft);border-radius:9px;background:var(--panel2);margin:7px 0;overflow:hidden}
   details.acc summary{cursor:pointer;padding:10px 14px;font-weight:600;font-size:13.5px;list-style:none;display:flex;align-items:center;gap:8px}
-  details.acc summary::before{content:"›";font-family:var(--mono);color:var(--t3);transition:transform .15s}
+  details.acc summary::before{content:"›";font-family:var(--mono);color:var(--acc);transition:transform .15s}
   details.acc[open] summary::before{transform:rotate(90deg)}
   details.acc summary::-webkit-details-marker{display:none}
-  details.acc summary:focus-visible{outline:2px solid var(--t3);outline-offset:-2px}
+  details.acc summary:focus-visible{outline:2px solid var(--acc);outline-offset:-2px}
   details.acc .acc-body{padding:0 14px 12px 32px;color:var(--muted);font-size:13px}
   .footer-note{margin-top:34px;padding-top:14px;border-top:1px solid var(--border-soft);color:var(--faint);font-size:12px}
 
@@ -322,14 +373,14 @@
 
   /* ── Toasts ── */
   #toasts{position:fixed;right:18px;bottom:18px;display:flex;flex-direction:column;gap:8px;z-index:100;max-width:min(380px,90vw)}
-  .toast{background:var(--panel2);border:1px solid var(--border);border-left:3px solid var(--t3);border-radius:10px;
+  .toast{background:var(--panel2);border:1px solid var(--border);border-left:3px solid var(--acc);border-radius:10px;
     padding:11px 14px;font-size:13px;display:flex;align-items:center;gap:12px;box-shadow:0 8px 24px rgba(0,0,0,.45);
     animation:tin .2s ease}
   @keyframes tin{from{transform:translateY(8px);opacity:0}to{transform:none;opacity:1}}
   .toast.out{opacity:0;transform:translateY(6px);transition:all .25s}
-  .toast button{appearance:none;background:none;border:none;color:var(--t3);font-family:var(--mono);font-size:12px;
+  .toast button{appearance:none;background:none;border:none;color:var(--acc);font-family:var(--mono);font-size:12px;
     cursor:pointer;text-decoration:underline dotted;padding:0;flex:0 0 auto}
-  .toast button:focus-visible{outline:2px solid var(--t3);outline-offset:2px}
+  .toast button:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
 
   /* ── Tables empilées sur mobile ── */
   @media(max-width:680px){
@@ -364,24 +415,28 @@
     @page{margin:14mm}
   }
 
-  /* ── Responsive ── */
+  /* ── Responsive : tiroir latéral mobile ── */
+  .burger{display:none}
+  .scrim{display:none}
   @media(max-width:920px){
     .app{grid-template-columns:1fr;height:auto;min-height:100vh}
-    aside.side{flex-direction:row;flex-wrap:wrap;align-items:center;border-right:none;border-bottom:1px solid var(--border-soft);
-      padding:12px 14px;gap:10px;position:sticky;top:0;z-index:40;overflow:visible}
-    .brand{padding:0;margin-right:6px}
-    nav.mainnav{flex-direction:row;gap:4px;overflow-x:auto}
-    .nav-btn{border-left:none;border-bottom:2px solid transparent;border-radius:8px 8px 0 0;padding:7px 11px}
-    .nav-btn.active{border-left:none;border-bottom-color:var(--t3)}
-    .side-foot{margin:0 0 0 auto;border-top:none;padding:0;flex-direction:row;align-items:center;gap:12px}
-    .prog-wrap{min-width:120px}
-    .save-line{display:none}
-    main#view{padding:20px 14px 70px;overflow:visible}
+    .burger{display:flex;align-items:center;justify-content:center;position:fixed;top:10px;left:10px;z-index:70;
+      width:42px;height:42px;border-radius:10px;background:var(--panel);border:1px solid var(--border);color:var(--acc);
+      font-size:19px;line-height:1;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.35)}
+    .burger:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+    aside.side{position:fixed;top:0;left:0;bottom:0;height:100dvh;width:min(80vw,300px);z-index:60;
+      transform:translateX(-105%);transition:transform .22s ease;box-shadow:8px 0 30px rgba(0,0,0,.45);overflow-y:auto}
+    body.nav-open aside.side{transform:none}
+    body.nav-open .burger{display:none}
+    input,select,textarea{font-size:16px}
+    body.nav-open .scrim{display:block;position:fixed;inset:0;background:rgba(8,6,12,.55);backdrop-filter:blur(2px);z-index:56}
+    main#view{padding:64px 14px 70px;overflow:visible}
     .row-body{padding-left:16px}
     .row-mains{display:none}
     .minis{display:none}
     .role{display:none}
   }
+  body.light .burger{box-shadow:0 4px 14px rgba(60,50,30,.2)}
 </style>
 </head>
 <body>
@@ -411,13 +466,26 @@
         <div class="prog-label"><span>Saisie en jeu</span><b id="prog-num">0/0</b></div>
         <div class="prog-bar"><i id="prog-fill" style="width:0%"></i></div>
       </div>
+      <button class="side-btn" id="import-btn">Importer des règles (JSON)</button>
+      <input type="file" id="import-file" accept="application/json,.json" hidden>
       <button class="side-btn" id="theme-btn" title="basculer le thème">☀ Mode clair</button>
-      <button class="side-btn" id="export-pdf">Exporter en PDF</button>
+      <button class="side-btn" id="density-btn" title="densité de l'affichage">Densité : confort</button>
+      <button class="side-btn" id="lang-btn" title="langue d'affichage des noms de sets">Noms de sets : EN</button>
+      <div class="acc-row"><span class="ctl-label">Accent</span>
+        <button type="button" class="acc-dot on" data-acc="or" style="background:#e2b04a" title="or" aria-label="accent or"></button>
+        <button type="button" class="acc-dot" data-acc="vert" style="background:#5cc492" title="vert" aria-label="accent vert"></button>
+        <button type="button" class="acc-dot" data-acc="bleu" style="background:#6db2ef" title="bleu" aria-label="accent bleu"></button>
+        <button type="button" class="acc-dot" data-acc="violet" style="background:#b691f0" title="violet" aria-label="accent violet"></button>
+        <button type="button" class="acc-dot" data-acc="rouge" style="background:#d46a7c" title="bordeaux" aria-label="accent bordeaux"></button>
+      </div>
       <div class="save-line" id="save-line"><span class="dot"></span><span id="save-status">local</span></div>
     </div>
   </aside>
   <main id="view" tabindex="-1"></main>
 </div>
+
+<button id="burger" class="burger" aria-label="ouvrir le menu">☰</button>
+<div id="scrim" class="scrim" aria-hidden="true"></div>
 
 <div id="toasts" aria-live="polite"></div>
 
@@ -462,11 +530,11 @@
 "use strict";
 /* ══════════════ RÉFÉRENTIEL ══════════════ */
 const STAT = {
-  "CC":"off","CD":"off","AS":"off","ATK":"off","ATK%":"off",
+  "CC":"off","CD":"off","ATK":"off","ATK%":"off",
   "HP":"deff","HP%":"deff","DEF":"deff","DEF%":"deff",
-  "RR":"util","HE":"util"
+  "RR":"util","HE":"util","AS":"util"
 };
-const ALLSTATS = ["ATK","ATK%","CC","CD","AS","HP","HP%","DEF","DEF%","RR","HE"];
+const ALLSTATS = ["ATK","ATK%","CC","CD","HP","HP%","DEF","DEF%","RR","HE","AS"];
 // Migration des anciennes sauvegardes : les flats étaient nommés fATK/fHP/fDEF.
 const STAT_RENAME = {fATK:"ATK", fHP:"HP", fDEF:"DEF"};
 const fixStat = x => STAT_RENAME[x] || x;
@@ -542,6 +610,25 @@ const SETS = [
   {n:"The Tempest",t:0,side:"right",b:"Rage Regen (ATK) +2",src:"GR2 · 1-9"}
 ];
 const SETSIDE = Object.fromEntries(SETS.map(s=>[s.n,s.side]));
+const SET_FR = {
+  "Crinière d'or":"Crinière d'or","Feu de dragon":"Feu de dragon","Croc gris":"Croc gris",
+  "Astral Guardian":"Gardien astral","Light's Grace":"Grâce de la lumière","Wicked Vengeance":"Vicieuse vengeance",
+  "Immortal Warrior":"Guerrier immortel","Warlord":"Seigneur de guerre","Salvation":"Salut","Life Force":"Force vitale",
+  "Calamity":"Calamité","Whirlwind":"Tourbillon","Annihilating Might":"Puissance anéantissante",
+  "Lifegiver":"Donneur de vie","Iron Fortress":"Forteresse d'acier","Wrathful Onslaught":"Assaut furieux",
+  "Savage Strike":"Frappe sauvage","Deadly Aim":"Visée mortelle","Vitality":"Vitalité","Juggernaut":"Fracasseur",
+  "Wings of Grace":"Ailes de la grâce","Cataclysm":"Cataclysme","Hell's Lament":"Lamentation infernale",
+  "Tempered Will":"Volonté tempérée","Unshaken Will":"Volonté inébranlable","Morale":"Esprit vif",
+  "Infernal Roar":"Rugissement infernal","Soulbound Arcana":"Arcana de l'âme","Ageless Wrath":"Fureur immémoriale",
+  "Undying Savage":"Sauvage immortel","Invigoration":"Revitalisation","Asclepius":"Asclepius",
+  "The Insight":"La perception","The Wisdom":"La sagesse","The Glacier":"Le glacier","Night Terror":"Terreur nocturne",
+  "Fracture":"Fracture","Curse":"Malédiction","The Doom":"Le chaos","Hawk Eye":"Œil de faucon",
+  "Mana Spring":"Fontaine de mana","The Styx":"Le Styx","Fatality":"Fatalité","Guardian":"Gardien",
+  "Occult Shield":"Bouclier occulte","Twisted Blade":"Lame tortueuse","Rapidity":"Rapidité","The Tempest":"La tempête"
+};
+const FR_TO_EN = Object.fromEntries(Object.entries(SET_FR).map(([en,fr])=>[fr.toLowerCase(), en]));
+function setName(n){ return LANG==="fr" ? (SET_FR[n]||n) : n; }
+function fixSet(x){ if(typeof x!=="string") return x; if(SETTIER[x]!==undefined) return x; return FR_TO_EN[x.trim().toLowerCase()] || x; }
 const TRANSFO = [
   ["Heal / Utility · gauche","Salvation","Light's Grace"],
   ["Heal / Utility · droite","Mana Spring / Asclepius","Invigoration / Morale / Wings of Grace"],
@@ -573,6 +660,8 @@ const SECTIONS = ["left","right"];
 const SECTION_LABEL = {right:"Côté droit", left:"Côté gauche"};
 const ARCH_LABEL = {dps:"DPS", tank:"Tank", heal:"Heal", support:"Support", inspire:"Inspire"};
 const ARCHS = ["dps","tank","heal","support","inspire"];
+function allArchs(){ return [...ARCHS, ...EXTRA_ARCHS]; }
+function archLabel(a){ return ARCH_LABEL[a] || a; }
 
 /* ══════════════ ÉTAT ══════════════ */
 let TABS = [];
@@ -581,9 +670,14 @@ let ENTERED = new Set();
 let CONSTRAINTS = JSON.parse(JSON.stringify(DEFAULT_CONSTRAINTS));
 let seq = 1, tabSeq = 1;
 let theme = "dark";
+let ACC = "or";
+let DENSITY = "confort";
+let LANG = "en";
+const ACCENTS = ["or","vert","bleu","violet","rouge"];
+let EXTRA_ARCHS = [];
 const KEY = "wor-tri-rules-v1";
 
-const UI = { view:"regles", q:"", fSection:"all", fArch:"all", open:new Set(),
+const UI = { view:"regles", q:"", fSection:"all", fArch:"all", fMain:new Set(), fSubs:new Set(), addingRole:null, open:new Set(),
              setsQ:"", setsTier:"all", pending:null, renaming:null,
              test:{ mode:"couverture", n:500, tiers:new Set(["4","3","2","1","0"]), sides:new Set(["right","left"]),
                     sample:[], openPieces:new Set(), filter:"all", consOpen:false,
@@ -603,6 +697,10 @@ function bumpSeqs(){
   for(const r of allRules()){ const m = /^[RP](\d+)$/.exec(r.id); if(m) seq = Math.max(seq, +m[1]+1); }
   for(const t of TABS){ const m = /^T(\d+)$/.exec(t.id); if(m) tabSeq = Math.max(tabSeq, +m[1]+1); }
 }
+function registerArchs(){
+  for(const r of allRules()) for(const a of (r.arch||[]))
+    if(!ARCHS.includes(a) && !EXTRA_ARCHS.includes(a)) EXTRA_ARCHS.push(a);
+}
 function legalMainsForSide(side){
   const u = new Set();
   SLOTS.filter(s=>s.side===side).forEach(s=>CONSTRAINTS[s.key].forEach(a=>u.add(a)));
@@ -613,8 +711,17 @@ function legalMainsForSide(side){
 let saveTimer = null;
 function applyTheme(){
   if(document.body && document.body.classList) document.body.classList.toggle("light", theme==="light");
+  if(document.body && document.body.setAttribute){
+    document.body.setAttribute("data-acc", ACC);
+    document.body.setAttribute("data-density", DENSITY);
+  }
   const b = document.getElementById("theme-btn");
   if(b) b.textContent = theme==="light" ? "☾ Mode sombre" : "☀ Mode clair";
+  const db = document.getElementById("density-btn");
+  if(db) db.textContent = DENSITY==="compact" ? "Densité : compacte" : "Densité : confort";
+  const lb = document.getElementById("lang-btn");
+  if(lb) lb.textContent = "Noms de sets : " + LANG.toUpperCase();
+  document.querySelectorAll(".acc-dot").forEach(d=>d.classList.toggle("on", d.dataset.acc===ACC));
 }
 function setSave(txt, cls){
   const line = document.getElementById("save-line");
@@ -622,10 +729,28 @@ function setSave(txt, cls){
   if(st) st.textContent = txt;
   if(line){ line.className = "save-line" + (cls?" "+cls:""); }
 }
-function payload(){ return JSON.stringify({v:4, consV:CONS_V, tabs:TABS, active:activeTabId, entered:[...ENTERED], constraints:CONSTRAINTS, theme, seq, tabSeq}); }
+function payload(){ return JSON.stringify({v:4, consV:CONS_V, tabs:TABS, active:activeTabId, entered:[...ENTERED], constraints:CONSTRAINTS, theme, acc:ACC, dens:DENSITY, lang:LANG, xarch:EXTRA_ARCHS, seq, tabSeq}); }
+function getStore(){
+  try{
+    if(window.storage && window.storage.get && window.storage.set){
+      return { tag:"cloud",
+        get: async k => { const r = await window.storage.get(k); return (r && r.value != null) ? r.value : null; },
+        set: async (k,v) => { await window.storage.set(k, v); } };
+    }
+  }catch(_){}
+  try{
+    const t = "__wor_probe__";
+    localStorage.setItem(t,"1"); localStorage.removeItem(t);
+    return { tag:"local",
+      get: async k => localStorage.getItem(k),
+      set: async (k,v) => { localStorage.setItem(k, v); } };
+  }catch(_){}
+  return null;
+}
 async function persist(){
-  if(!window.storage || !window.storage.set){ setSave("session seule","warn"); return; }
-  try{ await window.storage.set(KEY, payload()); setSave("enregistré","ok"); }
+  const store = getStore();
+  if(!store){ setSave("session seule","warn"); return; }
+  try{ await store.set(KEY, payload()); setSave(store.tag==="local" ? "enregistré (local)" : "enregistré","ok"); }
   catch(e){ setSave("session seule","warn"); }
 }
 function scheduleSave(){ clearTimeout(saveTimer); saveTimer = setTimeout(persist, 600); }
@@ -633,7 +758,7 @@ function sanitizeRule(r){
   if(!r || typeof r.id!=="string") return null;
   const mains = Array.isArray(r.mains)?r.mains.map(fixStat).filter(x=>ALLSTATS.includes(x)):[];
   const pool = Array.isArray(r.pool)?sortStats(r.pool.map(fixStat).filter(x=>ALLSTATS.includes(x) && !mains.includes(x))):[];
-  const sets = Array.isArray(r.sets)?r.sets.filter(x=>SETTIER[x]!==undefined):[];
+  const sets = Array.isArray(r.sets)?r.sets.map(fixSet).filter(x=>SETTIER[x]!==undefined):[];
   let section = r.section;
   if(section!=="right" && section!=="left"){ section = SETSIDE[sets[0]] || "right"; } // migration des anciennes sections "t1"
   return {
@@ -641,18 +766,19 @@ function sanitizeRule(r){
     section,
     sets,
     mains:sortStats(mains),
-    arch:Array.isArray(r.arch)?ARCHS.filter(a=>r.arch.includes(a)):[],
+    arch:Array.isArray(r.arch)?[...new Set(r.arch.filter(x=>typeof x==="string").map(x=>x.trim().slice(0,20)).filter(Boolean))]:[],
     pool,
     ess:Array.isArray(r.ess)?sortStats(r.ess.map(fixStat).filter(x=>pool.includes(x))):[],
     req:Number.isInteger(r.req)?Math.min(4,Math.max(1,r.req)):1
   };
 }
 async function restoreState(){
-  if(!window.storage || !window.storage.get){ setSave("session seule","warn"); ensureTab(); renderView(); return; }
+  const store = getStore();
+  if(!store){ setSave("session seule","warn"); ensureTab(); renderView(); return; }
   try{
-    const r = await window.storage.get(KEY);
-    if(!r || !r.value){ setSave("prêt","ok"); ensureTab(); renderView(); return; }
-    const data = JSON.parse(r.value);
+    const raw = await store.get(KEY);
+    if(!raw){ setSave(store.tag==="local" ? "prêt (local)" : "prêt","ok"); ensureTab(); renderView(); return; }
+    const data = JSON.parse(raw);
     if(data && data.v===4){
       if(Array.isArray(data.tabs)){
         TABS = data.tabs.map(t=>({
@@ -672,6 +798,10 @@ async function restoreState(){
       if(Number.isInteger(data.seq)) seq = Math.max(seq, data.seq);
       if(Number.isInteger(data.tabSeq)) tabSeq = Math.max(tabSeq, data.tabSeq);
       if(data.theme==="light" || data.theme==="dark") theme = data.theme;
+      if(ACCENTS.includes(data.acc)) ACC = data.acc;
+      if(data.dens==="compact" || data.dens==="confort") DENSITY = data.dens;
+      if(data.lang==="fr" || data.lang==="en") LANG = data.lang;
+      if(Array.isArray(data.xarch)) EXTRA_ARCHS = [...new Set(data.xarch.filter(x=>typeof x==="string").map(x=>x.trim().slice(0,20)).filter(x=>x && !ARCHS.includes(x)))];
     } else if(data){
       const rules = (data.v>=2) ? (data.rules||{}) : (data||{});
       const customs = (data.v>=2 && Array.isArray(data.custom)) ? data.custom : [];
@@ -684,7 +814,7 @@ async function restoreState(){
       if(Array.isArray(data.entered)) data.entered.forEach(id=>{ if(t.rules.some(r=>r.id===id)) ENTERED.add(id); });
       activeTabId = t.id;
     }
-    ensureTab(); bumpSeqs();
+    ensureTab(); bumpSeqs(); registerArchs();
     setSave("restauré","ok");
   }catch(e){ setSave("session seule","warn"); ensureTab(); }
   applyTheme();
@@ -815,13 +945,18 @@ function generateSample(){
 }
 
 /* ══════════════ COMPOSANTS ══════════════ */
-function setChip(name){ const t=SETTIER[name]??0; return `<span class="chip set t${t}">${esc(name)}</span>`; }
+function setChip(name){
+  const t = SETTIER[name] ?? 0;
+  const fr = setName(name);
+  const title = (LANG==="fr" && fr!==name) ? ` title="${esc(name)}"` : "";
+  return `<span class="chip set t${t}"${title}>${esc(fr)}</span>`;
+}
 function gauge(req){
   let d=""; for(let i=0;i<4;i++) d+=`<span class="dot${i<req?' fill':''}"></span>`;
   return `<span class="dots" aria-label="${req} subs requis sur 4">${d}</span>`;
 }
 function copyText(r){
-  return `${r.id} · ${r.name}\nSets : ${r.sets.join(", ")}\nAttribut(s) principal(aux) : ${r.mains.join(" / ")||"—"}\nPool de secondaires : ${sortStats(r.pool).join(", ")||"—"}\nNombre requis : ${r.req}\nEssentiels : ${sortStats(r.ess).join(", ")||"—"}`;
+  return `${r.id} · ${r.name}\nSets : ${r.sets.map(setName).join(", ")}\nAttribut(s) principal(aux) : ${r.mains.join(" / ")||"—"}\nPool de secondaires : ${sortStats(r.pool).join(", ")||"—"}\nNombre requis : ${r.req}\nEssentiels : ${sortStats(r.ess).join(", ")||"—"}`;
 }
 function ruleRow(r){
   const open = UI.open.has(r.id);
@@ -837,9 +972,10 @@ function ruleRow(r){
   else if(r.ess.length > r.req) warn = `<span class="rc-warn" style="color:var(--faint)">requis effectif ${r.ess.length} (★ obligatoires)</span>`;
   return `<article class="rule${open?' open':''}" id="card-${r.id}">
     <div class="row-head" role="button" tabindex="0" aria-expanded="${open}" data-toggle="${r.id}">
+      <span class="drag" draggable="true" data-drag="${r.id}" title="glisser pour réordonner">⠿</span>
       <input type="checkbox" class="chk" data-entered="${r.id}" ${ENTERED.has(r.id)?"checked":""} title="saisie en jeu" aria-label="règle saisie en jeu">
       <span class="rc-id">${r.id}</span>
-      <span class="rc-name">${esc(r.name)}${(r.arch||[]).map(a=>`<span class="role">${ARCH_LABEL[a]}</span>`).join("")}</span>
+      <span class="rc-name">${esc(r.name)}${(r.arch||[]).map(a=>`<span class="role">${esc(archLabel(a))}</span>`).join("")}</span>
       <span class="row-mains">${r.mains.join(" / ")||"—"}</span>
       <span class="row-right">
         <span class="minis">${minis}</span>
@@ -853,7 +989,7 @@ function ruleRow(r){
         <span class="k">Main(s)</span><span>${mains}</span>
         <span class="k">Subs</span><span>${chips}</span>
         <span class="k">Requis</span><span><span class="stepper"><button type="button" class="st-minus" data-rule="${r.id}" aria-label="réduire">−</button><span class="val">${r.req}</span><button type="button" class="st-plus" data-rule="${r.id}" aria-label="augmenter">+</button></span>${warn}</span>
-        <span class="k">Rôles</span><span>${ARCHS.map(a=>`<button type="button" class="fchip arch-tog${(r.arch||[]).includes(a)?' on':''}" data-archrule="${r.id}" data-arch="${a}">${ARCH_LABEL[a]}</button>`).join(" ")}</span>
+        <span class="k">Rôles</span><span>${allArchs().map(a=>`<button type="button" class="fchip arch-tog${(r.arch||[]).includes(a)?' on':''}" data-archrule="${r.id}" data-arch="${esc(a)}">${esc(archLabel(a))}</button>`).join(" ")} ${UI.addingRole===r.id?`<input type="text" class="tab-rename arch-input" id="arch-input" data-ctx="${r.id}" maxlength="20" placeholder="nouveau rôle">`:`<button type="button" class="fchip arch-plus" data-archplus="${r.id}">＋ rôle</button>`}</span>
       </div>
       <div class="rb-actions">
         <button type="button" class="sbtn rc-copy" data-rule="${r.id}">copier</button>
@@ -869,23 +1005,31 @@ function ruleRow(r){
 function matchFilters(r){
   if(UI.fSection!=="all" && r.section!==UI.fSection) return false;
   if(UI.fArch!=="all" && !(r.arch||[]).includes(UI.fArch)) return false;
+  for(const a of UI.fMain) if(!r.mains.includes(a)) return false;
+  for(const a of UI.fSubs) if(!r.pool.includes(a)) return false;
   if(UI.q){
     const q = UI.q.toLowerCase();
-    const hay = (r.id+" "+r.name+" "+r.sets.join(" ")+" "+r.mains.join(" ")+" "+(r.arch||[]).map(a=>ARCH_LABEL[a]).join(" ")).toLowerCase();
+    const hay = (r.id+" "+r.name+" "+r.sets.join(" ")+" "+r.sets.map(n=>SET_FR[n]||"").join(" ")+" "+r.mains.join(" ")+" "+(r.arch||[]).map(archLabel).join(" ")).toLowerCase();
     if(!hay.includes(q)) return false;
   }
   return true;
 }
 function tabBar(){
   return `<div class="tabs" id="tabbar">
-    ${TABS.map(t=>{
-      if(UI.renaming===t.id) return `<input type="text" class="tab-rename" id="tab-rename-input" value="${esc(t.name)}" maxlength="40">`;
-      return `<button type="button" class="tab-btn${t.id===activeTabId?' on':''}" data-tabsel="${t.id}">${esc(t.name)} <span class="n">${t.rules.length}</span></button>`;
-    }).join("")}
-    <button type="button" class="tab-add" id="tab-add" title="nouvel onglet">＋</button>
+    <div class="tabs-main">
+      <div class="tabs-scroll">
+        ${TABS.map(t=>{
+          if(UI.renaming===t.id) return `<input type="text" class="tab-rename" id="tab-rename-input" value="${esc(t.name)}" maxlength="40">`;
+          return `<button type="button" class="tab-btn${t.id===activeTabId?' on':''}" data-tabsel="${t.id}">${esc(t.name)} <span class="n">${t.rules.length}</span></button>`;
+        }).join("")}
+      </div>
+      <button type="button" class="tab-add" id="tab-add" title="nouvel onglet">＋</button>
+    </div>
     <span class="tab-tools">
       <button type="button" class="sbtn" id="tab-rename">renommer</button>
       <button type="button" class="sbtn" id="tab-dup">dupliquer</button>
+      <button type="button" class="sbtn" id="tab-export">exporter</button>${/^https?:$/.test(location.protocol)?`
+      <button type="button" class="sbtn" id="tab-share">copier le lien</button>`:""}
       <button type="button" class="sbtn del" id="tab-del">supprimer l'onglet</button>
     </span>
   </div>`;
@@ -898,25 +1042,40 @@ function viewRegles(){
     </div>
     ${tabBar()}
     <div class="controls">
-      <div class="search">
-        <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5 14 14"/></svg>
-        <input type="search" id="rule-q" placeholder="Chercher une règle, un set… ( / )" value="${esc(UI.q)}">
+      <div class="ctl" style="flex:1 1 240px">${ctlLabel("search","Recherche")}
+        <div class="search">
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5 14 14"/></svg>
+          <input type="search" id="rule-q" placeholder="Chercher une règle, un set… ( / )" value="${esc(UI.q)}">
+        </div>
       </div>
-      <div class="fchips" id="f-section">
-        ${[["all","Toutes"],["left","Côté gauche"],["right","Côté droit"]].map(([v,l])=>
-          `<button type="button" class="fchip${UI.fSection===v?' on':''}" data-fsection="${v}">${l}</button>`).join("")}
+      <div class="ctl">${ctlLabel("side","Côté du set")}
+        <div class="fchips" id="f-section">
+          ${[["all","Toutes"],["left","Côté gauche"],["right","Côté droit"]].map(([v,l])=>
+            `<button type="button" class="fchip${UI.fSection===v?' on':''}" data-fsection="${v}">${l}</button>`).join("")}
+        </div>
       </div>
-      <div class="fchips" id="f-arch">
-        ${[["all","Tous rôles"],["dps","DPS"],["tank","Tank"],["heal","Heal"],["support","Support"],["inspire","Inspire"]].map(([v,l])=>
-          `<button type="button" class="fchip${UI.fArch===v?' on':''}" data-farch="${v}">${l}</button>`).join("")}
+      <div class="ctl">${ctlLabel("role","Rôle")}
+        <div class="fchips" id="f-arch">
+          ${[["all","Tous rôles"], ...allArchs().map(a=>[a, archLabel(a)])].map(([v,l])=>
+            `<button type="button" class="fchip${UI.fArch===v?' on':''}" data-farch="${esc(v)}">${esc(l)}</button>`).join("")}
+        </div>
+      </div>
+      <div class="ctl">${ctlLabel("main","Main")}
+        <div class="fchips" id="f-main">
+          ${ALLSTATS.map(a=>`<button type="button" class="chip ${STAT[a]} pick${UI.fMain.has(a)?' sel':''}" data-fmain="${a}" title="ne garder que les règles dont les mains contiennent ${a}">${a}</button>`).join("")}
+        </div>
+      </div>
+      <div class="ctl">${ctlLabel("subs","Subs")}
+        <div class="fchips" id="f-subs">
+          ${ALLSTATS.map(a=>`<button type="button" class="chip ${STAT[a]} pick${UI.fSubs.has(a)?' sel':''}" data-fsub="${a}" title="ne garder que les règles dont la liste de subs contient ${a}">${a}</button>`).join("")}
+        </div>
       </div>
     </div>
     <div class="toolbar">
       <button type="button" class="btn primary" id="add-open">＋ Nouvelle règle</button>
-      <button type="button" class="btn" id="copy-all">Copier l'onglet</button>
       <button type="button" class="btn" id="toggle-all">Tout déplier</button>
     </div>
-    <div class="hint">Clic sur un sub : <b>hors liste</b> → <b>liste</b> → <b>★ obligatoire</b> · le requis se compte sur la liste, ★ incluses · « modifier » rouvre l'éditeur complet (nom, côté, sets, mains…). Tout ce qu'aucune règle de l'onglet ne couvre est recyclé — chiffre-le dans le <b>Testeur</b>, ou vérifie set par set dans <b>Sets &amp; transfo</b>.</div>
+    <div class="hint">Pastilles <b>Main / Subs</b> : filtres en <b>ET</b> — une règle ne reste affichée que si elle porte toutes les stats cochées. Clic sur un sub d'une carte : <b>hors liste</b> → <b>liste</b> → <b>★ obligatoire</b> · le requis se compte sur la liste, ★ incluses · « modifier » rouvre l'éditeur complet (nom, côté, sets, mains…). Tout ce qu'aucune règle de l'onglet ne couvre est recyclé — chiffre-le dans le <b>Testeur</b>, ou vérifie set par set dans <b>Sets &amp; transfo</b>.</div>
     <div class="rule-list" id="rule-list"></div>
   </div>`;
 }
@@ -955,10 +1114,24 @@ function refreshTabBar(){
 }
 
 /* ══════════════ VUE : SETS ══════════════ */
+const ICON = {
+  search:'<svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5 14 14"/></svg>',
+  side:'<svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 3 2 8l3 5M11 3l3 5-3 5"/></svg>',
+  role:'<svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="8" cy="5" r="2.6"/><path d="M3 13.5c1-2.8 3-4.2 5-4.2s4 1.4 5 4.2"/></svg>',
+  tier:'<svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M8 2l6 3-6 3-6-3 6-3Z"/><path d="M2 8.5l6 3 6-3M2 11.5l6 3 6-3"/></svg>',
+  tab:'<svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M2 4.5h4l1.5-2H14v10.5H2V4.5Z"/></svg>',
+  mode:'<svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2.5 5h11M2.5 11h11"/><circle cx="6" cy="5" r="1.7" fill="var(--panel)"/><circle cx="10" cy="11" r="1.7" fill="var(--panel)"/></svg>',
+  n:'<svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M3 13V8M8 13V3M13 13V6"/></svg>',
+  result:'<svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M2 13.5h12M4.5 13.5v-5l3 2 4-5v8"/></svg>',
+  eye:'<svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M1.5 8S4 3.8 8 3.8 14.5 8 14.5 8 12 12.2 8 12.2 1.5 8 1.5 8Z"/><circle cx="8" cy="8" r="1.9"/></svg>',
+  main:'<svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="8" cy="8" r="5.2"/><circle cx="8" cy="8" r="1.8" fill="currentColor" stroke="none"/></svg>',
+  subs:'<svg width="10" height="10" viewBox="0 0 16 16" fill="currentColor" stroke="none"><circle cx="5" cy="5" r="1.7"/><circle cx="11" cy="5" r="1.7"/><circle cx="5" cy="11" r="1.7"/><circle cx="11" cy="11" r="1.7"/></svg>'
+};
+function ctlLabel(icon, txt){ return `<span class="ctl-label">${ICON[icon]||""}${txt}</span>`; }
 function tabSelect(id){
-  return `<label style="color:var(--muted);font-size:13px">Onglet
+  return `<div class="ctl">${ctlLabel("tab","Onglet")}
     <select id="${id}">${TABS.map(t=>`<option value="${t.id}"${t.id===activeTabId?" selected":""}>${esc(t.name)} (${t.rules.length})</option>`).join("")}</select>
-  </label>`;
+  </div>`;
 }
 function destCell(s){
   const tab = activeTab();
@@ -972,10 +1145,10 @@ function destCell(s){
 function setsTable(side){
   const rows = SETS.filter(s=>s.side===side)
     .filter(s=>UI.setsTier==="all"||String(s.t)===UI.setsTier)
-    .filter(s=>!UI.setsQ || s.n.toLowerCase().includes(UI.setsQ.toLowerCase()));
+    .filter(s=>{ if(!UI.setsQ) return true; const q = UI.setsQ.toLowerCase(); return s.n.toLowerCase().includes(q) || setName(s.n).toLowerCase().includes(q); });
   if(!rows.length) return `<p class="hint" style="margin:8px 0 16px">Aucun set ne correspond.</p>`;
   return `<div class="tbl-wrap rtable"><table><thead><tr><th>Set</th><th>Tier</th><th>Bonus</th><th>Source</th><th>Couverture</th><th>Transfo</th></tr></thead><tbody>
-    ${rows.map(s=>`<tr><td data-th="Set">${esc(s.n)}</td><td data-th="Tier"><span class="tier-badge b${s.t}">T${tierLabel(s.t)}</span></td><td data-th="Bonus">${s.b}</td><td data-th="Source">${s.src}</td><td data-th="Couverture" class="dest">${destCell(s)}</td><td data-th="Transfo" class="dest">${s.to?`<span class="arrow">→</span> ${esc(s.to)}`:"—"}</td></tr>`).join("")}
+    ${rows.map(s=>`<tr><td data-th="Set">${esc(setName(s.n))}</td><td data-th="Tier"><span class="tier-badge b${s.t}">T${tierLabel(s.t)}</span></td><td data-th="Bonus">${s.b}</td><td data-th="Source">${s.src}</td><td data-th="Couverture" class="dest">${destCell(s)}</td><td data-th="Transfo" class="dest">${s.to?`<span class="arrow">→</span> ${esc(s.to)}`:"—"}</td></tr>`).join("")}
   </tbody></table></div>`;
 }
 function viewSets(){
@@ -986,22 +1159,26 @@ function viewSets(){
     </div>
     <div class="controls">
       ${tabSelect("sets-tab")}
-      <div class="search">
-        <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5 14 14"/></svg>
-        <input type="search" id="sets-q" placeholder="Chercher un set…" value="${esc(UI.setsQ)}">
+      <div class="ctl" style="flex:1 1 240px">${ctlLabel("search","Recherche")}
+        <div class="search">
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5 14 14"/></svg>
+          <input type="search" id="sets-q" placeholder="Chercher un set…" value="${esc(UI.setsQ)}">
+        </div>
       </div>
-      <div class="fchips" id="f-tier">
-        ${[["all","Tous"],["4","T∞"],["3","T3"],["2","T2"],["1","T1"],["0","T0"]].map(([v,l])=>
-          `<button type="button" class="fchip${UI.setsTier===v?' on':''}" data-ftier="${v}">${l}</button>`).join("")}
+      <div class="ctl">${ctlLabel("tier","Tier")}
+        <div class="fchips" id="f-tier">
+          ${[["all","Tous"],["4","T∞"],["3","T3"],["2","T2"],["1","T1"],["0","T0"]].map(([v,l])=>
+            `<button type="button" class="fchip${UI.setsTier===v?' on':''}" data-ftier="${v}">${l}</button>`).join("")}
+        </div>
       </div>
     </div>
-    <p class="hint" style="margin:4px 0 0">Donjons d'équipement 1-3 : <b>tous</b> les sets du T1 au T∞ peuvent y dropper — sets de forge inclus. La colonne Source indique la source dédiée / historique.</p>
+    <p class="hint" style="margin:4px 0 0">Donjons d'équipement 1-3 : <b>tous</b> les sets du T1 au T∞ peuvent y dropper — sets de forge inclus, <b>T0 exclu</b>. Les Gear Raids sont les <b>Raids d'équipement</b>. La colonne Source indique la source dédiée / historique.</p>
     <h3 class="grp-head">Côté gauche — arme &amp; torse</h3>
     <div id="tbl-left">${setsTable("left")}</div>
     <h3 class="grp-head">Côté droit — bracelet, collier &amp; bague</h3>
     <div id="tbl-right">${setsTable("right")}</div>
     <h3 class="grp-head">Transformation T1 → T2/T3</h3>
-    <p class="hint" style="margin-bottom:6px">La ressource de transformation est très rare : ne la dépenser que sur des pièces T1 <b>quad parfaites</b>.</p>
+    <p class="hint" style="margin-bottom:6px">La ressource de transformation est très rare : ne la dépenser que sur des pièces T1 <b>quad parfaites</b>. Les destinations de transformation restent affichées en anglais (référence wiki), quel que soit le réglage de langue.</p>
     <div class="transfo">
       ${TRANSFO.map(([cat,from,to])=>`<div class="transfo-row"><span class="cat">${cat}</span><span>${from}</span><span class="big-arrow">→</span><span>${to}</span></div>`).join("")}
     </div>
@@ -1048,12 +1225,12 @@ function coveragePanel(){
     .sort((a,b)=>c.perSet[b.n].kept/c.perSet[b.n].total - c.perSet[a.n].kept/c.perSet[a.n].total)
     .map(s=>{
       const d = c.perSet[s.n], p = d.kept/d.total;
-      return `<div class="slot-row"><span class="sl" style="min-width:150px">${esc(s.n)}</span>
+      return `<div class="slot-row"><span class="sl" style="min-width:150px">${esc(setName(s.n))}</span>
         <span class="covbar" style="flex:1"><span class="track"><i style="width:${Math.max(1,100*p)}%"></i></span><span class="pct">${pct(p)}</span></span></div>`;
     }).join("") || `<p class="hint">Aucun set de ce côté n'est couvert.</p>`;
   const uncov = SETS.filter(s=>c.perSet[s.n].kept===0);
   const uncovSide = side => uncov.filter(s=>s.side===side)
-    .map(s=>`<span class="chip set t${s.t}" style="margin:2px 4px 2px 0">${esc(s.n)}</span>`).join("") || `<span class="hint">aucun</span>`;
+    .map(s=>`<span class="chip set t${s.t}" style="margin:2px 4px 2px 0">${esc(setName(s.n))}</span>`).join("") || `<span class="hint">aucun</span>`;
   return `
     <div class="cov-strip">
       <div class="cov-card"><div class="num">${c.total.toLocaleString("fr-FR")}</div><div class="lbl">profils de pièces possibles (sets × slots × mains légaux × combinaisons de 4 subs)</div></div>
@@ -1098,22 +1275,30 @@ function samplePanel(){
   const kept = sample.filter(p=>p.matched.length>0).length;
   return `
     <div class="controls" style="margin-top:2px">
-      <label style="color:var(--muted);font-size:13px">Pièces <select id="ts-n">
-        ${[100,500,2000].map(n=>`<option value="${n}"${UI.test.n===n?" selected":""}>${n}</option>`).join("")}
-      </select></label>
-      <div class="fchips">${["4","3","2","1","0"].map(t=>`<button type="button" class="fchip${UI.test.tiers.has(t)?' on':''}" data-tstier="${t}">${t==="4"?"T∞":"T"+t}</button>`).join("")}</div>
-      <div class="fchips">
-        <button type="button" class="fchip${UI.test.sides.has("left")?' on':''}" data-tsside="left">Gauche</button>
-        <button type="button" class="fchip${UI.test.sides.has("right")?' on':''}" data-tsside="right">Droite</button>
+      <div class="ctl">${ctlLabel("n","Pièces")}
+        <select id="ts-n">${[100,500,2000].map(n=>`<option value="${n}"${UI.test.n===n?" selected":""}>${n}</option>`).join("")}</select>
       </div>
-      <button type="button" class="btn primary" id="ts-gen">Générer</button>
+      <div class="ctl">${ctlLabel("tier","Tiers")}
+        <div class="fchips">${["4","3","2","1","0"].map(t=>`<button type="button" class="fchip${UI.test.tiers.has(t)?' on':''}" data-tstier="${t}">${t==="4"?"T∞":"T"+t}</button>`).join("")}</div>
+      </div>
+      <div class="ctl">${ctlLabel("side","Côté")}
+        <div class="fchips">
+          <button type="button" class="fchip${UI.test.sides.has("left")?' on':''}" data-tsside="left">Gauche</button>
+          <button type="button" class="fchip${UI.test.sides.has("right")?' on':''}" data-tsside="right">Droite</button>
+        </div>
+      </div>
+      <button type="button" class="btn primary" id="ts-gen" style="margin-bottom:1px">Générer</button>
     </div>
     <p class="hint">Scope : ${sets.length} set(s). Tirage uniforme — set, puis slot du côté, puis main légal du slot, puis 4 subs distincts (main exclu). Les vraies fréquences de drop du jeu ne sont pas connues : c'est une hypothèse affichée, pas une vérité.</p>
     ${sample.length?`
       <div class="controls">
-        <span style="font-family:var(--mono);font-size:13px">${kept} gardée(s) / ${sample.length} — <b style="color:var(--t3)">${(100*kept/sample.length).toFixed(1).replace(".",",")} %</b></span>
-        <div class="fchips">${[["all","Toutes"],["kept","Gardées"],["rej","Recyclées"]].map(([v,l])=>
-          `<button type="button" class="fchip${UI.test.filter===v?' on':''}" data-tsfilter="${v}">${l}</button>`).join("")}</div>
+        <div class="ctl">${ctlLabel("result","Résultat")}
+          <span style="font-family:var(--mono);font-size:13px;padding:5px 0">${kept} gardée(s) / ${sample.length} — <b style="color:var(--acc)">${(100*kept/sample.length).toFixed(1).replace(".",",")} %</b></span>
+        </div>
+        <div class="ctl">${ctlLabel("eye","Affichage")}
+          <div class="fchips">${[["all","Toutes"],["kept","Gardées"],["rej","Recyclées"]].map(([v,l])=>
+            `<button type="button" class="fchip${UI.test.filter===v?' on':''}" data-tsfilter="${v}">${l}</button>`).join("")}</div>
+        </div>
       </div>
       <div class="piece-grid">${shown.map(({p,i})=>pieceCard(p,i)).join("")}</div>`
     :`<div class="empty"><p>Choisis un scope puis génère un échantillon.</p></div>`}`;
@@ -1145,7 +1330,7 @@ function manualPanel(){
     <div class="panel">
       <div class="ap-row" style="margin-bottom:6px">
         <label>Slot <select id="tm-slot">${SLOTS.map(s=>`<option value="${s.key}"${s.key===m.slot?" selected":""}>${s.label}</option>`).join("")}</select></label>
-        <label>Set <select id="tm-set">${sideSets.map(s=>`<option value="${esc(s.n)}"${s.n===m.set?" selected":""}>T${tierLabel(s.t)} · ${esc(s.n)}</option>`).join("")}</select></label>
+        <label>Set <select id="tm-set">${sideSets.map(s=>`<option value="${esc(s.n)}"${s.n===m.set?" selected":""}>T${tierLabel(s.t)} · ${esc(setName(s.n))}</option>`).join("")}</select></label>
         <label>Main <select id="tm-main">${legalMains.map(a=>`<option value="${a}"${a===m.main?" selected":""}>${a}</option>`).join("")}</select></label>
       </div>
       <span class="grp-label">Subs — clique pour en sélectionner 4 (le main est exclu)</span>
@@ -1158,7 +1343,7 @@ function constraintsInner(){
   return `<details class="acc" id="cons-details" style="margin-top:18px"${UI.test.consOpen?" open":""}>
     <summary>Contraintes de génération — mains possibles par slot</summary>
     <div class="acc-body" style="padding-left:14px">
-      <p style="margin-bottom:6px">Arme = ATK (flat), torse = HP (flat). Côté droit, tout est possible <b>sauf</b> : ni AS ni RR sur bracelet (CC y est exclusif), ni CC ni RR sur collier (AS exclusif), ni CC ni AS sur bague (RR exclusif). Corrige ici si le jeu te contredit — la couverture et le générateur suivent. Les variations de subs des pièces ancient/exclusives sont volontairement ignorées.</p>
+      <p style="margin-bottom:6px">Arme = ATK, torse = HP. Côté droit, tout est possible <b>sauf</b> : ni AS ni RR sur bracelet (CC y est exclusif), ni CC ni RR sur collier (AS exclusif), ni CC ni AS sur bague (RR exclusif). Corrige ici si le jeu te contredit — la couverture et le générateur suivent. Les variations de subs des pièces ancient/exclusives sont volontairement ignorées.</p>
       ${SLOTS.map(s=>`<div class="slot-row"><span class="sl">${s.label}</span><span>${
         ALLSTATS.map(a=>`<button type="button" class="chip ${STAT[a]} pick${CONSTRAINTS[s.key].includes(a)?' sel':''}" data-cslot="${s.key}" data-cstat="${a}">${a}</button>`).join("")
       }</span></div>`).join("")}
@@ -1185,9 +1370,11 @@ function viewTesteur(){
     </div>
     <div class="controls">
       ${tabSelect("ts-tab")}
-      <div class="seg">
-        ${[["couverture","Couverture"],["echantillon","Échantillon"],["piece","Pièce manuelle"]].map(([v,l])=>
-          `<button type="button" class="${mode===v?'on':''}" data-tsmode="${v}">${l}</button>`).join("")}
+      <div class="ctl">${ctlLabel("mode","Mode")}
+        <div class="seg">
+          ${[["couverture","Couverture"],["echantillon","Échantillon"],["piece","Pièce manuelle"]].map(([v,l])=>
+            `<button type="button" class="${mode===v?'on':''}" data-tsmode="${v}">${l}</button>`).join("")}
+        </div>
       </div>
     </div>
     <p class="hint" style="margin:2px 0 0">Sémantique appliquée (confirmée in-game) : chaque <b>★ est obligatoire</b>, et le <b>nombre requis</b> se compte sur toute la liste sélectionnée, ★ incluses — si les ★ suffisent à l'atteindre, les positions restantes de la pièce sont libres.</p>
@@ -1207,7 +1394,7 @@ function viewReference(){
   return `<div class="wrap">
     <div class="view-head">
       <h2>Référence &amp; doctrine</h2>
-      <div class="lede">Les contraintes qui fondent le tri : budgets saturants, doctrine par archétype, politique par tier, contraintes par slot, mécanique de l'outil in-game, et les points encore ouverts.</div>
+      <div class="lede">Les contraintes qui fondent le tri : lexique, budgets saturants, doctrine par archétype, politique par tier, contraintes par slot, mécanique de l'outil in-game, et les points encore ouverts. Chaque bloc se déplie.</div>
     </div>
     <div class="strip">
       <div class="stat-card"><div class="num">48</div><div class="lbl">sets — 3 T∞, 16 T2/T3, 18 T1 (tous transformables), 11 T0</div></div>
@@ -1216,29 +1403,51 @@ function viewReference(){
       <div class="stat-card"><div class="num">11</div><div class="lbl">attributs — 1 main + 4 subs distincts par pièce, jamais la même stat deux fois</div></div>
     </div>
 
-    <div class="panel">
-      <h4>Contraintes de main par slot</h4>
+    <details class="panel">
+      <summary class="p-sum">Lexique</summary>
+      <div class="tbl-wrap rtable"><table>
+        <thead><tr><th>Terme</th><th>Signification</th></tr></thead>
+        <tbody>
+          <tr><td data-th="Terme"><span class="chip off">ATK</span> <span class="chip deff">HP</span> <span class="chip deff">DEF</span></td><td data-th="Signification">Valeurs plates (flat) — sans le %.</td></tr>
+          <tr><td data-th="Terme"><span class="chip off">ATK%</span> <span class="chip deff">HP%</span> <span class="chip deff">DEF%</span></td><td data-th="Signification">Pourcentages de la stat de base du héros.</td></tr>
+          <tr><td data-th="Terme"><span class="chip off">CC</span></td><td data-th="Signification">Crit Chance — taux de coup critique.</td></tr>
+          <tr><td data-th="Terme"><span class="chip off">CD</span></td><td data-th="Signification">Crit DMG — dégâts des coups critiques.</td></tr>
+          <tr><td data-th="Terme"><span class="chip util">AS</span></td><td data-th="Signification">Attack Speed · in-game FR : <b>Vit. d'ATQ</b> — vitesse d'attaque (base 100, budget ~450).</td></tr>
+          <tr><td data-th="Terme"><span class="chip util">RR</span></td><td data-th="Signification">Rage Regen · in-game FR : <b>Régén. de rage</b> — charge l'ultime.</td></tr>
+          <tr><td data-th="Terme"><span class="chip util">HE</span></td><td data-th="Signification">Healing Effect · in-game FR : <b>Effet de soin</b> — efficacité des soins (plafond utile ~150).</td></tr>
+          <tr><td data-th="Terme">Main / Sub</td><td data-th="Signification">Attribut principal d'une pièce / attribut secondaire (4 par pièce, tous distincts du main).</td></tr>
+          <tr><td data-th="Terme">Liste / Pool · ★ · Requis</td><td data-th="Signification">Subs sélectionnés d'une règle · ★ = essentiel obligatoire · nombre minimal de subs de la liste (★ incluses).</td></tr>
+          <tr><td data-th="Terme">Quad / Triple</td><td data-th="Signification">Pièce à 4 / 3 subs utiles.</td></tr>
+          <tr><td data-th="Terme">T0 → T3 · T∞</td><td data-th="Signification">Paliers de sets ; T∞ = nouveau palier des donjons/raids d'équipement.</td></tr>
+          <tr><td data-th="Terme">GR · Forge</td><td data-th="Signification">GR = Gear Raid, en FR <b>Raid d'équipement</b> (le chiffre = boss, la plage = niveaux) · Forge = Gear Forge, fabrication ciblée.</td></tr>
+          <tr><td data-th="Terme">DGT · ATQ · PV</td><td data-th="Signification">Dégâts · attaque · points de vie (libellés français in-game des bonus de sets).</td></tr>
+        </tbody>
+      </table></div>
+    </details>
+
+    <details class="panel">
+      <summary class="p-sum">Contraintes de main par slot</summary>
       <div class="tbl-wrap rtable"><table>
         <thead><tr><th>Slot</th><th>Mains possibles</th></tr></thead>
         <tbody>
-          <tr><td data-th="Slot">Arme</td><td data-th="Mains">ATK (flat) uniquement → ATK impossible en sub sur une arme</td></tr>
-          <tr><td data-th="Slot">Torse</td><td data-th="Mains">HP (flat) uniquement → HP impossible en sub sur un torse</td></tr>
+          <tr><td data-th="Slot">Arme</td><td data-th="Mains">ATK uniquement → ATK impossible en sub sur une arme</td></tr>
+          <tr><td data-th="Slot">Torse</td><td data-th="Mains">HP uniquement → HP impossible en sub sur un torse</td></tr>
           <tr><td data-th="Slot">Bracelet</td><td data-th="Mains">Tout <b>sauf AS et RR</b> — CC n'est possible en main qu'ici</td></tr>
           <tr><td data-th="Slot">Collier</td><td data-th="Mains">Tout <b>sauf CC et RR</b> — AS n'est possible en main qu'ici</td></tr>
           <tr><td data-th="Slot">Bague</td><td data-th="Mains">Tout <b>sauf CC et AS</b> — RR n'est possible en main qu'ici</td></tr>
         </tbody>
       </table></div>
       <p class="hint">Conséquences directes : une règle « main AS » ne matchera que des colliers, « main RR » que des bagues, « main CC » que des bracelets. Ces listes sont éditables dans le Testeur (contraintes de génération) si le jeu te contredit. Les subs possibles uniquement sur pièces ancient/exclusives sont volontairement ignorés tant que l'info n'est pas sûre.</p>
-    </div>
+    </details>
 
-    <div class="panel">
-      <h4>Les budgets saturants</h4>
+    <details class="panel">
+      <summary class="p-sum">Les budgets saturants</summary>
       <p class="hint" style="margin:0 0 8px">Trois attributs se remplissent puis deviennent des rolls morts. Tout le design des règles découle de leur arithmétique.</p>
       <div class="tbl-wrap rtable"><table>
         <thead><tr><th>Attribut</th><th>Base</th><th>Cible</th><th>Roll moyen / pièce</th><th>Conséquence</th></tr></thead>
         <tbody>
           <tr><td data-th="Attribut"><span class="chip off">CC</span></td><td data-th="Base">0</td><td data-th="Cible">~100 %</td><td data-th="Roll moyen / pièce">15 – 25</td><td data-th="Conséquence">CC nécessaire en sub sur <b>les 5 pièces</b> (5 × 20 = 100 pile, aucune marge).</td></tr>
-          <tr><td data-th="Attribut"><span class="chip off">AS</span></td><td data-th="Base">100</td><td data-th="Cible">~450 <i>(coût exponentiel au-delà)</i></td><td data-th="Roll moyen / pièce">50 – 80</td><td data-th="Conséquence">AS sur <b>les 5 pièces</b>, et il faut des rolls hauts : 5 × 65 = 425 en moyenne. Le bonus Warlord (+30) aide à boucler.</td></tr>
+          <tr><td data-th="Attribut"><span class="chip util">AS</span></td><td data-th="Base">100</td><td data-th="Cible">~450 <i>(coût exponentiel au-delà)</i></td><td data-th="Roll moyen / pièce">50 – 80</td><td data-th="Conséquence">AS sur <b>les 5 pièces</b>, et il faut des rolls hauts : 5 × 65 = 425 en moyenne. Le bonus Warlord (+30) aide à boucler.</td></tr>
           <tr><td data-th="Attribut"><span class="chip util">HE</span></td><td data-th="Base">0</td><td data-th="Cible">150 <i>(Pantheon inclus)</i></td><td data-th="Roll moyen / pièce">—</td><td data-th="Conséquence">Rendements décroissants sévères au-delà de 150. Les bonus de set (+25/+30) financent une partie du budget.</td></tr>
         </tbody>
       </table></div>
@@ -1247,10 +1456,10 @@ function viewReference(){
         5 pièces × 4 secondaires = 20 slots. CC + AS partout en consomment 10. Sur les 10 restants, priorité :
         <b>AS excédentaire</b> (marge pour plus tard) &gt; <b>HP%</b> &gt; <b>RR</b>. Le DEF% ne vaut rien en sub DPS — exclu de tous les pools offensifs.
       </div>
-    </div>
+    </details>
 
-    <div class="panel">
-      <h4>La doctrine</h4>
+    <details class="panel">
+      <summary class="p-sum">La doctrine</summary>
       <ul class="clean">
         <li><b>Le main = la stat de scaling.</b> ATK% pour les ATK-scalers, HP% pour les HP-scalers (Gluttony…), DEF% pour les DEF-scalers (Ghan, Trusk, Azhor). Même règle, même trio de subs.</li>
         <li><b>Trio offensif obligatoire en subs DPS : CC + CD + AS.</b> Aucune stat non offensive en requis sur une règle DPS. Le 4ᵉ slot est libre — c'est là que HP%/RR atterrissent naturellement.</li>
@@ -1258,48 +1467,56 @@ function viewReference(){
         <li><b>Transition vers le late game : le triple T2 reste jouable.</b> En attendant les quads, des pièces T2 à 3 bons subs équipent très bien heals et tanks — et certains héros veulent surtout un RR maximal avec le set associé. D'où l'intérêt d'un onglet « transition » moins sévère (requis 3) à côté du jeu de règles strict.</li>
         <li><b>AS ou CD en main : quad parfait ou rien.</b> Un ou deux héros pour l'AS (collier uniquement), un seul pour le CD. La pièce porte les quatre autres subs offensifs, sans exception.</li>
         <li><b>Inspire : maximiser ATK, ATK%, HP%, AS.</b> Trois héros purs (ATK + survie), les hybrides (heal ATK-based, contrôle de foule) prennent l'AS en plus.</li>
-        <li><b>Heals = scalers.</b> Main = stat de scaling (ATK% ou HP%), HE en sub. Les heals HP n'ont pas besoin d'ATK.</li>
+        <li><b>Heals : leur stat de scaling + AS en priorité.</b> Main = stat de scaling (ATK% ou HP%) ; en subs, priorité à la stat de scaling et à l'AS (plus de casts = plus de soins), HE ensuite. Les heals HP n'ont pas besoin d'ATK.</li>
         <li><b>Supports : RR + survie.</b> HP% toujours meilleur que DEF%, et DEF% meilleur que les flats — le flat HP sort des pools au profit du DEF%.</li>
         <li><b>Tanks : HP% en main, RR essentiel</b> — monétisé via Rage Regen (Attacked), sans besoin d'AS. DEF% valide en sub (synergie Tempered Will).</li>
       </ul>
-    </div>
+    </details>
 
-    <div class="panel">
-      <h4>Politique par tier</h4>
+    <details class="panel">
+      <summary class="p-sum">Politique par tier</summary>
       <div class="tbl-wrap rtable"><table>
         <thead><tr><th>Tier</th><th>Rôle</th><th>Sévérité conseillée</th></tr></thead>
         <tbody>
           <tr><td data-th="Tier"><span class="tier-badge b4">T∞</span></td><td data-th="Rôle">Nouveau palier — donjons d'équipement 1-3 &amp; raids d'équipement</td><td data-th="Sévérité">À définir — construis les règles au fil des premiers drops</td></tr>
           <tr><td data-th="Tier"><span class="tier-badge b3">T3</span></td><td data-th="Rôle">Forge (choisies) — et en drop aléatoire dans les donjons d'équipement</td><td data-th="Sévérité">Filet de sécurité, req 2-3</td></tr>
           <tr><td data-th="Tier"><span class="tier-badge b2">T2</span></td><td data-th="Rôle">Le farm réel du palier (GR 19-24)</td><td data-th="Sévérité">Trio requis, req 2-3 — en transition, tolérer le triple subs sur heals/tanks</td></tr>
-          <tr><td data-th="Tier"><span class="tier-badge b1">T1</span></td><td data-th="Rôle"><b>Matière à transformation</b> — une ressource très rare convertit une pièce T1 en set T2/T3</td><td data-th="Sévérité"><b>Quad parfait ou rien</b> (req 4)</td></tr>
+          <tr><td data-th="Tier"><span class="tier-badge b1">T1</span></td><td data-th="Rôle">Porté en early, remplacé au fil de la progression — en late, ne sert plus qu'à être <b>transformé</b> en T2/T3 (essences / gemmes)</td><td data-th="Sévérité">Early : règles souples si besoin d'équiper · late : <b>quad parfait</b> pour la transformation (req 4)</td></tr>
           <tr><td data-th="Tier"><span class="tier-badge b0">T0</span></td><td data-th="Rôle">—</td><td data-th="Sévérité">Aucune règle → recyclage intégral</td></tr>
         </tbody>
       </table></div>
-    </div>
+    </details>
 
-    <div class="panel">
-      <h4>Mécanique de l'outil in-game &amp; pièges</h4>
+    <details class="panel">
+      <summary class="p-sum">Mécanique de l'outil in-game &amp; pièges</summary>
       <ul class="clean">
         <li><b>Le OR des mains exclut du pool de subs.</b> Piège principal du schéma. Ne fusionner plusieurs mains dans une règle que si le pool ne contient aucun d'eux — coût d'exclusion nul (ex. mains ATK%/HP%/DEF% avec pool CC, CD, AS).</li>
-        <li><b>ATK / HP en main = sélecteur de slot gauche.</b> Arme = toujours ATK (flat), torse = toujours HP (flat). C'est le seul moyen de cibler un slot, l'outil n'ayant pas de champ dédié. Côté droit, les exclusivités CC/AS/RR jouent le même rôle : bracelet / collier / bague.</li>
+        <li><b>ATK / HP en main = sélecteur de slot gauche.</b> Arme = toujours ATK, torse = toujours HP. C'est le seul moyen de cibler un slot, l'outil n'ayant pas de champ dédié. Côté droit, les exclusivités CC/AS/RR jouent le même rôle : bracelet / collier / bague.</li>
         <li><b>Sémantique du matching confirmée : ★ = ET, liste = comptage.</b> Chaque sub marqué ★ doit apparaître sur la pièce, sans exception. Le nombre requis se compte ensuite sur toute la liste sélectionnée, ★ incluses : 3 ★ et requis 4 → les 3 ★ plus au moins un autre sub de la liste ; 3 ★ et requis 3 → les ★ suffisent, la 4ᵉ position est totalement libre.</li>
         <li><b>Une stat ne peut jamais être à la fois main et sub</b> d'une même pièce — l'éditeur et le testeur l'appliquent partout.</li>
         <li><b>Pas de détection variant / exclusive / tier / enhancement.</b> Et c'est assumé : une pièce Unrivalled Power ou Exclusive aux stats pourries doit dégager comme les autres.</li>
       </ul>
-    </div>
+    </details>
 
-    <div class="panel">
-      <h4>Points ouverts</h4>
-      <details class="acc"><summary>Sets T∞ — doctrine à écrire</summary><div class="acc-body">Crinière d'or et Feu de dragon (2 pièces → côté gauche), Croc gris (3 pièces → côté droit) — donjons d'équipement 1-3 et raids d'équipement 1 et 3. Mêmes attributs et mêmes contraintes de mains par slot que tout le reste (confirmé) ; hors circuit de transformation. La doctrine des stats reste la même — seuls la sévérité et les pools par set restent à définir quand les premiers drops parleront.</div></details>
-      <details class="acc"><summary>Cumul des règles : OR ou priorité ?</summary><div class="acc-body">Le système suppose un OR de conservation : une pièce est gardée dès qu'elle matche au moins une règle. Si l'outil évalue en priorité descendante avec arrêt au premier match, l'ordre de saisie compte — dans ce cas, saisir les règles les plus strictes en premier.</div></details>
-      <details class="acc"><summary>Mains par slot — à revalider si le jeu contredit</summary><div class="acc-body">Les listes retenues : arme ATK (flat), torse HP (flat), et côté droit tout sauf les exclusivités (ni AS/RR sur bracelet, ni CC/RR sur collier, ni CC/AS sur bague). Si une main s'avère impossible sur un slot, retire-la des contraintes du Testeur — couverture et générateur se recalculent.</div></details>
+    <details class="panel">
+      <summary class="p-sum">Points ouverts</summary>
+      <details class="acc"><summary>Cumul des règles : OR ou priorité ?</summary><div class="acc-body">Le système suppose un OR de conservation : une pièce est gardée dès qu'elle matche au moins une règle. Si l'outil évalue en priorité descendante avec arrêt au premier match, l'ordre de saisie compte — dans ce cas, saisir les règles les plus strictes en premier. Le glisser-déposer des cartes réordonne exactement cet ordre.</div></details>
       <details class="acc"><summary>Héros AS-immunes</summary><div class="acc-body">Vierna, Zelus, Osiren, Dolores (et Xaris hors invocations) n'exploitent pas l'AS. Si une règle exige AS en essentiel, leurs pièces idéales (CC + CD sans AS) sont recyclées : assumé, ou prévoir une règle dédiée sans AS.</div></details>
       <details class="acc"><summary>Sets de présence (Morale)</summary><div class="acc-body">Le porteur importe peu, seul le bonus compte. Si les règles sur ces sets sont trop strictes pour équiper trois pièces sur un porteur sacrifiable, baisser leur requis à 2 — ou l'équiper avec les rebuts.</div></details>
       <details class="acc"><summary>Whirlwind (+75 AS)</summary><div class="acc-body">Un quad Whirlwind a deux débouchés — porté tel quel pour boucler un budget 450 difficile, ou transformé en Warlord / Wicked Vengeance. Décision au moment de dépenser la ressource, pas au tri.</div></details>
       <details class="acc"><summary>Plafond de règles in-game</summary><div class="acc-body">Si l'outil plafonne, sacrifier d'abord les règles aux captures les plus faibles ou sans capture exclusive — le mode Couverture du Testeur les identifie directement.</div></details>
       <details class="acc"><summary>Rage Regen Efficiency</summary><div class="acc-body">Un seul RR dans la liste d'attributs. Si une distinction RR / RR Efficiency apparaît dans l'outil, toutes les règles utilisant RR sont à revisiter.</div></details>
-    </div>
+    </details>
+
+    <details class="panel">
+      <summary class="p-sum">Liens utiles</summary>
+      <ul class="clean">
+        <li><a href="https://watcher-of-realms.fandom.com/wiki/Attribute" target="_blank" rel="noopener">Wiki — Attributes</a> : la référence des stats et de leurs plages de rolls.</li>
+        <li><a href="https://watcher-of-realms.fandom.com/wiki/Gear" target="_blank" rel="noopener">Wiki — Gear</a> : la page des sets d'équipement.</li>
+        <li><a href="https://github.com/Mawldor/WoR-content/tree/main" target="_blank" rel="noopener">WoR-content (Mawldor)</a> : tests en réel de quelles stats choisir, et d'autres guides très utiles.</li>
+        <li><a href="https://github.com/Mawldor/WoR-content/blob/main/HE-ATK.md" target="_blank" rel="noopener">HE vs ATK (Mawldor)</a> : le test des heals — arbitrer Effet de soin contre ATK.</li>
+      </ul>
+    </details>
   </div>`;
 }
 
@@ -1336,6 +1553,14 @@ function updateSidebar(){
 }
 function route(){
   const h = location.hash.replace(/^#\/?/, "");
+  if(h.startsWith("import=")){
+    let txt = null; try{ txt = b64uDecode(h.slice(7)); }catch(_){}
+    const res = txt ? importRulesText(txt) : {ok:false, err:"lien illisible"};
+    if(res.ok){ UI.open.clear(); scheduleSave(); toast(`Onglet <b>${esc(res.tab.name)}</b> importé depuis le lien (${res.tab.rules.length} règle(s)).`); }
+    else { toast("Import depuis le lien impossible : "+esc(res.err)+"."); }
+    try{ history.replaceState(null,"","#/regles"); }catch(_){}
+    UI.view = "regles"; renderView(); return;
+  }
   const [view, param] = h.split("/");
   if(view==="sets" || view==="reference" || view==="testeur"){ UI.view = view; }
   else {
@@ -1346,6 +1571,7 @@ function route(){
         const t = tabOfRule(param);
         if(t) activeTabId = t.id;
         UI.q = ""; UI.fSection = "all"; UI.fArch = "all";
+        UI.fMain = new Set(); UI.fSubs = new Set();
         UI.open.add(param);
         UI.pending = param;
       }
@@ -1366,6 +1592,54 @@ function doCopy(txt, btn){
   if(navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(txt).then(ok).catch(fb); }
   else fb();
 }
+function slug(x){ return String(x).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"") || "onglet"; }
+function downloadText(filename, text){
+  try{
+    const blob = new Blob([text], {type:"application/json"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = filename;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(()=>URL.revokeObjectURL(url), 2000);
+  }catch(e){ toast("Téléchargement impossible dans cet environnement — utilise « Copier l'onglet »."); }
+}
+function b64uEncode(str){ return btoa(unescape(encodeURIComponent(str))).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,""); }
+function b64uDecode(b){ b = String(b).replace(/-/g,"+").replace(/_/g,"/"); while(b.length % 4) b += "="; return decodeURIComponent(escape(atob(b))); }
+function exportTabObj(tab){
+  return { format:"wor-tri-rules", version:1, exported:new Date().toISOString().slice(0,10),
+           tab:{ name:tab.name, rules:tab.rules.map(r=>{ const {id, ...rest} = r; return rest; }) } };
+}
+function importRulesText(text){
+  let data; try{ data = JSON.parse(text); }catch(e){ return {ok:false, err:"JSON illisible"}; }
+  const t = (data && data.format==="wor-tri-rules" && data.tab) ? data.tab : data;
+  if(!t || !Array.isArray(t.rules)) return {ok:false, err:"structure inattendue (pas de liste de règles)"};
+  const base = String(t.name||"Import").slice(0,40);
+  const name = TABS.some(x=>x.name===base) ? (base+" (import)").slice(0,40) : base;
+  bumpSeqs(); // ids garantis uniques même si le compteur a dérivé
+  const nt = newTab(name);
+  nt.rules = t.rules.map(r=>sanitizeRule({...(r && typeof r==="object" ? r : {}), id:"R"+(seq++)})).filter(r=>r && r.sets.length && r.pool.length);
+  if(!nt.rules.length){ TABS.splice(TABS.indexOf(nt),1); ensureTab(); return {ok:false, err:"aucune règle valide dans ce fichier"}; }
+  registerArchs();
+  activeTabId = nt.id;
+  return {ok:true, tab:nt};
+}
+function finishImport(text){
+  const prevActive = activeTabId;
+  const res = importRulesText(text);
+  if(!res.ok){ toast("Import impossible : "+esc(res.err)+"."); return; }
+  UI.open.clear();
+  if(UI.view==="regles"){ renderView(); } else { goto("/regles"); }
+  scheduleSave();
+  toast(`Onglet <b>${esc(res.tab.name)}</b> importé (${res.tab.rules.length} règle(s)).`, {action:{label:"annuler", fn(){
+    const i = TABS.findIndex(x=>x.id===res.tab.id);
+    if(i>=0) TABS.splice(i,1);
+    ensureTab();
+    if(TABS.some(x=>x.id===prevActive)) activeTabId = prevActive;
+    UI.open.clear();
+    if(UI.view==="regles"){ renderView(); } else { updateSidebar(); }
+    scheduleSave();
+  }}});
+}
 function printRule(r){
   let warn = "";
   if(r.req > r.pool.length) warn = ' <span class="pv-warn">⚠ requis &gt; liste</span>';
@@ -1373,7 +1647,7 @@ function printRule(r){
   const tags = (ENTERED.has(r.id)?'<span class="pv-mod">✓ saisie</span>':'');
   return `<div class="pv-rule">
     <div class="pv-title">${r.id} · ${esc(r.name)}${tags}${warn}</div>
-    <div class="pv-line"><span class="pv-k">Sets</span> — ${r.sets.join(", ")}</div>
+    <div class="pv-line"><span class="pv-k">Sets</span> — ${r.sets.map(setName).join(", ")}</div>
     <div class="pv-line"><span class="pv-k">Main(s)</span> — ${r.mains.join(" / ")||"—"}</div>
     <div class="pv-line"><span class="pv-k">Pool</span> — ${sortStats(r.pool).join(", ")||"—"} &nbsp;·&nbsp; <span class="pv-k">Requis</span> ${r.req} &nbsp;·&nbsp; <span class="pv-k">Essentiels</span> — ${sortStats(r.ess).join(", ")||"—"}</div>
   </div>`;
@@ -1410,11 +1684,16 @@ function renderAddPanel(){
   if(AP.req > AP.pool.size){ rw.textContent = "requis > liste — injouable"; rw.style.color = "var(--off)"; }
   else if(AP.ess.size > AP.req){ rw.textContent = "requis effectif "+AP.ess.size+" (★ obligatoires)"; rw.style.color = "var(--faint)"; }
   else { rw.textContent = ""; }
-  document.getElementById("ap-arch").innerHTML = ARCHS.map(a=>
-    `<button type="button" class="fchip${AP.arch.has(a)?' on':''}" data-role="ap-arch" data-arch="${a}">${ARCH_LABEL[a]}</button>`).join("");
+  document.getElementById("ap-arch").innerHTML = allArchs().map(a=>{
+    const del = (!ARCHS.includes(a) && !AP.arch.has(a) && !allRules().some(r=>(r.arch||[]).includes(a)))
+      ? `<button type="button" class="arch-del" data-delarch="${esc(a)}" title="supprimer ce rôle inutilisé">✕</button>` : "";
+    return `<span class="arch-wrap"><button type="button" class="fchip${AP.arch.has(a)?' on':''}" data-role="ap-arch" data-arch="${esc(a)}">${esc(archLabel(a))}</button>${del}</span>`;
+  }).join(" ") + (UI.addingRole==="dlg"
+    ? ` <input type="text" class="tab-rename arch-input" id="arch-input" data-ctx="dlg" maxlength="20" placeholder="nouveau rôle">`
+    : ` <button type="button" class="fchip arch-plus" data-archplus="dlg">＋ rôle</button>`);
   document.getElementById("ap-sets-label").textContent = "Sets — "+(AP.side==="right"?"côté droit":"côté gauche");
   document.getElementById("ap-sets").innerHTML = SIDE_SETS[AP.side].map(n=>
-    `<button type="button" class="chip set t${SETTIER[n]} pick${AP.sets.has(n)?' sel':''}" data-role="ap-set" data-set="${esc(n)}">${esc(n)}</button>`).join("");
+    `<button type="button" class="chip set t${SETTIER[n]} pick${AP.sets.has(n)?' sel':''}" data-role="ap-set" data-set="${esc(n)}"${LANG==="fr"&&SET_FR[n]!==n?` title="${esc(n)}"`:""}>${esc(setName(n))}</button>`).join("");
 }
 function applySide(side){
   AP.side = side;
@@ -1457,7 +1736,7 @@ function saveRule(){
   const pool = sortStats([...AP.pool].filter(a=>!mainsArr.includes(a)));
   const ess = sortStats([...AP.ess].filter(a=>pool.includes(a)));
   const fields = { name, section:AP.side, sets, mains:mainsArr,
-                   arch:ARCHS.filter(a=>AP.arch.has(a)), pool, ess, req:Math.min(4,Math.max(1,AP.req)) };
+                   arch:allArchs().filter(a=>AP.arch.has(a)), pool, ess, req:Math.min(4,Math.max(1,AP.req)) };
   if(AP.editing){
     const r = getRule(AP.editing);
     if(r) Object.assign(r, fields);
@@ -1473,6 +1752,7 @@ function saveRule(){
     activeTab().rules.push({ id, ...fields });
     closeDlg();
     UI.q=""; UI.fSection="all"; UI.fArch="all";
+    UI.fMain = new Set(); UI.fSubs = new Set();
     UI.open.add(id); UI.pending = id;
     if(UI.view!=="regles"){ goto("/regles/"+id); } else { renderView(); }
     scheduleSave();
@@ -1481,6 +1761,21 @@ function saveRule(){
 }
 
 /* ══════════════ INTERACTIONS ══════════════ */
+function commitRole(ctx, raw){
+  const v = String(raw||"").trim().slice(0,20);
+  UI.addingRole = null;
+  if(v){
+    let key = allArchs().find(a=>archLabel(a).toLowerCase()===v.toLowerCase());
+    if(!key){ key = v; EXTRA_ARCHS.push(v); }
+    if(ctx==="dlg"){ AP.arch.add(key); }
+    else {
+      const r = getRule(ctx);
+      if(r) r.arch = allArchs().filter(x=>(r.arch||[]).includes(x)||x===key);
+    }
+    scheduleSave();
+  }
+  if(ctx==="dlg"){ renderAddPanel(); } else { renderView(); }
+}
 function commitRename(commit){
   const inp = document.getElementById("tab-rename-input");
   if(UI.renaming && inp && commit){
@@ -1502,9 +1797,9 @@ document.addEventListener("click", e=>{
 
   // navigation
   const nav = t.closest(".nav-btn");
-  if(nav){ goto("/"+nav.dataset.nav); return; }
+  if(nav){ document.body.classList.remove("nav-open"); goto("/"+nav.dataset.nav); return; }
   const ref = t.closest("[data-goto]");
-  if(ref){ goto("/regles/"+ref.dataset.goto); return; }
+  if(ref){ document.body.classList.remove("nav-open"); goto("/regles/"+ref.dataset.goto); return; }
 
   // onglets
   const tsel = t.closest("[data-tabsel]");
@@ -1560,6 +1855,20 @@ document.addEventListener("click", e=>{
   if(fs){ UI.fSection = fs.dataset.fsection;
     document.querySelectorAll("[data-fsection]").forEach(b=>b.classList.toggle("on", b===fs));
     updateRuleList(); return; }
+  const fm = t.closest("[data-fmain]");
+  if(fm){
+    const a = fm.dataset.fmain;
+    UI.fMain.has(a) ? UI.fMain.delete(a) : UI.fMain.add(a);
+    if(fm.classList) fm.classList.toggle("sel", UI.fMain.has(a));
+    updateRuleList(); return;
+  }
+  const fsb = t.closest("[data-fsub]");
+  if(fsb){
+    const a = fsb.dataset.fsub;
+    UI.fSubs.has(a) ? UI.fSubs.delete(a) : UI.fSubs.add(a);
+    if(fsb.classList) fsb.classList.toggle("sel", UI.fSubs.has(a));
+    updateRuleList(); return;
+  }
   const fa = t.closest("[data-farch]");
   if(fa){ UI.fArch = fa.dataset.farch;
     document.querySelectorAll("[data-farch]").forEach(b=>b.classList.toggle("on", b===fa));
@@ -1571,18 +1880,6 @@ document.addEventListener("click", e=>{
 
   // toolbar règles
   if(t.closest("#add-open") || t.closest("#add-open-empty")){ openDlg(); return; }
-  const ca = t.closest("#copy-all");
-  if(ca){
-    const tab = activeTab(); if(!tab) return;
-    const parts = ["══ ONGLET : "+tab.name.toUpperCase()+" ══"];
-    for(const sec of SECTIONS){
-      const list = tab.rules.filter(r=>r.section===sec);
-      if(!list.length) continue;
-      parts.push("── "+SECTION_LABEL[sec]+" ──");
-      list.forEach(r=>parts.push(copyText(r)));
-    }
-    doCopy(parts.join("\n\n"), ca); return;
-  }
   const ta2 = t.closest("#toggle-all");
   if(ta2){
     const tab = activeTab();
@@ -1611,6 +1908,20 @@ document.addEventListener("click", e=>{
   }
   if(t.closest("#ap-req-minus")){ AP.req = Math.max(1, AP.req-1); renderAddPanel(); return; }
   if(t.closest("#ap-req-plus")){ AP.req = Math.min(4, AP.req+1); renderAddPanel(); return; }
+  const rplus = t.closest("[data-archplus]");
+  if(rplus){
+    UI.addingRole = rplus.dataset.archplus;
+    if(UI.addingRole==="dlg"){ renderAddPanel(); } else { rerenderRule(UI.addingRole); }
+    const inp = document.getElementById("arch-input");
+    if(inp && inp.focus) inp.focus();
+    return;
+  }
+  const darch = t.closest("[data-delarch]");
+  if(darch){
+    const a = darch.dataset.delarch;
+    if(!allRules().some(r=>(r.arch||[]).includes(a))) EXTRA_ARCHS = EXTRA_ARCHS.filter(x=>x!==a);
+    scheduleSave(); renderAddPanel(); return;
+  }
   const apa = t.closest('[data-role="ap-arch"]');
   if(apa){ AP.arch.has(apa.dataset.arch) ? AP.arch.delete(apa.dataset.arch) : AP.arch.add(apa.dataset.arch); renderAddPanel(); return; }
   const qk = t.closest("[data-quick]");
@@ -1627,16 +1938,34 @@ document.addEventListener("click", e=>{
   const aps = t.closest('[data-role="ap-set"]');
   if(aps){ AP.sets.has(aps.dataset.set) ? AP.sets.delete(aps.dataset.set) : AP.sets.add(aps.dataset.set); renderAddPanel(); return; }
 
-  // thème
+  // thème & accent
   if(t.closest("#theme-btn")){ theme = (theme==="light")?"dark":"light"; applyTheme(); scheduleSave(); return; }
+  if(t.closest("#density-btn")){ DENSITY = DENSITY==="compact" ? "confort" : "compact"; applyTheme(); scheduleSave(); return; }
+  if(t.closest("#lang-btn")){ LANG = LANG==="fr" ? "en" : "fr"; applyTheme(); scheduleSave(); renderView(); return; }
+  const ad = t.closest(".acc-dot");
+  if(ad){ ACC = ACCENTS.includes(ad.dataset.acc) ? ad.dataset.acc : "or"; applyTheme(); scheduleSave(); return; }
 
-  // export pdf
-  if(t.closest("#export-pdf")){
-    document.getElementById("print-view").innerHTML = printDoc();
-    toast("Boîte d'impression ouverte — choisis « Enregistrer en PDF ». Si rien ne s'ouvre, ouvre le fichier dans ton navigateur.", {ttl:7000});
-    try{ window.print(); }catch(_){}
+  // import / export d'onglets
+  if(t.closest("#import-btn")){ const fi = document.getElementById("import-file"); if(fi && fi.click) fi.click(); return; }
+  const tex = t.closest("#tab-export");
+  if(tex){
+    const tab = activeTab(); if(!tab) return;
+    downloadText("wor-regles-"+slug(tab.name)+".json", JSON.stringify(exportTabObj(tab), null, 2));
+    toast(`Onglet <b>${esc(tab.name)}</b> exporté — un fichier JSON à partager ou à garder en sauvegarde.`);
     return;
   }
+  const shr = t.closest("#tab-share");
+  if(shr){
+    const tab = activeTab(); if(!tab) return;
+    const url = location.origin + location.pathname + "#/import=" + b64uEncode(JSON.stringify(exportTabObj(tab)));
+    doCopy(url, shr);
+    toast(url.length > 6000 ? "Lien copié — très long pour ce volume de règles : préfère le fichier JSON." : "Lien copié — il ouvre l'app avec cet onglet importé.", {ttl:6500});
+    return;
+  }
+
+  // tiroir mobile
+  if(t.closest("#burger")){ document.body.classList.toggle("nav-open"); return; }
+  if(t.closest("#scrim")){ document.body.classList.remove("nav-open"); return; }
 
   // testeur
   const tsm = t.closest("[data-tsmode]");
@@ -1695,7 +2024,7 @@ document.addEventListener("click", e=>{
     const r = getRule(at.dataset.archrule);
     if(r){
       const a = at.dataset.arch;
-      r.arch = (r.arch||[]).includes(a) ? r.arch.filter(x=>x!==a) : ARCHS.filter(x=>(r.arch||[]).includes(x)||x===a);
+      r.arch = (r.arch||[]).includes(a) ? r.arch.filter(x=>x!==a) : allArchs().filter(x=>(r.arch||[]).includes(x)||x===a);
       rerenderRule(r.id); scheduleSave();
     }
     return;
@@ -1734,7 +2063,7 @@ document.addEventListener("click", e=>{
 
   // repli/dépli d'une carte (après tous les contrôles internes)
   const head = t.closest(".row-head");
-  if(head && !t.closest("input")){
+  if(head && !t.closest("input") && !t.closest(".drag")){
     const id = head.dataset.toggle;
     UI.open.has(id) ? UI.open.delete(id) : UI.open.add(id);
     rerenderRule(id);
@@ -1749,6 +2078,16 @@ document.addEventListener("change", e=>{
     const id = chk.dataset.entered;
     chk.checked ? ENTERED.add(id) : ENTERED.delete(id);
     updateSidebar(); scheduleSave();
+    return;
+  }
+  if(e.target.id==="import-file"){
+    const f = e.target.files && e.target.files[0];
+    e.target.value = "";
+    if(!f) return;
+    const rd = new FileReader();
+    rd.onload = ()=> finishImport(String(rd.result||""));
+    rd.onerror = ()=> toast("Impossible de lire ce fichier.");
+    rd.readAsText(f);
     return;
   }
   if(e.target.id==="ts-tab" || e.target.id==="sets-tab"){
@@ -1766,7 +2105,13 @@ document.addEventListener("input", e=>{
   if(e.target.id === "sets-q"){ UI.setsQ = e.target.value; updateSetsTables(); }
 });
 document.addEventListener("keydown", e=>{
+  if(e.target && e.target.id==="arch-input"){
+    if(e.key==="Enter"){ e.preventDefault(); commitRole(e.target.dataset.ctx, e.target.value); }
+    else if(e.key==="Escape"){ const ctx=e.target.dataset.ctx; UI.addingRole=null; if(ctx==="dlg"){ renderAddPanel(); } else { renderView(); } }
+    return;
+  }
   if(e.key === "Escape"){
+    document.body.classList.remove("nav-open");
     if(UI.renaming){ commitRename(false); return; }
     closeDlg(); return;
   }
@@ -1788,8 +2133,61 @@ document.addEventListener("keydown", e=>{
 });
 document.addEventListener("focusout", e=>{
   if(e.target && e.target.id==="tab-rename-input"){ setTimeout(()=>{ if(UI.renaming) commitRename(true); }, 120); }
+  if(e.target && e.target.id==="arch-input"){
+    const ctx = e.target.dataset.ctx;
+    setTimeout(()=>{ if(UI.addingRole){ UI.addingRole=null; if(ctx==="dlg"){ renderAddPanel(); } else { renderView(); } } }, 120);
+  }
 });
+let DRAG = null;
+function reorderRule(dragId, targetId, before){
+  const tab = activeTab(); if(!tab || dragId===targetId) return false;
+  const from = tab.rules.findIndex(r=>r.id===dragId);
+  if(from<0) return false;
+  const rule = tab.rules[from];
+  tab.rules.splice(from,1);
+  let to = tab.rules.findIndex(r=>r.id===targetId);
+  if(to<0){ tab.rules.splice(from,0,rule); return false; }
+  if(!before) to++;
+  tab.rules.splice(to,0,rule);
+  return true;
+}
+document.addEventListener("dragstart", e=>{
+  const h = e.target.closest && e.target.closest("[data-drag]");
+  if(!h) return;
+  DRAG = h.dataset.drag;
+  if(e.dataTransfer){ e.dataTransfer.effectAllowed = "move"; try{ e.dataTransfer.setData("text/plain", DRAG); }catch(_){} }
+  const card = document.getElementById("card-"+DRAG);
+  if(card && card.classList) card.classList.add("dragging");
+});
+document.addEventListener("dragover", e=>{
+  if(!DRAG) return;
+  const card = e.target.closest && e.target.closest(".rule");
+  if(!card || card.id==="card-"+DRAG) return;
+  e.preventDefault();
+  if(e.dataTransfer) e.dataTransfer.dropEffect = "move";
+  const rect = card.getBoundingClientRect ? card.getBoundingClientRect() : null;
+  const before = rect ? (e.clientY - rect.top) < rect.height/2 : true;
+  if(card.classList){ card.classList.toggle("drop-before", before); card.classList.toggle("drop-after", !before); }
+});
+document.addEventListener("dragleave", e=>{
+  const card = e.target.closest && e.target.closest(".rule");
+  if(card && card.classList){ card.classList.remove("drop-before"); card.classList.remove("drop-after"); }
+});
+document.addEventListener("drop", e=>{
+  if(!DRAG) return;
+  const card = e.target.closest && e.target.closest(".rule");
+  if(!card) return;
+  e.preventDefault();
+  const targetId = card.id.replace(/^card-/, "");
+  const rect = card.getBoundingClientRect ? card.getBoundingClientRect() : null;
+  const before = rect ? (e.clientY - rect.top) < rect.height/2 : true;
+  if(reorderRule(DRAG, targetId, before)) scheduleSave();
+  DRAG = null;
+  updateRuleList(); refreshTabBar();
+});
+document.addEventListener("dragend", ()=>{ if(DRAG){ DRAG = null; updateRuleList(); } });
 window.addEventListener("hashchange", route);
+window.addEventListener("beforeprint", ()=>{ const pv = document.getElementById("print-view"); if(pv) pv.innerHTML = printDoc(); });
 
 /* ══════════════ DÉMARRAGE ══════════════ */
 try{ if(!location.hash) history.replaceState(null,"","#/regles"); }catch(_){}
