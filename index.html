@@ -534,7 +534,7 @@ const STAT = {
   "HP":"deff","HP%":"deff","DEF":"deff","DEF%":"deff",
   "RR":"util","HE":"util","AS":"util"
 };
-const ALLSTATS = ["ATK","ATK%","CC","CD","HP","HP%","DEF","DEF%","RR","HE","AS"];
+const ALLSTATS = ["ATK","DEF","HP","ATK%","DEF%","HP%","CC","CD","HE","RR","AS"];
 // Migration des anciennes sauvegardes : les flats étaient nommés fATK/fHP/fDEF.
 const STAT_RENAME = {fATK:"ATK", fHP:"HP", fDEF:"DEF"};
 const fixStat = x => STAT_RENAME[x] || x;
