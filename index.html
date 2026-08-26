@@ -6,7 +6,8 @@
 <title>Tri d'équipement · Watcher of Realms</title>
 <!--
   Watcher of Realms — gestionnaire de règles de tri d'équipement
-  SPA autonome : aucune dépendance, aucun réseau, données 100 % locales.
+  SPA autonome : aucune dépendance, données 100 % locales. Seule exception réseau, au clic
+  « Partager » : le raccourcisseur da.gd (repli automatique sur le lien long si injoignable).
   Persistance : stockage Claude quand disponible, sinon bascule automatique sur localStorage (PC & mobile).
   Partage / sauvegarde : export & import JSON par onglet (bouton « exporter » sur la barre d'onglets,
   « Importer des règles » dans le menu). Un lien de partage #/import=… est décodé au chargement (utile une fois hébergé).
@@ -184,6 +185,8 @@
   .fchip{appearance:none;background:var(--panel);border:1px solid var(--border);color:var(--muted);
     font-family:var(--mono);font-size:11.5px;padding:5px 12px;border-radius:20px;cursor:pointer;transition:all .15s;flex:0 0 auto;white-space:nowrap}
   .fchip:hover{color:var(--ink)}
+  /* rôles hors .fchips (carte de règle, éditeur) : en flux inline, sans marge les lignes se collent */
+  .rb-grid .fchip,#ap-arch .fchip,#ap-arch .arch-wrap{margin:2px 4px 2px 0}
   .fchip.on{color:var(--acc);border-color:var(--acc-bd);background:var(--acc-dim)}
   .fchip:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
   .toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:10px 0 2px}
@@ -394,6 +397,7 @@
     cursor:pointer;text-decoration:underline dotted;padding:0;flex:0 0 auto}
   .toast button:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
 
+  td.td-name{font-weight:600}
   /* ── Tables empilées sur mobile ── */
   @media(max-width:680px){
     .rtable thead{display:none}
@@ -402,9 +406,17 @@
     .rtable tr:hover td{background:none}
     .rtable td{display:block;border:none;padding:4px 0}
     .rtable td::before{content:attr(data-th);display:block;font-family:var(--display);font-variant:small-caps;letter-spacing:.04em;font-size:11.5px;color:var(--faint)}
+    /* le nom (set ou règle) devient le titre de la carte : plus gros, sans label redondant */
+    .rtable td.td-name{font-family:var(--display);font-variant:small-caps;letter-spacing:.03em;font-size:16.5px;padding:0 0 4px;border-bottom:1px dashed var(--border-soft);margin-bottom:4px}
+    .rtable td.td-name::before{display:none}
+    /* table de couverture : les 3 chiffres tiennent sur une seule ligne */
+    .rtable td.td-mid{display:inline-block;width:33%;padding:4px 6px 4px 0;vertical-align:top}
     .panel{padding:14px}
     .transfo-row{grid-template-columns:1fr}
     .transfo-row .big-arrow{justify-self:start}
+    .strip{grid-template-columns:1fr 1fr;gap:8px}
+    .stat-card{padding:10px 12px}
+    .stat-card .num{font-size:20px}
   }
 
   /* ── Impression ── */
@@ -432,7 +444,9 @@
   .burger{display:none}
   .scrim{display:none}
   @media(max-width:920px){
-    .app{grid-template-columns:1fr;height:auto;min-height:100vh}
+    /* minmax(0,1fr) : sans le 0, l'item de grille garde min-width:auto et gonfle à la largeur
+       de son contenu (rangée d'onglets…) → scroll latéral de toute la page */
+    .app{grid-template-columns:minmax(0,1fr);height:auto;min-height:100vh}
     .burger{display:flex;align-items:center;justify-content:center;position:fixed;top:10px;left:10px;z-index:70;
       width:42px;height:42px;border-radius:10px;background:var(--panel);border:1px solid var(--border);color:var(--acc);
       font-size:19px;line-height:1;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.35)}
@@ -559,8 +573,8 @@ const ALLSTATS = ["ATK","DEF","HP","ATK%","DEF%","HP%","RR","CC","CD","HE","AS"]
 const STAT_RENAME = {fATK:"ATK", fHP:"HP", fDEF:"DEF"};
 const fixStat = x => STAT_RENAME[x] || x;
 const SETS = [
-  {n:"Goldmane",t:4,side:"left",bFr:"PV +30 % · chaque ATQ basique inflige en plus des DGT bruts = 4 % des PV max du héros",bEn:"HP +30%. Each Basic ATK deals extra True DMG equal to 4% of the hero's Max HP.",srcFr:"Donjon équip. 1-3 · Raid équip. 1",srcEn:"Gear Dungeon 1-3 · Gear Raid 1"},
-  {n:"Drakefire",t:4,side:"left",bFr:"ATQ +30 % · Incinération appliquée → DGT +1 % (5 s, cumulable ×10)",bEn:"ATK +30%. Each time Burning is inflicted, DMG +1% for 5 sec, stacking up to 10 times.",srcFr:"Donjon équip. 1-3 · Raid équip. 1",srcEn:"Gear Dungeon 1-3 · Gear Raid 1"},
+  {n:"Goldmane",t:4,side:"left",bFr:"PV +30 % · chaque ATQ basique inflige en plus des DGT bruts = 4 % des PV max du héros",bEn:"HP +30%. Each Basic ATK deals extra True DMG equal to 4% of the hero's Max HP.",srcFr:"Donjon équip. 1-3 (niv. 3-13) · Raid équip. 1 (niv. 19-24)",srcEn:"Gear Dungeon 1-3 (lv. 3-13) · Gear Raid 1 (lv. 19-24)"},
+  {n:"Drakefire",t:4,side:"left",bFr:"ATQ +30 % · Incinération appliquée → DGT +1 % (5 s, cumulable ×10)",bEn:"ATK +30%. Each time Burning is inflicted, DMG +1% for 5 sec, stacking up to 10 times.",srcFr:"Donjon équip. 1-3 (niv. 3-13) · Raid équip. 1 (niv. 19-24)",srcEn:"Gear Dungeon 1-3 (lv. 3-13) · Gear Raid 1 (lv. 19-24)"},
   {n:"Astral Guardian",t:3,side:"left",bFr:"PV +30 %, DEF +15 %",bEn:"HP +30%, DEF +15%",src:"Gear Forge"},
   {n:"Light's Grace",t:3,side:"left",bFr:"Effet de soin +30, Régén. de rage +10 %",bEn:"Healing Effect +30, Rage Regen +10%",src:"Gear Forge"},
   {n:"Wicked Vengeance",t:3,side:"left",bFr:"DGT crit. +40 %, ATQ +10 %",bEn:"Crit.DMG +40%, ATK +10%",src:"Gear Forge"},
@@ -578,7 +592,7 @@ const SETS = [
   {n:"Deadly Aim",t:0,side:"left",bFr:"Taux crit. +10 %",bEn:"Crit.Rate +10%",src:"GR1 · 6-12"},
   {n:"Vitality",t:0,side:"left",bFr:"PV +1000",bEn:"HP +1000",src:"GR1 · 1-5"},
   {n:"Juggernaut",t:0,side:"left",bFr:"ATQ +200",bEn:"ATK +200",src:"GR1 · 1-5"},
-  {n:"Greyfang",t:4,side:"right",bFr:"DGT d'ATQ basique +35 % · après un kill : pénétration +15 % (10 s)",bEn:"Basic ATK DMG +35%. After killing an enemy, Penetration +15% for 10 sec.",srcFr:"Donjon équip. 1-3 · Raid équip. 3",srcEn:"Gear Dungeon 1-3 · Gear Raid 3"},
+  {n:"Greyfang",t:4,side:"right",bFr:"DGT d'ATQ basique +35 % · après un kill : pénétration +15 % (10 s)",bEn:"Basic ATK DMG +35%. After killing an enemy, Penetration +15% for 10 sec.",srcFr:"Donjon équip. 1-3 (niv. 3-13) · Raid équip. 3 (niv. 19-24)",srcEn:"Gear Dungeon 1-3 (lv. 3-13) · Gear Raid 3 (lv. 19-24)"},
   {n:"Wings of Grace",t:3,side:"right",bFr:"Effet de soin +30 · ATQ +12 % pour le héros et l'allié à l'ATQ la plus haute",bEn:"Healing Effect +30. ATK +12% for the hero and the highest-ATK ally in range.",src:"Gear Forge"},
   {n:"Cataclysm",t:3,side:"right",bFr:"Crit d'ATQ basique → DGT +10 % (8 s, ×5)",bEn:"On Basic-ATK Crit. Hit, DMG +10% for 8 sec, stacking ×5.",src:"Gear Forge"},
   {n:"Tempered Will",t:3,side:"right",bFr:"Réduction de DGT +15 % · DEF +5 % par ennemi bloqué (×4)",bEn:"DMG Reduction +15%. DEF +5% per enemy blocked, stacking ×4.",src:"Gear Forge"},
@@ -610,6 +624,17 @@ const SETS = [
 ];
 const SETTIER = Object.fromEntries(SETS.map(s=>[s.n,s.t]));
 const SET_ORDER = Object.fromEntries(SETS.map((s,i)=>[s.n,i])); // SETS est rangé dans l'ordre d'affichage in-game
+// Disponibilité machine des sets (filtres du générateur d'échantillon), dérivée des libellés src
+// « GRn · a-b » (Raid équip. n, niveaux a-b) ; T∞ = Raid 1 (gauche) / Raid 3 (droite), niv. 19-24.
+// Donjons d'équip. (niv. 1-13) : T1 dès le niv. 1, T2/T3/T∞ dès le niv. 3, jamais de T0.
+const GD_MIN_BY_TIER = {1:1, 2:3, 3:3, 4:3};
+const SET_AVAIL = Object.fromEntries(SETS.map(s=>{
+  const m = /^GR(\d) · (\d+)-(\d+)$/.exec(s.src||"");
+  const gr = m ? {n:+m[1], min:+m[2], max:+m[3]} : (s.t===4 ? {n:s.side==="left"?1:3, min:19, max:24} : null);
+  const gd = GD_MIN_BY_TIER[s.t]!==undefined ? {min:GD_MIN_BY_TIER[s.t], max:13} : null;
+
+  return [s.n, {gr, gd}];
+}));
 const SETSIDE = Object.fromEntries(SETS.map(s=>[s.n,s.side]));
 const SIDE_SETS = {
   right: SETS.filter(x=>x.side==="right").map(x=>x.n),
@@ -687,6 +712,9 @@ let theme = "dark";
 let ACC = "or";
 let DENSITY = "confort";
 let LANG = (typeof navigator!=="undefined" && String(navigator.language||"").toLowerCase().startsWith("fr")) ? "fr" : "en";
+// La langue suit le navigateur tant que l'utilisateur n'a pas cliqué le toggle : on ne persiste
+// que les choix explicites, sinon un premier passage figerait la langue détectée ce jour-là.
+let LANG_CHOSEN = false;
 const ACCENTS = ["or","vert","bleu","violet","rouge"];
 let EXTRA_ARCHS = [];
 const KEY = "wor-tri-rules-v1";
@@ -724,6 +752,8 @@ fr:{
   v_rules_lede:"Chaque onglet est un jeu de règles indépendant. Une pièce est conservée si elle satisfait au moins une règle de l'onglet ; tout le reste part au recyclage. Coche chaque règle une fois saisie dans le jeu.",
   lbl_search:"Recherche", lbl_side:"Ensemble", lbl_role:"Rôle", lbl_main:"Main", lbl_subs:"Subs",
   lbl_tab:"Onglet", lbl_tier:"Tier", lbl_mode:"Mode", lbl_n:"Pièces", lbl_tiers:"Tiers", lbl_side2:"Ensemble",
+  lbl_src:"Source", lbl_lvl:"Niveau", src_gr:n=>"Raid "+n, src_gd:"Donjon",
+  ts_scope:"Scope", ts_by_tiers:"Tiers & ensemble", ts_by_src:"Raids & donjons",
   lbl_result:"Résultat", lbl_display:"Affichage",
   f_all:"Toutes", f_allroles:"Tous rôles", f_kept:"Gardées", f_rej:"Recyclées", f_alltiers:"Tous",
   ph_rule_q:"Chercher une règle, un set… ( / )", ph_sets_q:"Chercher un set…",
@@ -755,20 +785,34 @@ fr:{
   v_test_h:"Testeur de règles",
   v_test_lede:"Vérifie ce que ton jeu de règles garde et recycle, avant de le saisir dans le jeu — en exhaustif, sur un échantillon aléatoire, ou pièce par pièce.",
   mode_cov:"Couverture", mode_sample:"Échantillon", mode_piece:"Pièce manuelle",
-  hint_sem:`Sémantique appliquée (confirmée in-game) : chaque <b>★ est obligatoire</b>, et le <b>nombre requis</b> se compte sur toute la liste sélectionnée, ★ incluses — si les ★ suffisent à l'atteindre, les positions restantes de la pièce sont libres.`,
+  hint_sem:`Sémantique appliquée (confirmée in-game) :<ul>
+    <li>chaque <b>★ est obligatoire</b> ;</li>
+    <li>le <b>nombre requis</b> se compte sur toute la liste sélectionnée, ★ incluses ;</li>
+    <li>si les ★ suffisent à l'atteindre, les positions restantes de la pièce sont libres.</li>
+  </ul>`,
   empty_test:"L'onglet testé n'a aucune règle — rien à mesurer.",
   cov_total:"profils de pièces possibles (sets × slots × mains légaux × combinaisons de 4 subs)",
   cov_kept:p=>"gardés — "+p+" de tout ce qui peut dropper",
   cov_multi:"gardés par 2 règles ou plus (chevauchement)", cov_mute:"règle(s) qui ne gardent rien",
   cov_catch_h:"Ce que chaque règle attrape",
-  cov_catch_hint:`Pour chaque règle : combien de profils elle garde, quelle part ça représente <b>parmi les pièces des sets qu'elle cible</b>, et combien elle est <b>seule</b> à garder. Une règle quad très stricte ne garde que quelques profils sur des milliers — c'est voulu, pas cassé. Les deux vrais signaux d'alerte : « ne garde rien » et « doublon ».`,
-  th_rule:"Règle", th_kept:"Pièces gardées", th_pct:"% de ses sets", th_uniq:"Seule à garder", th_read:"Lecture",
+  cov_catch_hint:`<ul>
+    <li><b>Pièces gardées</b> : combien de profils la règle garde.</li>
+    <li><b>% de ses sets</b> : la part que ça représente parmi les pièces des sets qu'elle cible.</li>
+    <li>Une règle quad très stricte ne garde que quelques profils sur des milliers : c'est voulu, pas cassé.</li>
+    <li>Les deux vrais signaux d'alerte : « ne garde rien » et « doublon » (tout ce qu'elle garde l'est déjà par d'autres règles).</li>
+  </ul>`,
+  th_rule:"Règle", th_kept:"Pièces gardées", th_pct:"% de ses sets", th_read:"Lecture",
   diag_ok:"ok", diag_none:"ne garde rien — sets, mains ou seuil incompatibles : à corriger ou à supprimer",
   diag_dup:"doublon — tout ce qu'elle garde l'est déjà par d'autres règles",
   cov_rate_h:"Taux de conservation par set", gh_l:"2 pièces", gh_r:"3 pièces",
   no_side_cov:"Aucun set de ce côté n'est couvert.",
   uncov_sum:n=>`Sets non couverts (${n}) — 100 % recyclés par cet onglet`, uncov_none:"aucun",
-  hint_scope:n=>`Scope : ${n} set(s). Tirage uniforme — set, puis slot du côté, puis main légal du slot, puis 4 subs distincts (main exclu). Les vraies fréquences de drop du jeu ne sont pas connues : c'est une hypothèse affichée, pas une vérité.`,
+  hint_scope:n=>`<ul>
+    <li>Scope : <b>${n}</b> set(s).</li>
+    <li>Tirage uniforme : set, puis slot de l'ensemble, puis main légal du slot, puis 4 subs distincts (main exclu).</li>
+    <li>Les vraies fréquences de drop du jeu ne sont pas connues : c'est une hypothèse affichée, pas une vérité.</li>
+    <li>Les taux d'apparition des équipements anciens ne sont pas calculés, la donnée n'étant pas connue (principalement pour l'apparition de la sub RR sur le torse et l'arme).</li>
+  </ul>`,
   res_kept:(k,n)=>`${k} gardée(s) / ${n} — `,
   btn_gen:"Générer", empty_sample:"Choisis un scope puis génère un échantillon.",
   v_ok:names=>"✓ Gardée par "+names, v_rej:"✗ Recyclée",
@@ -835,6 +879,8 @@ en:{
   v_rules_lede:"Each tab is an independent rule set. A piece is kept if it satisfies at least one rule of the tab; everything else gets recycled. Tick each rule once entered in the game.",
   lbl_search:"Search", lbl_side:"Set size", lbl_role:"Role", lbl_main:"Main", lbl_subs:"Subs",
   lbl_tab:"Tab", lbl_tier:"Tier", lbl_mode:"Mode", lbl_n:"Pieces", lbl_tiers:"Tiers", lbl_side2:"Set size",
+  lbl_src:"Source", lbl_lvl:"Level", src_gr:n=>"Raid "+n, src_gd:"Dungeon",
+  ts_scope:"Scope", ts_by_tiers:"Tiers & set size", ts_by_src:"Raids & dungeons",
   lbl_result:"Result", lbl_display:"Display",
   f_all:"All", f_allroles:"All roles", f_kept:"Kept", f_rej:"Recycled", f_alltiers:"All",
   ph_rule_q:"Search a rule, a set… ( / )", ph_sets_q:"Search a set…",
@@ -866,20 +912,34 @@ en:{
   v_test_h:"Rule tester",
   v_test_lede:"Check what your rule set keeps and recycles, before entering it in the game — exhaustively, on a random sample, or piece by piece.",
   mode_cov:"Coverage", mode_sample:"Sample", mode_piece:"Manual piece",
-  hint_sem:`Applied semantics (confirmed in-game): every <b>★ is mandatory</b>, and the <b>required count</b> runs over the whole selected list, ★ included — if the ★ alone reach it, the remaining positions of the piece are free.`,
+  hint_sem:`Applied semantics (confirmed in-game):<ul>
+    <li>every <b>★ is mandatory</b>;</li>
+    <li>the <b>required count</b> runs over the whole selected list, ★ included;</li>
+    <li>if the ★ alone reach it, the remaining positions of the piece are free.</li>
+  </ul>`,
   empty_test:"The tested tab has no rules — nothing to measure.",
   cov_total:"possible piece profiles (sets × slots × legal mains × 4-sub combinations)",
   cov_kept:p=>"kept — "+p+" of everything that can drop",
   cov_multi:"kept by 2+ rules (overlap)", cov_mute:"rule(s) keeping nothing",
   cov_catch_h:"What each rule catches",
-  cov_catch_hint:`For each rule: how many profiles it keeps, what share that is <b>among the pieces of the sets it targets</b>, and how many it is the <b>sole</b> keeper of. A very strict quad rule keeps only a handful of profiles out of thousands — that's intended, not broken. The two real warning signs: "keeps nothing" and "duplicate".`,
-  th_rule:"Rule", th_kept:"Pieces kept", th_pct:"% of its sets", th_uniq:"Sole keeper", th_read:"Reading",
+  cov_catch_hint:`<ul>
+    <li><b>Pieces kept</b>: how many profiles the rule keeps.</li>
+    <li><b>% of its sets</b>: the share that represents among the pieces of the sets it targets.</li>
+    <li>A very strict quad rule keeps only a handful of profiles out of thousands: that's intended, not broken.</li>
+    <li>The two real warning signs: "keeps nothing" and "duplicate" (everything it keeps is already kept by other rules).</li>
+  </ul>`,
+  th_rule:"Rule", th_kept:"Pieces kept", th_pct:"% of its sets", th_read:"Reading",
   diag_ok:"ok", diag_none:"keeps nothing — incompatible sets, mains or threshold: fix or delete",
   diag_dup:"duplicate — everything it keeps is already kept by other rules",
   cov_rate_h:"Keep rate per set", gh_l:"2-piece", gh_r:"3-piece",
   no_side_cov:"No set on this side is covered.",
   uncov_sum:n=>`Uncovered sets (${n}) — 100% recycled by this tab`, uncov_none:"none",
-  hint_scope:n=>`Scope: ${n} set(s). Uniform draw — set, then slot on that side, then a legal main for the slot, then 4 distinct subs (main excluded). The game's real drop rates are unknown: this is a stated assumption, not a truth.`,
+  hint_scope:n=>`<ul>
+    <li>Scope: <b>${n}</b> set(s).</li>
+    <li>Uniform draw: set, then a slot of that set size, then a legal main for the slot, then 4 distinct subs (main excluded).</li>
+    <li>The game's real drop rates are unknown: this is a stated assumption, not a truth.</li>
+    <li>Ancient gear appearance rates are not computed, as the data is unknown (mainly the RR sub showing up on armor and weapon).</li>
+  </ul>`,
   res_kept:(k,n)=>`${k} kept / ${n} — `,
   btn_gen:"Generate", empty_sample:"Pick a scope, then generate a sample.",
   v_ok:names=>"✓ Kept by "+names, v_rej:"✗ Recycled",
@@ -929,7 +989,7 @@ function applyLang(){
 
 const UI = { view:"regles", q:"", fSection:"all", fArch:"all", fMain:new Set(), fSubs:new Set(), fSet:"all", fTier:"all", filtersOpen:false, addingRole:null, open:new Set(),
              setsQ:"", setsTier:"all", pending:null, renaming:null,
-             test:{ mode:"couverture", n:500, tiers:new Set(["4","3","2","1","0"]), sides:new Set(["right","left"]),
+             test:{ mode:"couverture", n:500, tiers:new Set(["4","3","2","1","0"]), sides:new Set(["right","left"]), scopeMode:"source", src:"gr1", lvl:"all",
                     sample:[], openPieces:new Set(), filter:"all", consOpen:false,
                     manual:{ slot:"bracelet", set:"Infernal Roar", main:"ATK%", subs:[] } } };
 
@@ -991,7 +1051,7 @@ function setSave(txt, cls){
   if(st) st.textContent = txt;
   if(line){ line.className = "save-line" + (cls?" "+cls:""); }
 }
-function payload(){ return JSON.stringify({v:4, consV:CONS_V, tabs:TABS, active:activeTabId, entered:[...ENTERED], constraints:CONSTRAINTS, theme, acc:ACC, dens:DENSITY, lang:LANG, xarch:EXTRA_ARCHS, tabSeq}); }
+function payload(){ return JSON.stringify({v:4, consV:CONS_V, tabs:TABS, active:activeTabId, entered:[...ENTERED], constraints:CONSTRAINTS, theme, acc:ACC, dens:DENSITY, lang:LANG_CHOSEN?LANG:null, xarch:EXTRA_ARCHS, tabSeq}); }
 function getStore(){
   try{
     if(window.storage && window.storage.get && window.storage.set){
@@ -1084,7 +1144,7 @@ async function restoreState(){
       if(data.theme==="light" || data.theme==="dark") theme = data.theme;
       if(ACCENTS.includes(data.acc)) ACC = data.acc;
       if(data.dens==="compact" || data.dens==="confort") DENSITY = data.dens;
-      if(data.lang==="fr" || data.lang==="en") LANG = data.lang;
+      if(data.lang==="fr" || data.lang==="en"){ LANG = data.lang; LANG_CHOSEN = true; }
       if(Array.isArray(data.xarch)) EXTRA_ARCHS = [...new Set(data.xarch.filter(x=>typeof x==="string").map(x=>x.trim().slice(0,20)).filter(x=>x && !ARCHS.includes(x)))];
     } else if(data){
       const rules = (data.v>=2) ? (data.rules||{}) : (data||{});
@@ -1200,7 +1260,18 @@ function computeCoverage(){
 
 /* ══════════════ GÉNÉRATION ALÉATOIRE ══════════════ */
 function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+function setAvailableFor(name, src, lvl){
+  const av = SET_AVAIL[name] || {};
+  const inR = (r, l) => !!r && (l==="all" || (l>=r.min && l<=r.max));
+  if(src==="gd") return inR(av.gd, lvl);
+  if(src==="gr1"||src==="gr2"||src==="gr3") return !!av.gr && av.gr.n===+src.slice(2) && inR(av.gr, lvl);
+
+  return lvl==="all" || inR(av.gr, lvl) || inR(av.gd, lvl); // src "all" : dispo quelque part à ce niveau
+}
 function scopeSets(){
+  // Deux scopes exclusifs : par tiers/ensemble, OU par source de farm (raid/donjon + niveau).
+  if(UI.test.scopeMode==="source") return SETS.filter(s=>setAvailableFor(s.n, UI.test.src, UI.test.lvl)).map(s=>s.n);
+
   return SETS.filter(s=>UI.test.tiers.has(String(s.t)) && UI.test.sides.has(s.side)).map(s=>s.n);
 }
 function randPiece(sets){
@@ -1463,7 +1534,7 @@ function setsTable(side){
     .filter(s=>{ if(!UI.setsQ) return true; const q = UI.setsQ.toLowerCase(); return s.n.toLowerCase().includes(q) || setName(s.n).toLowerCase().includes(q); });
   if(!rows.length) return `<p class="hint" style="margin:8px 0 16px">${t("no_set_match")}</p>`;
   return `<div class="tbl-wrap rtable"><table><thead><tr><th>${t("th_set")}</th><th>${t("th_tier")}</th><th>${t("th_bonus")}</th><th>${t("th_source")}</th><th>${t("th_cov")}</th><th>${t("th_transfo")}</th></tr></thead><tbody>
-    ${rows.map(s=>`<tr><td data-th="${t("th_set")}">${esc(setName(s.n))}</td><td data-th="${t("th_tier")}"><span class="tier-badge b${s.t}">T${tierLabel(s.t)}</span></td><td data-th="${t("th_bonus")}">${setBonus(s)}</td><td data-th="${t("th_source")}">${setSrc(s)}</td><td data-th="${t("th_cov")}" class="dest">${destCell(s)}</td><td data-th="${t("th_transfo")}" class="dest">${s.to?`<span class="arrow">→</span> ${esc(toLabel(s.to))}`:"—"}</td></tr>`).join("")}
+    ${rows.map(s=>`<tr><td data-th="${t("th_set")}" class="td-name">${esc(setName(s.n))}</td><td data-th="${t("th_tier")}"><span class="tier-badge b${s.t}">T${tierLabel(s.t)}</span></td><td data-th="${t("th_bonus")}">${setBonus(s)}</td><td data-th="${t("th_source")}">${setSrc(s)}</td><td data-th="${t("th_cov")}" class="dest">${destCell(s)}</td><td data-th="${t("th_transfo")}" class="dest">${s.to?`<span class="arrow">→</span> ${esc(toLabel(s.to))}`:"—"}</td></tr>`).join("")}
   </tbody></table></div>`;
 }
 function viewSets(){
@@ -1553,15 +1624,15 @@ function coveragePanel(){
     </div>
     <div class="panel">
       <h4>${t("cov_catch_h")}</h4>
-      <p class="hint" style="margin:0 0 8px">${t("cov_catch_hint")}</p>
-      <div class="tbl-wrap rtable"><table><thead><tr><th>${t("th_rule")}</th><th>${t("th_kept")}</th><th>${t("th_pct")}</th><th>${t("th_uniq")}</th><th>${t("th_read")}</th></tr></thead><tbody>
+      <div class="hint" style="margin:0 0 8px">${t("cov_catch_hint")}</div>
+      <div class="tbl-wrap rtable"><table><thead><tr><th>${t("th_rule")}</th><th>${t("th_kept")}</th><th>${t("th_pct")}</th><th>${t("th_read")}</th></tr></thead><tbody>
         ${tab.rules.map(r=>{
           const n = c.perRule[r.id], u = c.uniq[r.id];
           const den = r.sets.reduce((acc,sn)=>acc+(c.perSet[sn]?c.perSet[sn].total:0),0);
           let diag = `<span class="ok-txt">${t("diag_ok")}</span>`;
           if(n===0) diag = `<span class="warn-txt">${t("diag_none")}</span>`;
           else if(u===0) diag = `<span class="warn-txt">${t("diag_dup")}</span>`;
-          return `<tr><td data-th="${t("th_rule")}"><b>${r.id}</b> ${esc(r.name)}</td><td data-th="${t("th_kept")}">${n.toLocaleString(t("date_locale"))}</td><td data-th="${t("th_pct")}">${den?pct(n/den):"—"}</td><td data-th="${t("th_uniq")}">${u.toLocaleString(t("date_locale"))}</td><td data-th="${t("th_read")}">${diag}</td></tr>`;
+          return `<tr><td data-th="${t("th_rule")}" class="td-name"><b>${r.id}</b> ${esc(r.name)}</td><td data-th="${t("th_kept")}" class="td-mid">${n.toLocaleString(t("date_locale"))}</td><td data-th="${t("th_pct")}" class="td-mid">${den?pct(n/den):"—"}</td><td data-th="${t("th_read")}">${diag}</td></tr>`;
         }).join("")}
       </tbody></table></div>
     </div>
@@ -1586,11 +1657,29 @@ function samplePanel(){
   const shown = sample.map((p,i)=>({p,i})).filter(({p})=>
     UI.test.filter==="all" || (UI.test.filter==="kept")===(p.matched.length>0));
   const kept = sample.filter(p=>p.matched.length>0).length;
+  const isSrc = UI.test.scopeMode==="source";
   return `
     <div class="controls" style="margin-top:2px">
-      <div class="ctl">${ctlLabel("n",t("lbl_n"))}
-        <select id="ts-n">${[100,500,2000].map(n=>`<option value="${n}"${UI.test.n===n?" selected":""}>${n}</option>`).join("")}</select>
+      <div class="ctl">${ctlLabel("mode",t("ts_scope"))}
+        <div class="seg">
+          <button type="button" class="${isSrc?"on":""}" data-tsscope="source">${t("ts_by_src")}</button>
+          <button type="button" class="${isSrc?"":"on"}" data-tsscope="filtres">${t("ts_by_tiers")}</button>
+        </div>
       </div>
+      ${isSrc?`
+      <div class="ctl">${ctlLabel("src",t("lbl_src"))}
+        <div class="fchips">
+          ${[["gr1",t("src_gr",1)],["gr2",t("src_gr",2)],["gr3",t("src_gr",3)],["gd",t("src_gd")]].map(([v,l])=>
+            `<button type="button" class="fchip${UI.test.src===v?' on':''}" data-tssrc="${v}">${l}</button>`).join("")}
+        </div>
+      </div>
+      <div class="ctl">${ctlLabel("lvl",t("lbl_lvl"))}
+        <select id="ts-lvl">
+          <option value="all">${t("f_alltiers")}</option>
+          ${Array.from({length:UI.test.src==="gd"?13:24},(_,i)=>i+1).map(l=>
+            `<option value="${l}"${UI.test.lvl===l?" selected":""}>${l}</option>`).join("")}
+        </select>
+      </div>`:`
       <div class="ctl">${ctlLabel("tier",t("lbl_tiers"))}
         <div class="fchips">${["4","3","2","1","0"].map(t=>`<button type="button" class="fchip${UI.test.tiers.has(t)?' on':''}" data-tstier="${t}">${t==="4"?"T∞":"T"+t}</button>`).join("")}</div>
       </div>
@@ -1599,10 +1688,13 @@ function samplePanel(){
           <button type="button" class="fchip${UI.test.sides.has("left")?' on':''}" data-tsside="left">${t("gh_l")}</button>
           <button type="button" class="fchip${UI.test.sides.has("right")?' on':''}" data-tsside="right">${t("gh_r")}</button>
         </div>
+      </div>`}
+      <div class="ctl">${ctlLabel("n",t("lbl_n"))}
+        <select id="ts-n">${[100,500,2000].map(n=>`<option value="${n}"${UI.test.n===n?" selected":""}>${n}</option>`).join("")}</select>
       </div>
       <button type="button" class="btn primary" id="ts-gen" style="margin-bottom:1px">${t("btn_gen")}</button>
     </div>
-    <p class="hint">${t("hint_scope", sets.length)}</p>
+    <div class="hint">${t("hint_scope", sets.length)}</div>
     ${sample.length?`
       <div class="controls">
         <div class="ctl">${ctlLabel("result",t("lbl_result"))}
@@ -1690,7 +1782,7 @@ function viewTesteur(){
         </div>
       </div>
     </div>
-    <p class="hint" style="margin:2px 0 0">${t("hint_sem")}</p>
+    <div class="hint" style="margin:2px 0 0">${t("hint_sem")}</div>
     <div id="test-body">${body}</div>
     ${constraintsPanel()}
   </div>`;
@@ -2053,21 +2145,31 @@ function downloadText(filename, text){
     setTimeout(()=>URL.revokeObjectURL(url), 2000);
   }catch(e){ toast(t("t_dl_fail")); }
 }
-function randHex(n){
-  try{
-    const a = new Uint8Array(n/2);
-    (window.crypto||crypto).getRandomValues(a);
-    return Array.from(a).map(b=>b.toString(16).padStart(2,"0")).join("");
-  }catch(_){ let h=""; while(h.length<n) h+=Math.floor(Math.random()*16).toString(16); return h.slice(0,n); }
+function rand36(n){
+  const a = new Uint8Array(n);
+  try{ (window.crypto||crypto).getRandomValues(a); }catch(_){ for(let i=0;i<n;i++) a[i] = Math.floor(Math.random()*256); }
+
+  return Array.from(a).map(b=>(b%36).toString(36)).join("");
 }
 async function shortenShare(longUrl){
-  // API 1pt.co : GET addURL?long=…&short=… → {message, short} ; slug demandé : WoR-GB-{16 hex}
-  const slug = "WoR-GB-" + randHex(16);
+  // API da.gd (CORS ouvert, sans clé) : GET /shorten?url=…[&shorturl=slug] → texte brut « https://da.gd/slug ».
+  // Le fragment #/import=… est conservé dans la redirection (vérifié sur le header Location).
   const opts = (typeof AbortSignal!=="undefined" && AbortSignal.timeout) ? {signal:AbortSignal.timeout(4500)} : {};
-  const res = await fetch("https://api.1pt.co/addURL?long=" + encodeURIComponent(longUrl) + "&short=" + slug, opts);
-  const j = await res.json();
-  if(!j || !j.short) throw new Error("short-missing");
-  return "https://1pt.co/" + j.short;
+  const call = async q=>{
+    const res = await fetch("https://da.gd/shorten?url=" + encodeURIComponent(longUrl) + q, opts);
+    if(!res.ok) throw new Error("short-http-"+res.status);
+    const txt = (await res.text()).trim();
+    if(!/^https:\/\/da\.gd\/[A-Za-z0-9-]+$/.test(txt)) throw new Error("short-bad");
+
+    return txt;
+  };
+  // Slug marqué « WoR-xxxxxx » — da.gd tronque les slugs à 10 caractères, il reste donc 6 caractères
+  // d'aléa (~2,2 milliards de combinaisons) : 3 essais en cas de collision (HTTP 400 « already taken »).
+  for(let i=0; i<3; i++){
+    try{ return await call("&shorturl=WoR-"+rand36(6)); }catch(_){}
+  }
+
+  return call(""); // slug aléatoire da.gd (sans préfixe) avant que l'appelant ne replie sur le lien long
 }
 function b64uEncode(str){ return btoa(unescape(encodeURIComponent(str))).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,""); }
 function b64uDecode(b){ b = String(b).replace(/-/g,"+").replace(/_/g,"/"); while(b.length % 4) b += "="; return decodeURIComponent(escape(atob(b))); }
@@ -2455,6 +2557,7 @@ document.addEventListener("click", e=>{
   if(el.closest("#density-btn")){ DENSITY = DENSITY==="compact" ? "confort" : "compact"; applyTheme(); scheduleSave(); return; }
   const lg = el.closest("[data-lang]");
   if(lg){
+    LANG_CHOSEN = true; scheduleSave(); // même re-cliquer la langue active est un choix explicite
     if(LANG!==lg.dataset.lang){
       LANG = lg.dataset.lang==="fr" ? "fr" : "en";
       applyTheme(); applyLang(); scheduleSave(); renderView();
@@ -2482,12 +2585,15 @@ document.addEventListener("click", e=>{
   const shr = el.closest("#tab-share");
   if(shr){
     const tab = activeTab(); if(!tab) return;
-    // Raccourcisseur (shortenShare) débranché : lien compact v2 (deflate), copié tel quel.
+    const prev = shr.textContent;
+    const done = ()=>{ shr.disabled = false; shr.textContent = prev; };
+    shr.textContent = "…"; shr.disabled = true;
     encodeShare(tab).then(payload=>{
       const url = location.origin + location.pathname + "#/import=" + payload;
-      doCopy(url, shr);
-      toast(t(url.length > 6000 ? "t_share_long" : "t_share_ok"), {ttl:7000});
-    });
+      return shortenShare(url)
+        .then(su=>{ done(); doCopy(su, shr); toast(t("t_share_short", su), {ttl:7000}); })
+        .catch(()=>{ done(); doCopy(url, shr); toast(t(url.length > 6000 ? "t_share_long" : "t_share_ok") + " " + t("t_share_fallback"), {ttl:7500}); });
+    }).catch(done);
     return;
   }
 
@@ -2498,6 +2604,14 @@ document.addEventListener("click", e=>{
   // testeur
   const tsm = el.closest("[data-tsmode]");
   if(tsm){ UI.test.mode = tsm.dataset.tsmode; renderView(); return; }
+  const tsc = el.closest("[data-tsscope]");
+  if(tsc){ UI.test.scopeMode = tsc.dataset.tsscope; updateTestBody(); return; }
+  const tsr = el.closest("[data-tssrc]");
+  if(tsr){
+    UI.test.src = tsr.dataset.tssrc;
+    if(UI.test.src==="gd" && UI.test.lvl!=="all" && UI.test.lvl>13) UI.test.lvl = "all"; // les donjons plafonnent au niv. 13
+    updateTestBody(); return;
+  }
   const tst = el.closest("[data-tstier]");
   if(tst){ const v=tst.dataset.tstier; UI.test.tiers.has(v)?UI.test.tiers.delete(v):UI.test.tiers.add(v); updateTestBody(); return; }
   const tss = el.closest("[data-tsside]");
@@ -2622,6 +2736,7 @@ document.addEventListener("change", e=>{
     refreshSampleVerdicts(); scheduleSave(); renderView(); return;
   }
   if(e.target.id==="f-set"){ UI.fSet = e.target.value; updateRuleList(); return; }
+  if(e.target.id==="ts-lvl"){ const v = e.target.value; UI.test.lvl = v==="all" ? "all" : +v; updateTestBody(); return; }
   if(e.target.id==="ts-n"){ UI.test.n = +e.target.value; return; }
   if(e.target.id==="ap-section"){ applySide(e.target.value); return; }
   if(e.target.id==="tm-slot"){ UI.test.manual.slot = e.target.value; updateTestBody(); return; }
