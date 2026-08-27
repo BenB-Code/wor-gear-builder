@@ -154,6 +154,11 @@
   .tab-rename{background:var(--panel2);border:1px solid var(--acc-bd);border-radius:9px;color:var(--ink);
     font:inherit;font-size:14px;padding:6px 10px;width:190px}
   .tab-tools{display:flex;gap:6px;flex-wrap:wrap;align-items:stretch}
+  .key-row{display:inline-flex;align-items:center;gap:9px;flex-wrap:wrap;align-self:flex-start;margin-top:3px;
+    padding:7px 12px;background:var(--panel);border:1px solid var(--border-soft);border-left:3px solid var(--acc);border-radius:9px}
+  .key-input{background:var(--panel);border:1px solid var(--border);border-radius:7px;color:var(--ink);
+    font-family:var(--mono);font-size:12px;padding:5px 10px;flex:0 0 auto;width:13ch}
+  .key-input::placeholder{color:var(--faint);font-family:var(--body)}
   .tsep{width:1px;background:var(--border);margin:2px 4px;flex:0 0 auto}
 
   /* ── Segmented + filtres + toolbar ── */
@@ -627,6 +632,12 @@ const SET_ORDER = Object.fromEntries(SETS.map((s,i)=>[s.n,i])); // SETS est rang
 // Disponibilité machine des sets (filtres du générateur d'échantillon), dérivée des libellés src
 // « GRn · a-b » (Raid équip. n, niveaux a-b) ; T∞ = Raid 1 (gauche) / Raid 3 (droite), niv. 19-24.
 // Donjons d'équip. (niv. 1-13) : T1 dès le niv. 1, T2/T3/T∞ dès le niv. 3, jamais de T0.
+// Taux de drop mesurés au niveau 21 — moyennes, appliquées à tous les niveaux (cf. hint échantillon) :
+// - GR2 : mesures pré-T∞ (~147k runs GR3 21, même table de loot ; GR2 n'a pas reçu les T∞) — T2 38 %, T1 62 %.
+// - GR1/GR3 (post-T∞) : échantillon préliminaire de 40 runs GR3 21 — 7 T∞ / 14 T2 / 47 T1 (sur 68 pièces).
+// - Pièces anciennes (seules à pouvoir porter la sub RR sur arme/torse) : ~0,87 % des drops de raid.
+const RAID_TIER_RATES = { gr1:{4:7/68, 2:14/68, 1:47/68}, gr2:{2:0.38, 1:0.62}, gr3:{4:7/68, 2:14/68, 1:47/68} };
+const ANCIENT_RATE = 0.0087;
 const GD_MIN_BY_TIER = {1:1, 2:3, 3:3, 4:3};
 const SET_AVAIL = Object.fromEntries(SETS.map(s=>{
   const m = /^GR(\d) · (\d+)-(\d+)$/.exec(s.src||"");
@@ -768,6 +779,7 @@ fr:{
   tip_fsub:a=>"ne garder que les règles dont la liste de subs contient "+a,
   k_sets:"Sets", k_mains:"Main(s)", k_subs:"Subs", k_req:"Requis", k_roles:"Rôles",
   flt_sum:"Recherche &amp; filtres", lbl_set:"Set",
+  lbl_gamekey:"Clé in-game", ph_gamekey:"ex. AB12CD34", b_copykey:"copier",
   tip_drag:"glisser pour réordonner", tip_entered:"saisie en jeu", aria_entered:"règle saisie en jeu",
   warn_unplayable:"requis &gt; liste — injouable", warn_eff:n=>"requis effectif "+n+" (★ obligatoires)",
   st_ess:"essentiel", st_pool:"dans le pool", st_off:"hors pool",
@@ -808,10 +820,11 @@ fr:{
   no_side_cov:"Aucun set de ce côté n'est couvert.",
   uncov_sum:n=>`Sets non couverts (${n}) — 100 % recyclés par cet onglet`, uncov_none:"aucun",
   hint_scope:n=>`<ul>
-    <li>Scope : <b>${n}</b> set(s).</li>
-    <li>Tirage uniforme : set, puis slot de l'ensemble, puis main légal du slot, puis 4 subs distincts (main exclu).</li>
-    <li>Les vraies fréquences de drop du jeu ne sont pas connues : c'est une hypothèse affichée, pas une vérité.</li>
-    <li>Les taux d'apparition des équipements anciens ne sont pas calculés, la donnée n'étant pas connue (principalement pour l'apparition de la sub RR sur le torse et l'arme).</li>
+    <li>Scope : <b>${n}</b> set(s). Tirage : set, puis slot de l'ensemble, puis main légal du slot, puis 4 subs distincts (main exclu).</li>
+    <li>En <b>Gear Raid</b>, le tier est tiré selon des taux théoriques mesurés au niveau 21 (★) et appliqués à tous les niveaux — Raids 1 &amp; 3 : ≈ 10 % T∞ · 21 % T2 · 69 % T1 · Raid 2 : ≈ 38 % T2 · 62 % T1. Ce sont des moyennes : l'échantillon fluctue autour.</li>
+    <li>Les <b>pièces anciennes</b> (≈ 0,87 % des drops de raid) sont les seules à pouvoir porter la sub RR sur arme/torse — simulé en mode raid.</li>
+    <li>Donjons, niveaux avec T0 et mode « Tiers &amp; ensemble » : tirage uniforme, faute de données.</li>
+    <li>Les fréquences fines du jeu restent inconnues : hypothèses affichées, pas des vérités.</li>
   </ul>`,
   res_kept:(k,n)=>`${k} gardée(s) / ${n} — `,
   btn_gen:"Générer", empty_sample:"Choisis un scope puis génère un échantillon.",
@@ -895,6 +908,7 @@ en:{
   tip_fsub:a=>"only keep rules whose sub list includes "+a,
   k_sets:"Sets", k_mains:"Main(s)", k_subs:"Subs", k_req:"Required", k_roles:"Roles",
   flt_sum:"Search &amp; filters", lbl_set:"Set",
+  lbl_gamekey:"In-game key", ph_gamekey:"e.g. AB12CD34", b_copykey:"copy",
   tip_drag:"drag to reorder", tip_entered:"entered in game", aria_entered:"rule entered in game",
   warn_unplayable:"required &gt; list — unplayable", warn_eff:n=>"effective required "+n+" (★ mandatory)",
   st_ess:"essential", st_pool:"in the pool", st_off:"off the pool",
@@ -935,10 +949,11 @@ en:{
   no_side_cov:"No set on this side is covered.",
   uncov_sum:n=>`Uncovered sets (${n}) — 100% recycled by this tab`, uncov_none:"none",
   hint_scope:n=>`<ul>
-    <li>Scope: <b>${n}</b> set(s).</li>
-    <li>Uniform draw: set, then a slot of that set size, then a legal main for the slot, then 4 distinct subs (main excluded).</li>
-    <li>The game's real drop rates are unknown: this is a stated assumption, not a truth.</li>
-    <li>Ancient gear appearance rates are not computed, as the data is unknown (mainly the RR sub showing up on armor and weapon).</li>
+    <li>Scope: <b>${n}</b> set(s). Draw: set, then a slot of that set size, then a legal main for the slot, then 4 distinct subs (main excluded).</li>
+    <li>In <b>Gear Raids</b>, the tier is drawn from theoretical rates measured at level 21 (★) and applied to every level — Raids 1 &amp; 3: ≈ 10% T∞ · 21% T2 · 69% T1 · Raid 2: ≈ 38% T2 · 62% T1. These are averages: samples fluctuate around them.</li>
+    <li><b>Ancient pieces</b> (≈ 0.87% of raid drops) are the only ones that can carry the RR sub on weapon/armor — simulated in raid mode.</li>
+    <li>Dungeons, levels with T0 and the "Tiers &amp; set size" mode: uniform draw, for lack of data.</li>
+    <li>The game's fine-grained frequencies remain unknown: stated assumptions, not truths.</li>
   </ul>`,
   res_kept:(k,n)=>`${k} kept / ${n} — `,
   btn_gen:"Generate", empty_sample:"Pick a scope, then generate a sample.",
@@ -989,7 +1004,7 @@ function applyLang(){
 
 const UI = { view:"regles", q:"", fSection:"all", fArch:"all", fMain:new Set(), fSubs:new Set(), fSet:"all", fTier:"all", filtersOpen:false, addingRole:null, open:new Set(),
              setsQ:"", setsTier:"all", pending:null, renaming:null,
-             test:{ mode:"couverture", n:500, tiers:new Set(["4","3","2","1","0"]), sides:new Set(["right","left"]), scopeMode:"source", src:"gr1", lvl:"all",
+             test:{ mode:"couverture", n:500, tiers:new Set(["4","3","2","1","0"]), sides:new Set(["right","left"]), scopeMode:"source", src:"gr1", lvl:21,
                     sample:[], openPieces:new Set(), filter:"all", consOpen:false,
                     manual:{ slot:"bracelet", set:"Infernal Roar", main:"ATK%", subs:[] } } };
 
@@ -1011,7 +1026,7 @@ function sortStats(arr){ return ALLSTATS.filter(x=>arr.includes(x)); }
 const tierLabel = t => t===4 ? "∞" : t;
 function sortSets(arr){ return [...arr].sort((a,b)=>(SET_ORDER[a]??1e9)-(SET_ORDER[b]??1e9)); }
 function esc(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
-function newTab(name){ const nt = {id:"T"+(tabSeq++), name:name||t("tab_new", tabSeq), rules:[]}; TABS.push(nt); return nt; }
+function newTab(name){ const nt = {id:"T"+(tabSeq++), name:name||t("tab_new", tabSeq), key:"", rules:[]}; TABS.push(nt); return nt; }
 function ensureTab(){ if(!TABS.length) newTab(t("tab_default")); if(!activeTab()) activeTabId = TABS[0].id; }
 function bumpSeqs(){
   for(const t of TABS){ const m = /^T(\d+)$/.exec(t.id); if(m) tabSeq = Math.max(tabSeq, +m[1]+1); }
@@ -1123,6 +1138,7 @@ async function restoreState(){
         TABS = data.tabs.map(t=>({
           id:typeof t.id==="string"?t.id:("T"+(tabSeq++)),
           name:String(t.name||"Onglet").slice(0,40),
+          key:typeof t.key==="string"?t.key.slice(0,60):"",
           rules:Array.isArray(t.rules)?t.rules.map(sanitizeRule).filter(Boolean):[]
         }));
       }
@@ -1274,15 +1290,31 @@ function scopeSets(){
 
   return SETS.filter(s=>UI.test.tiers.has(String(s.t)) && UI.test.sides.has(s.side)).map(s=>s.n);
 }
-function randPiece(sets){
+function randPiece(sets, opts={}){
   for(let guard=0; guard<50; guard++){
-    const set = pick(sets);
+    let set;
+    if(opts.rates){
+      // Tirage du tier selon les taux mesurés (renormalisés sur les tiers présents), puis set uniforme dans le tier.
+      const byTier = {};
+      for(const n of sets){ const t = SETTIER[n]; (byTier[t] = byTier[t] || []).push(n); }
+      const tiers = Object.keys(byTier).map(Number).filter(t=>opts.rates[t]);
+      const total = tiers.reduce((s,t)=>s+opts.rates[t], 0);
+      if(tiers.length && total>0){
+        let r = Math.random()*total, tier = tiers[tiers.length-1];
+        for(const t of tiers){ r -= opts.rates[t]; if(r<=0){ tier = t; break; } }
+        set = pick(byTier[tier]);
+      } else set = pick(sets);
+    } else set = pick(sets);
     const side = SETSIDE[set];
     const slots = SLOTS.filter(s=>s.side===side && CONSTRAINTS[s.key].length);
     if(!slots.length) continue;
     const slot = pick(slots);
     const main = pick(CONSTRAINTS[slot.key]);
-    const rest = ALLSTATS.filter(a=>a!==main);
+    let rest = ALLSTATS.filter(a=>a!==main);
+    // Sub RR sur arme/torse : réservée aux pièces anciennes (~0,87 % des drops de raid) — simulée en mode raids.
+    if(opts.ancientRate!=null && (slot.key==="arme" || slot.key==="torse") && Math.random()>=opts.ancientRate){
+      rest = rest.filter(a=>a!=="RR");
+    }
     const subs = [];
     while(subs.length<4){ const s = pick(rest); if(!subs.includes(s)) subs.push(s); }
     return {slot:slot.key, set, main, subs:sortStats(subs)};
@@ -1298,8 +1330,13 @@ function generateSample(){
   UI.test.sample = [];
   UI.test.openPieces = new Set();
   if(!sets.length) return;
+  // Pondération et pièces anciennes : Gear Raids uniquement. Si du T0 est dans le scope
+  // (bas niveaux), aucune donnée mesurée → tirage uniforme comme pour les donjons.
+  const isRaid = UI.test.scopeMode==="source" && UI.test.src!=="gd";
+  const rates = (isRaid && sets.every(n=>SETTIER[n]!==0)) ? RAID_TIER_RATES[UI.test.src] : null;
+  const opts = { rates, ancientRate: isRaid ? ANCIENT_RATE : null };
   for(let i=0;i<UI.test.n;i++){
-    const p = randPiece(sets);
+    const p = randPiece(sets, opts);
     if(!p) break;
     p.matched = activeTab() ? activeTab().rules.filter(r=>matchRule(r,p)).map(r=>r.id) : [];
     UI.test.sample.push(p);
@@ -1395,6 +1432,11 @@ function tabBar(){
       <button type="button" class="sbtn" id="tab-export">${t("export")}</button>
       <button type="button" class="sbtn" id="tab-share">${t("share")}</button>
     </span>
+    <div class="key-row">
+      <span class="ctl-label">${t("lbl_gamekey")}</span>
+      <input type="text" class="key-input" id="tab-key" maxlength="60" placeholder="${t("ph_gamekey")}" value="${esc((activeTab()||{}).key||"")}">
+      <button type="button" class="sbtn" id="tab-key-copy">${t("b_copykey")}</button>
+    </div>
   </div>`;
 }
 function filtersSummary(){
@@ -1677,7 +1719,7 @@ function samplePanel(){
         <select id="ts-lvl">
           <option value="all">${t("f_alltiers")}</option>
           ${Array.from({length:UI.test.src==="gd"?13:24},(_,i)=>i+1).map(l=>
-            `<option value="${l}"${UI.test.lvl===l?" selected":""}>${l}</option>`).join("")}
+            `<option value="${l}"${UI.test.lvl===l?" selected":""}>${l===21&&UI.test.src!=="gd"?"21 ★":l}</option>`).join("")}
         </select>
       </div>`:`
       <div class="ctl">${ctlLabel("tier",t("lbl_tiers"))}
@@ -1809,6 +1851,16 @@ function refFR(){
     </div>
 
     <details class="panel">
+      <summary class="p-sum">Taux de drop mesurés (Gear Raids, niveau 21)</summary>
+      <ul class="clean">
+        <li><b>Raids 1 &amp; 3</b> (post-T∞) : ≈ <b>10,3 % T∞ · 20,6 % T2 · 69,1 % T1</b> — échantillon préliminaire de 40 runs GR3 niv. 21 (7 / 14 / 47 sur 68 pièces), à affiner avec le temps.</li>
+        <li><b>Raid 2</b> (sans T∞) : ≈ <b>38 % T2 · 62 % T1</b> — mesures pré-T∞ sur ~147 000 runs GR3 niv. 21 (même table de loot).</li>
+        <li><b>Pièces anciennes</b> : ≈ <b>0,87 %</b> des drops de raid — seules à pouvoir porter la sub RR sur arme/torse.</li>
+        <li>Ce sont des moyennes mesurées au niveau 21, appliquées telles quelles à tous les niveaux par le générateur d'échantillon (donjons et niveaux à T0 : uniforme, faute de données).</li>
+      </ul>
+    </details>
+
+    <details class="panel">
       <summary class="p-sum">Lexique</summary>
       <div class="tbl-wrap rtable"><table>
         <thead><tr><th>Terme</th><th>Signification</th></tr></thead>
@@ -1937,6 +1989,16 @@ function refEN(){
       <div class="stat-card"><div class="num">3</div><div class="lbl">exclusive mains: CC bangle · AS amulet · RR ring</div></div>
       <div class="stat-card"><div class="num">11</div><div class="lbl">attributes — 1 main + 4 distinct subs per piece, never the same stat twice</div></div>
     </div>
+
+    <details class="panel">
+      <summary class="p-sum">Measured drop rates (Gear Raids, level 21)</summary>
+      <ul class="clean">
+        <li><b>Raids 1 &amp; 3</b> (post-T∞): ≈ <b>10.3% T∞ · 20.6% T2 · 69.1% T1</b> — preliminary sample of 40 GR3 lv. 21 runs (7 / 14 / 47 out of 68 pieces), to be refined over time.</li>
+        <li><b>Raid 2</b> (no T∞): ≈ <b>38% T2 · 62% T1</b> — pre-T∞ measurements over ~147,000 GR3 lv. 21 runs (same loot table).</li>
+        <li><b>Ancient pieces</b>: ≈ <b>0.87%</b> of raid drops — the only ones that can carry the RR sub on weapon/armor.</li>
+        <li>These are averages measured at level 21, applied as-is to every level by the sample generator (dungeons and T0 levels: uniform, for lack of data).</li>
+      </ul>
+    </details>
 
     <details class="panel">
       <summary class="p-sum">Glossary</summary>
@@ -2186,8 +2248,8 @@ async function inflateText(b64){ const buf = await new Response(new Blob([bytesF
 const STAT_CODE = ["ATK","ATK%","CC","CD","HP","HP%","DEF","DEF%","RR","HE","AS"];
 const statMask = arr => arr.reduce((m,s)=>{ const i = STAT_CODE.indexOf(s); return i<0 ? m : m|(1<<i); }, 0);
 const statUnmask = m => STAT_CODE.filter((_,i)=>m&(1<<i));
-function packTab(tab){ return {v:2, n:tab.name, r:tab.rules.map(r=>[r.name, r.sets, statMask(r.mains), statMask(r.pool), statMask(r.ess), r.req, (r.arch&&r.arch.length)?r.arch:0])}; }
-function unpackTab(o){ return {name:o.n, rules:(Array.isArray(o.r)?o.r:[]).map(x=>({name:x[0], sets:Array.isArray(x[1])?x[1]:[], mains:statUnmask(+x[2]||0), pool:statUnmask(+x[3]||0), ess:statUnmask(+x[4]||0), req:+x[5]||1, arch:Array.isArray(x[6])?x[6]:[]}))}; }
+function packTab(tab){ return {v:2, n:tab.name, ...(tab.key?{k:tab.key}:{}), r:tab.rules.map(r=>[r.name, r.sets, statMask(r.mains), statMask(r.pool), statMask(r.ess), r.req, (r.arch&&r.arch.length)?r.arch:0])}; }
+function unpackTab(o){ return {name:o.n, key:typeof o.k==="string"?o.k:"", rules:(Array.isArray(o.r)?o.r:[]).map(x=>({name:x[0], sets:Array.isArray(x[1])?x[1]:[], mains:statUnmask(+x[2]||0), pool:statUnmask(+x[3]||0), ess:statUnmask(+x[4]||0), req:+x[5]||1, arch:Array.isArray(x[6])?x[6]:[]}))}; }
 async function encodeShare(tab){
   try{ return "2." + await deflateText(JSON.stringify(packTab(tab))); }
   catch(_){ return b64uEncode(JSON.stringify(exportTabObj(tab))); } // navigateur sans CompressionStream : lien long v1
@@ -2198,7 +2260,7 @@ async function decodeShare(payload){
 }
 function exportTabObj(tab){
   return { format:"wor-tri-rules", version:1, exported:new Date().toISOString().slice(0,10),
-           tab:{ name:tab.name, rules:tab.rules.map(r=>{ const {id, ...rest} = r; return rest; }) } };
+           tab:{ name:tab.name, ...(tab.key?{key:tab.key}:{}), rules:tab.rules.map(r=>{ const {id, ...rest} = r; return rest; }) } };
 }
 function importRulesText(text){
   let data; try{ data = JSON.parse(text); }catch(e){ return {ok:false, err:t("err_json")}; }
@@ -2209,6 +2271,7 @@ function importRulesText(text){
   const name = TABS.some(x=>x.name===base) ? (base+t("import_sfx")).slice(0,40) : base;
   bumpSeqs(); // id d'onglet garanti unique même si le compteur a dérivé
   const nt = newTab(name);
+  if(typeof tb.key==="string") nt.key = tb.key.slice(0,60);
   for(const r of tb.rules){
     const rule = sanitizeRule({...(r && typeof r==="object" ? r : {}), id:"TMP"});
     if(rule && rule.sets.length && rule.pool.length){ rule.id = nextRuleId(nt, rule.section); nt.rules.push(rule); }
@@ -2440,6 +2503,7 @@ document.addEventListener("click", e=>{
   if(el.closest("#tab-dup")){
     const src = activeTab(); if(!src) return;
     const nt = newTab(src.name+t("copy_sfx"));
+    nt.key = src.key||"";
     nt.rules = JSON.parse(JSON.stringify(src.rules)); // numérotation par onglet : les ids se conservent tels quels
     activeTabId = nt.id; UI.open.clear();
     refreshTabBar(); updateRuleList(); updateSidebar(); scheduleSave();
@@ -2578,6 +2642,13 @@ document.addEventListener("click", e=>{
 
   // import / export d'onglets
   if(el.closest("#import-btn")){ const fi = document.getElementById("import-file"); if(fi && fi.click) fi.click(); return; }
+  const kcp = el.closest("#tab-key-copy");
+  if(kcp){
+    const tab = activeTab();
+    if(tab && tab.key) doCopy(tab.key, kcp);
+    else { const inp = document.getElementById("tab-key"); if(inp) inp.focus(); }
+    return;
+  }
   const tex = el.closest("#tab-export");
   if(tex){
     const tab = activeTab(); if(!tab) return;
@@ -2749,6 +2820,7 @@ document.addEventListener("change", e=>{
 document.addEventListener("input", e=>{
   if(e.target.id === "rule-q"){ UI.q = e.target.value; updateRuleList(); }
   if(e.target.id === "sets-q"){ UI.setsQ = e.target.value; updateSetsTables(); }
+  if(e.target.id === "tab-key"){ const tab = activeTab(); if(tab){ tab.key = e.target.value.slice(0,60); scheduleSave(); } }
 });
 document.addEventListener("keydown", e=>{
   if(e.target && e.target.id==="arch-input"){
