@@ -815,7 +815,7 @@ fr:{
   </ul>`,
   th_rule:"Règle", th_kept:"Pièces gardées", th_pct:"% de ses sets", th_read:"Lecture",
   diag_ok:"ok", diag_none:"ne garde rien — sets, mains ou seuil incompatibles : à corriger ou à supprimer",
-  diag_dup:"doublon — tout ce qu'elle garde l'est déjà par d'autres règles",
+  diag_dup:"doublon — tout ce qu'elle garde l'est déjà par :",
   cov_rate_h:"Taux de conservation par set", gh_l:"2 pièces", gh_r:"3 pièces",
   no_side_cov:"Aucun set de ce côté n'est couvert.",
   uncov_sum:n=>`Sets non couverts (${n}) — 100 % recyclés par cet onglet`, uncov_none:"aucun",
@@ -944,7 +944,7 @@ en:{
   </ul>`,
   th_rule:"Rule", th_kept:"Pieces kept", th_pct:"% of its sets", th_read:"Reading",
   diag_ok:"ok", diag_none:"keeps nothing — incompatible sets, mains or threshold: fix or delete",
-  diag_dup:"duplicate — everything it keeps is already kept by other rules",
+  diag_dup:"duplicate — everything it keeps is already kept by:",
   cov_rate_h:"Keep rate per set", gh_l:"2-piece", gh_r:"3-piece",
   no_side_cov:"No set on this side is covered.",
   uncov_sum:n=>`Uncovered sets (${n}) — 100% recycled by this tab`, uncov_none:"none",
@@ -1249,8 +1249,8 @@ function computeCoverage(){
   const tab = activeTab();
   const rules = tab ? tab.rules : [];
   let total=0, kept=0, multi=0;
-  const perRule = {}, uniq = {};
-  rules.forEach(r=>{ perRule[r.id]=0; uniq[r.id]=0; });
+  const perRule = {}, uniq = {}, overlap = {};
+  rules.forEach(r=>{ perRule[r.id]=0; uniq[r.id]=0; overlap[r.id]={}; });
   const perSet = {};
   SETS.forEach(s=>{ perSet[s.n]={total:0,kept:0}; });
   for(const slot of SLOTS){
@@ -1264,14 +1264,20 @@ function computeCoverage(){
         total += combos.length;
         if(!rel.length) continue;
         for(const subs of combos){
-          let m=0, first=null;
-          for(const r of rel){ if(matchSubs(r, subs, main)){ m++; perRule[r.id]++; if(!first) first=r.id; } }
-          if(m){ kept++; perSet[set.n].kept++; if(m>1) multi++; else uniq[first]++; }
+          const hits = [];
+          for(const r of rel){ if(matchSubs(r, subs, main)){ perRule[r.id]++; hits.push(r.id); } }
+          if(hits.length){
+            kept++; perSet[set.n].kept++;
+            if(hits.length>1){
+              multi++;
+              for(const a of hits) for(const b of hits) if(a!==b) overlap[a][b] = (overlap[a][b]||0)+1;
+            } else uniq[hits[0]]++;
+          }
         }
       }
     }
   }
-  return {total, kept, multi, perRule, uniq, perSet, rules};
+  return {total, kept, multi, perRule, uniq, overlap, perSet, rules};
 }
 
 /* ══════════════ GÉNÉRATION ALÉATOIRE ══════════════ */
@@ -1673,7 +1679,12 @@ function coveragePanel(){
           const den = r.sets.reduce((acc,sn)=>acc+(c.perSet[sn]?c.perSet[sn].total:0),0);
           let diag = `<span class="ok-txt">${t("diag_ok")}</span>`;
           if(n===0) diag = `<span class="warn-txt">${t("diag_none")}</span>`;
-          else if(u===0) diag = `<span class="warn-txt">${t("diag_dup")}</span>`;
+          else if(u===0){
+            // les règles recouvrantes, triées par nombre de profils partagés décroissant
+            const partners = Object.entries(c.overlap[r.id]||{}).sort((a,b)=>b[1]-a[1])
+              .map(([id])=>{ const pr = getRule(id); return `<button type="button" class="ruleref" data-goto="${id}" title="${esc(pr?pr.name:"")}">${id}</button>`; });
+            diag = `<span class="warn-txt">${t("diag_dup")}</span> ${partners.join(" ")}`;
+          }
           return `<tr><td data-th="${t("th_rule")}" class="td-name"><b>${r.id}</b> ${esc(r.name)}</td><td data-th="${t("th_kept")}" class="td-mid">${n.toLocaleString(t("date_locale"))}</td><td data-th="${t("th_pct")}" class="td-mid">${den?pct(n/den):"—"}</td><td data-th="${t("th_read")}">${diag}</td></tr>`;
         }).join("")}
       </tbody></table></div>
