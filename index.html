@@ -764,7 +764,7 @@ fr:{
   lbl_search:"Recherche", lbl_side:"Ensemble", lbl_role:"Rôle", lbl_main:"Main", lbl_subs:"Subs",
   lbl_tab:"Onglet", lbl_tier:"Tier", lbl_mode:"Mode", lbl_n:"Pièces", lbl_tiers:"Tiers", lbl_side2:"Ensemble",
   lbl_src:"Source", lbl_lvl:"Niveau", src_gr:n=>"Raid "+n, src_gd:"Donjon",
-  ts_scope:"Scope", ts_by_tiers:"Tiers & ensemble", ts_by_src:"Raids & donjons",
+  ts_scope:"Scope", ts_by_tiers:"Tiers & ensemble", ts_by_src:"Raids & donjons", lbl_bytier:"Par tier",
   lbl_result:"Résultat", lbl_display:"Affichage",
   f_all:"Toutes", f_allroles:"Tous rôles", f_kept:"Gardées", f_rej:"Recyclées", f_alltiers:"Tous",
   ph_rule_q:"Chercher une règle, un set… ( / )", ph_sets_q:"Chercher un set…",
@@ -893,7 +893,7 @@ en:{
   lbl_search:"Search", lbl_side:"Set size", lbl_role:"Role", lbl_main:"Main", lbl_subs:"Subs",
   lbl_tab:"Tab", lbl_tier:"Tier", lbl_mode:"Mode", lbl_n:"Pieces", lbl_tiers:"Tiers", lbl_side2:"Set size",
   lbl_src:"Source", lbl_lvl:"Level", src_gr:n=>"Raid "+n, src_gd:"Dungeon",
-  ts_scope:"Scope", ts_by_tiers:"Tiers & set size", ts_by_src:"Raids & dungeons",
+  ts_scope:"Scope", ts_by_tiers:"Tiers & set size", ts_by_src:"Raids & dungeons", lbl_bytier:"By tier",
   lbl_result:"Result", lbl_display:"Display",
   f_all:"All", f_allroles:"All roles", f_kept:"Kept", f_rej:"Recycled", f_alltiers:"All",
   ph_rule_q:"Search a rule, a set… ( / )", ph_sets_q:"Search a set…",
@@ -1741,6 +1741,13 @@ function samplePanel(){
       <div class="controls">
         <div class="ctl">${ctlLabel("result",t("lbl_result"))}
           <span style="font-family:var(--mono);font-size:13px;padding:5px 0">${t("res_kept", kept, sample.length)}<b style="color:var(--acc)">${(100*kept/sample.length).toFixed(1).replace(".", LANG==="fr"?",":".")} %</b></span>
+        </div>
+        <div class="ctl">${ctlLabel("tier",t("lbl_bytier"))}
+          <span style="display:inline-flex;align-items:center;gap:12px;flex-wrap:wrap;font-family:var(--mono);font-size:12px;padding:5px 0">
+            ${(()=>{ const byTier={}; for(const p of sample){ const tt=SETTIER[p.set]; byTier[tt]=(byTier[tt]||0)+1; }
+              return [4,3,2,1,0].filter(tt=>byTier[tt]).map(tt=>
+                `<span style="white-space:nowrap"><span class="tier-badge b${tt}">T${tierLabel(tt)}</span> <b>${byTier[tt]}</b> <span style="color:var(--faint)">· ${(100*byTier[tt]/sample.length).toFixed(1).replace(".", LANG==="fr"?",":".")} %</span></span>`).join(""); })()}
+          </span>
         </div>
         <div class="ctl">${ctlLabel("eye",t("lbl_display"))}
           <div class="fchips">${[["all",t("f_all")],["kept",t("f_kept")],["rej",t("f_rej")]].map(([v,l])=>
