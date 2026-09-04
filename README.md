@@ -61,6 +61,12 @@ liste les règles qui la recouvrent, cliquables.
 
 <div align="center"><img src="docs/captures/couverture.png" width="850" alt="Couverture exhaustive"></div>
 
+Un accordéon **« Chevauchements entre règles »** détaille chaque paire qui garde des pièces
+en commun : combien, et ce que ça représente en % de chacune des deux règles — de quoi
+repérer les recouvrements avant qu'ils ne deviennent des doublons.
+
+<div align="center"><img src="docs/captures/chevauchements.png" width="850" alt="Chevauchements entre règles"></div>
+
 ### 🎲 Simulation de farm aux taux mesurés
 
 Génère des échantillons de pièces par **raid ou donjon d'équipement et par niveau**.
@@ -68,6 +74,19 @@ En Gear Raid, le tirage est pondéré par des taux mesurés en jeu (voir tableau
 pièces anciennes comprises — et le résultat affiche la répartition par tier obtenue.
 
 <div align="center"><img src="docs/captures/echantillon.png" width="850" alt="Échantillon pondéré par les taux de drop"></div>
+
+### 🔍 Pièce manuelle — le verdict d'un drop réel
+
+Un drop douteux en main ? Décris-le dans le **stepper** (slot → main → subs → set, sélection
+par pastilles avec filtre par tier) et l'outil rend son verdict : **gardée par telle règle**
+ou **recyclée**. En prime, dès 2-3 subs saisies :
+
+- **Règles qui couvrent ces subs** — celles qui garderaient la pièce si son set était le bon,
+  avec le détail de ce qui manque encore (sub du pool, ★ obligatoire) ;
+- **Règles proches** — celles qui la ratent de peu, et **pourquoi** exactement (chaque
+  critère en échec est listé, la règle est cliquable).
+
+<div align="center"><img src="docs/captures/piece-manuelle.png" width="850" alt="Testeur de pièce manuelle"></div>
 
 ### 📚 Les 48 sets & leurs transformations
 
@@ -104,8 +123,7 @@ mesurés avec leur provenance.
 - Thème clair / sombre, 5 accents de couleur, densité confort / compacte ;
 - Suivi « saisie en jeu » : coche chaque règle recopiée, la barre de
   progression suit ;
-- Testeur de **pièce manuelle** : décris un drop réel, l'outil dit quelle
-  règle le garde et pourquoi ;
+- **Clé d'import in-game** par onglet, copiable en un clic depuis la vue Règles ;
 - Plusieurs onglets = plusieurs jeux de règles indépendants.
 
 <br clear="right">

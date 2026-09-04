@@ -27,6 +27,13 @@ parmi les pièces des sets qu'elle cible, et une **Lecture** :
 > 💡 Une règle quad très stricte qui ne garde que quelques profils sur des milliers, c'est
 > **voulu**, pas cassé. Les deux vrais signaux d'alerte sont « ne garde rien » et « doublon ».
 
+L'accordéon **« Chevauchements entre règles »** liste chaque paire de règles qui gardent
+des pièces en commun : le nombre de profils partagés, et ce que ça pèse en % de chacune des
+deux règles. Un chevauchement n'est pas un problème en soi — il le devient quand il atteint
+100 % de l'une des deux (doublon).
+
+<div align="center"><img src="captures/chevauchements.png" width="850" alt="Chevauchements entre règles"></div>
+
 Plus bas : le **taux de conservation par set** (barres, dans l'ordre in-game) et
 l'accordéon des **sets non couverts** — tout ce qui part intégralement au recyclage.
 
@@ -53,9 +60,21 @@ règle (★ manquantes, main non accepté…).
 
 <div align="center"><img src="captures/piece-manuelle.png" width="850" alt="Pièce manuelle"></div>
 
-Tu viens de looter une pièce et tu hésites à la garder ? Décris-la (slot, set, main,
-4 subs) : le verdict tombe, avec pour chaque règle proche la raison exacte du rejet —
-parfait pour découvrir qu'une règle mériterait un ajustement.
+Tu viens de looter une pièce et tu hésites à la garder ? Décris-la dans le **stepper** —
+quatre étapes (slot → main → subs → set), sélection par pastilles, filtre des sets par tier,
+chaque étape repliée affiche son résumé. Dès 4 subs et un set choisis, le **verdict** tombe :
+gardée par telle règle, ou recyclée.
+
+Deux panneaux accompagnent le verdict :
+
+- **Règles qui couvrent ces subs** *(dès 2 subs saisies)* — les règles compatibles avec ce
+  slot, ce main et ces subs, qui garderaient la pièce **si son set était l'un des leurs** ;
+  pour chacune, ce qui manque encore est détaillé (sub du pool à compléter, ★ obligatoire
+  absente). C'est ainsi qu'une pièce peut être « recyclée » tout en ayant ses subs couvertes :
+  seul son set ne fait partie d'aucune règle ;
+- **Règles proches** — celles qui ratent la pièce de peu, avec **chaque raison d'échec**
+  listée (★ manquante, main refusé, requis non atteint…). Les identifiants de règles sont
+  cliquables partout — parfait pour découvrir qu'une règle mériterait un ajustement.
 
 ## Contraintes de génération
 
