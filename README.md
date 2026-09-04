@@ -117,8 +117,9 @@ Mesures au **niveau 21**, appliquées à tous les niveaux par le générateur d'
 
 | Source | T∞ | T2 | T1 | Provenance |
 |---|---|---|---|---|
-| Gear Raids 1 & 3 (post-T∞) | ≈ 10,3 % | ≈ 20,6 % | ≈ 69,1 % | 40 runs GR3 niv. 21 — préliminaire, à affiner |
-| Gear Raid 2 (sans T∞) | — | ≈ 38 % | ≈ 62 % | ~147 000 runs GR3 niv. 21, pré-T∞ (même table) |
+| Gear Raid 1 (post-T∞) | ≈ 16,8 % | ≈ 17,4 % | ≈ 65,8 % | 710 runs GR1 niv. 21 cumulés (1 089 pièces) |
+| Gear Raid 3 (post-T∞) | ≈ 9,6 % | ≈ 18,2 % | ≈ 72,2 % | 279 runs GR3 niv. 21 cumulés (418 pièces) |
+| Gear Raid 2 (sans T∞) | — | ≈ 38 % | ≈ 62 % | ~147 000 runs GR3 niv. 21, pré-T∞ |
 
 **Pièces anciennes** : ≈ 0,87 % des drops de raid — les seules à pouvoir porter la sub RR
 sur arme et torse ; simulées par le générateur.

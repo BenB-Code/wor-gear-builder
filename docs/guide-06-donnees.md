@@ -24,7 +24,8 @@ Le premier bloc de la page documente les taux qui alimentent le
 
 | Source | T∞ | T2 | T1 | Provenance |
 |---|---|---|---|---|
-| Gear Raids 1 & 3 (post-T∞) | ≈ 10,3 % | ≈ 20,6 % | ≈ 69,1 % | 40 runs GR3 niv. 21 — préliminaire |
+| Gear Raid 1 (post-T∞) | ≈ 16,8 % | ≈ 17,4 % | ≈ 65,8 % | 710 runs GR1 niv. 21 cumulés (1 089 pièces) |
+| Gear Raid 3 (post-T∞) | ≈ 9,6 % | ≈ 18,2 % | ≈ 72,2 % | 279 runs GR3 niv. 21 cumulés (418 pièces) |
 | Gear Raid 2 (sans T∞) | — | ≈ 38 % | ≈ 62 % | ~147 000 runs GR3 niv. 21, pré-T∞ |
 
 Plus les **pièces anciennes** : ≈ 0,87 % des drops de raid — les seules à pouvoir porter
@@ -36,7 +37,9 @@ de données.
 
 ## Contribuer des données 📊
 
-L'échantillon post-T∞ est encore petit (40 runs). Si tu farmes en notant tes drops :
+Les échantillons post-T∞ grossissent (989 runs cumulés à ce jour) mais tout relevé
+supplémentaire affine les taux — et le Raid 2 post-T∞ n'a encore aucune mesure. Si tu
+farmes en notant tes drops :
 
 1. note **la source et le niveau** (ex. GR3 niv. 21), le **nombre de runs**, et le compte
    de pièces par **tier** (+ les pièces anciennes si tu les repères) ;

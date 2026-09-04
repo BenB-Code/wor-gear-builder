@@ -168,6 +168,7 @@
   .seg button:hover{color:var(--ink)}
   .seg button.on{background:var(--acc-dim);color:var(--acc)}
   .seg button:focus-visible{outline:2px solid var(--acc);outline-offset:-2px}
+  .seg.wrap{flex-wrap:wrap}
   .controls{display:flex;flex-wrap:wrap;align-items:flex-end;gap:12px 18px;margin:16px 0 10px;background:var(--panel);border:1px solid var(--border-soft);border-radius:12px;padding:11px 14px}
   .controls-acc{margin:14px 0 10px}
   .controls-acc>summary.p-sum{cursor:pointer;list-style:none;display:inline-flex;align-items:center;gap:8px;
@@ -315,6 +316,24 @@
   .p-body{display:none;border-top:1px dashed var(--border-soft);padding:9px 11px;font-size:12px;color:var(--muted)}
   .piece.open .p-body{display:block}
   .p-body .xr{margin:3px 0}
+  .xr-line{padding-left:16px;position:relative;color:var(--muted)}
+  .xr-line::before{content:"·";position:absolute;left:6px;color:var(--faint)}
+  /* ── Pièce manuelle : stepper ── */
+  .tm-step{border:1px solid var(--border-soft);border-radius:9px;background:var(--panel2);margin:7px 0;overflow:hidden}
+  .tm-step .step-head{display:flex;align-items:center;gap:10px;width:100%;appearance:none;background:none;border:none;color:var(--ink);padding:9px 12px;cursor:pointer;text-align:left;font:inherit}
+  .tm-step .step-head:focus-visible{outline:2px solid var(--acc);outline-offset:-2px}
+  .tm-step .step-head .k{font-family:var(--display);font-variant:small-caps;letter-spacing:.04em;font-size:13px;color:var(--faint);min-width:48px;flex:0 0 auto}
+  .tm-step .step-head .v{font-family:var(--mono);font-size:12px;color:var(--acc);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+  .tm-step .step-head .chev{margin-left:auto;color:var(--faint);font-size:11px;flex:0 0 auto;transition:transform .15s}
+  /* un bouton d'action dans l'en-tête prend le margin auto — sinon deux autos se partagent
+     l'espace et le bouton flotte au milieu ; le chevron se recale juste après */
+  .tm-step .step-head .sbtn{margin-left:auto;flex:0 0 auto}
+  .tm-step .step-head .sbtn ~ .chev{margin-left:0}
+  .tm-step.open .step-head .chev{transform:rotate(180deg)}
+  .tm-step .step-body{display:none;padding:2px 12px 12px}
+  .tm-step.open .step-body{display:block}
+  .tm-stats,.tm-sets{display:flex;flex-wrap:wrap;gap:5px}
+  .tm-stats .chip,.tm-sets .chip{margin:0}
   .p-body .xr b{font-family:var(--mono);font-weight:600;color:var(--ink)}
   .slot-row{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;padding:7px 0;border-bottom:1px dashed var(--border-soft)}
   .slot-row:last-child{border-bottom:none}
@@ -422,6 +441,13 @@
     .strip{grid-template-columns:1fr 1fr;gap:8px}
     .stat-card{padding:10px 12px}
     .stat-card .num{font-size:20px}
+    /* pièce manuelle : grilles uniformes (pas de chips orphelines en fin de ligne) */
+    .tm-stats{display:grid;grid-template-columns:repeat(6,1fr)}
+    .tm-stats .chip{display:inline-flex;align-items:center;justify-content:center;padding:7px 2px}
+    .tm-sets{display:grid;grid-template-columns:repeat(2,1fr)}
+    .tm-sets .chip{display:inline-flex;align-items:center;justify-content:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .seg.wrap{display:grid;grid-template-columns:repeat(5,1fr)}
+    .seg.wrap button{padding:6px 2px;font-size:12.5px}
   }
 
   /* ── Impression ── */
@@ -633,10 +659,13 @@ const SET_ORDER = Object.fromEntries(SETS.map((s,i)=>[s.n,i])); // SETS est rang
 // « GRn · a-b » (Raid équip. n, niveaux a-b) ; T∞ = Raid 1 (gauche) / Raid 3 (droite), niv. 19-24.
 // Donjons d'équip. (niv. 1-13) : T1 dès le niv. 1, T2/T3/T∞ dès le niv. 3, jamais de T0.
 // Taux de drop mesurés au niveau 21 — moyennes, appliquées à tous les niveaux (cf. hint échantillon) :
-// - GR2 : mesures pré-T∞ (~147k runs GR3 21, même table de loot ; GR2 n'a pas reçu les T∞) — T2 38 %, T1 62 %.
-// - GR1/GR3 (post-T∞) : échantillon préliminaire de 40 runs GR3 21 — 7 T∞ / 14 T2 / 47 T1 (sur 68 pièces).
-// - Pièces anciennes (seules à pouvoir porter la sub RR sur arme/torse) : ~0,87 % des drops de raid.
-const RAID_TIER_RATES = { gr1:{4:7/68, 2:14/68, 1:47/68}, gr2:{2:0.38, 1:0.62}, gr3:{4:7/68, 2:14/68, 1:47/68} };
+// - GR1 (post-T∞) : 710 runs GR1 21 cumulés (340+370) — 183 T∞ / 189 T2 / 717 T1 (1089 pièces).
+//   Nettement plus de T∞ que GR3 : les tables GR1 et GR3 diffèrent, contrairement à l'hypothèse initiale.
+// - GR3 (post-T∞) : 279 runs GR3 21 cumulés (40+119+120) — 40 T∞ / 76 T2 / 302 T1 (418 pièces).
+// - GR2 : mesures pré-T∞ (~147k runs GR3 21 ; GR2 n'a pas reçu les T∞) — T2 38 %, T1 62 %.
+// - Pièces anciennes (seules à pouvoir porter la sub RR sur arme/torse) : ~0,87 % des drops de raid
+//   (mesure historique ~147k runs ; 8/2032 observées depuis, compatible).
+const RAID_TIER_RATES = { gr1:{4:183/1089, 2:189/1089, 1:717/1089}, gr2:{2:0.38, 1:0.62}, gr3:{4:40/418, 2:76/418, 1:302/418} };
 const ANCIENT_RATE = 0.0087;
 const GD_MIN_BY_TIER = {1:1, 2:3, 3:3, 4:3};
 const SET_AVAIL = Object.fromEntries(SETS.map(s=>{
@@ -819,9 +848,19 @@ fr:{
   cov_rate_h:"Taux de conservation par set", gh_l:"2 pièces", gh_r:"3 pièces",
   no_side_cov:"Aucun set de ce côté n'est couvert.",
   uncov_sum:n=>`Sets non couverts (${n}) — 100 % recyclés par cet onglet`, uncov_none:"aucun",
+  ov_sum:n=>`Chevauchements entre règles (${n} paire${n>1?"s":""})`,
+  ov_hint:`Profils gardés par les deux règles à la fois. Un chevauchement n'est pas un problème en soi — il le devient quand il atteint 100 % de l'une des deux (doublon).`,
+  ov_row:(n,pa,a,pb,b)=>`${n} pièce(s) gardée(s) par les deux règles à la fois — soit ${pa} % de tout ce que garde ${a}, et ${pb} % de ce que garde ${b}`,
+  ov_none:"Aucun chevauchement — chaque règle garde des pièces que les autres ignorent.",
+  m_rulescov_part:k=>`Règles encore compatibles avec ces ${k} subs (pour ce slot et ce main)`,
+  m_rulescov_full:"Règles qui couvrent ces subs (pour ce slot et ce main)",
+  m_rulescov_none:"aucune — ces subs ne rentrent dans aucune règle pour ce slot/main",
+  m_rulescov_hint:"Informatif : ces règles gardent une pièce portant ces subs à condition que son set soit l'un des sets indiqués.",
+  rc_miss_pre:"manque :", rc_miss_more:(n,l)=>`${n} sub${n>1?"s":""} parmi ${l}`, rc_ok:"subs au complet",
+  m_near_sub:"Règles proches — ce qui leur manque pour garder cette pièce :",
   hint_scope:n=>`<ul>
     <li>Scope : <b>${n}</b> set(s). Tirage : set, puis slot de l'ensemble, puis main légal du slot, puis 4 subs distincts (main exclu).</li>
-    <li>En <b>Gear Raid</b>, le tier est tiré selon des taux théoriques mesurés au niveau 21 (★) et appliqués à tous les niveaux — Raids 1 &amp; 3 : ≈ 10 % T∞ · 21 % T2 · 69 % T1 · Raid 2 : ≈ 38 % T2 · 62 % T1. Ce sont des moyennes : l'échantillon fluctue autour.</li>
+    <li>En <b>Gear Raid</b>, le tier est tiré selon des taux théoriques mesurés au niveau 21 (★) et appliqués à tous les niveaux — Raid 1 : ≈ 16,8 % T∞ · 17,4 % T2 · 65,8 % T1 · Raid 3 : ≈ 10 % T∞ · 18 % T2 · 72 % T1 · Raid 2 : ≈ 38 % T2 · 62 % T1. Ce sont des moyennes : l'échantillon fluctue autour.</li>
     <li>Les <b>pièces anciennes</b> (≈ 0,87 % des drops de raid) sont les seules à pouvoir porter la sub RR sur arme/torse — simulé en mode raid.</li>
     <li>Donjons, niveaux avec T0 et mode « Tiers &amp; ensemble » : tirage uniforme, faute de données.</li>
     <li>Les fréquences fines du jeu restent inconnues : hypothèses affichées, pas des vérités.</li>
@@ -830,10 +869,10 @@ fr:{
   btn_gen:"Générer", empty_sample:"Choisis un scope puis génère un échantillon.",
   v_ok:names=>"✓ Gardée par "+names, v_rej:"✗ Recyclée",
   xr_off:n=>`${n} règle(s) ne ciblent pas ce set`, xr_close:"aucune autre règle proche", xr_none:"aucune règle dans l'onglet",
-  why_main:(m,l)=>`${m} en main — attendu : ${l}`, why_ess:l=>`★ manquant(s) : ${l} — les ★ sont obligatoires`,
-  why_count:(k,r)=>`${k}/${r} subs de la liste (★ incluses)`,
+  why_main:(m,l)=>`${m} en main — attendu : ${l}`, why_ess:l=>`★ manquante(s) sur la pièce : ${l}`,
+  why_count:(k,r,have,miss)=>`${k}/${r} subs de la liste — la pièce a : ${have||"aucun"} · compteraient aussi : ${miss||"—"}`,
   tip_mainattr:"attribut principal",
-  m_slot:"Slot", m_set:"Set", m_main:"Main",
+  m_slot:"Slot", m_set:"Set", m_main:"Main", m_subs_k:"Subs",
   m_subs:"Subs — clique pour en sélectionner 4 (le main est exclu)",
   m_pick:n=>`Sélectionne 4 subs (${n}/4) pour obtenir le verdict.`,
   m_kept:names=>"✓ Gardée par "+names,
@@ -948,9 +987,19 @@ en:{
   cov_rate_h:"Keep rate per set", gh_l:"2-piece", gh_r:"3-piece",
   no_side_cov:"No set on this side is covered.",
   uncov_sum:n=>`Uncovered sets (${n}) — 100% recycled by this tab`, uncov_none:"none",
+  ov_sum:n=>`Rule overlaps (${n} pair${n>1?"s":""})`,
+  ov_hint:`Profiles kept by both rules at once. An overlap is not a problem per se — it becomes one when it reaches 100% of either rule (duplicate).`,
+  ov_row:(n,pa,a,pb,b)=>`${n} piece(s) kept by both rules at once — that's ${pa}% of everything ${a} keeps, and ${pb}% of what ${b} keeps`,
+  ov_none:"No overlap — every rule keeps pieces the others ignore.",
+  m_rulescov_part:k=>`Rules still compatible with these ${k} subs (for this slot and main)`,
+  m_rulescov_full:"Rules covering these subs (for this slot and main)",
+  m_rulescov_none:"none — these subs fit no rule for this slot/main",
+  m_rulescov_hint:"Informational: these rules keep a piece with these subs provided its set is one of the listed sets.",
+  rc_miss_pre:"missing:", rc_miss_more:(n,l)=>`${n} sub${n>1?"s":""} among ${l}`, rc_ok:"subs complete",
+  m_near_sub:"Close rules — what they'd need to keep this piece:",
   hint_scope:n=>`<ul>
     <li>Scope: <b>${n}</b> set(s). Draw: set, then a slot of that set size, then a legal main for the slot, then 4 distinct subs (main excluded).</li>
-    <li>In <b>Gear Raids</b>, the tier is drawn from theoretical rates measured at level 21 (★) and applied to every level — Raids 1 &amp; 3: ≈ 10% T∞ · 21% T2 · 69% T1 · Raid 2: ≈ 38% T2 · 62% T1. These are averages: samples fluctuate around them.</li>
+    <li>In <b>Gear Raids</b>, the tier is drawn from theoretical rates measured at level 21 (★) and applied to every level — Raid 1: ≈ 16.8% T∞ · 17.4% T2 · 65.8% T1 · Raid 3: ≈ 10% T∞ · 18% T2 · 72% T1 · Raid 2: ≈ 38% T2 · 62% T1. These are averages: samples fluctuate around them.</li>
     <li><b>Ancient pieces</b> (≈ 0.87% of raid drops) are the only ones that can carry the RR sub on weapon/armor — simulated in raid mode.</li>
     <li>Dungeons, levels with T0 and the "Tiers &amp; set size" mode: uniform draw, for lack of data.</li>
     <li>The game's fine-grained frequencies remain unknown: stated assumptions, not truths.</li>
@@ -959,10 +1008,10 @@ en:{
   btn_gen:"Generate", empty_sample:"Pick a scope, then generate a sample.",
   v_ok:names=>"✓ Kept by "+names, v_rej:"✗ Recycled",
   xr_off:n=>`${n} rule(s) don't target this set`, xr_close:"no other close rule", xr_none:"no rule in this tab",
-  why_main:(m,l)=>`${m} as main — expected: ${l}`, why_ess:l=>`missing ★: ${l} — ★ are mandatory`,
-  why_count:(k,r)=>`${k}/${r} subs from the list (★ included)`,
+  why_main:(m,l)=>`${m} as main — expected: ${l}`, why_ess:l=>`★ missing on the piece: ${l}`,
+  why_count:(k,r,have,miss)=>`${k}/${r} subs from the list — the piece has: ${have||"none"} · would also count: ${miss||"—"}`,
   tip_mainattr:"main attribute",
-  m_slot:"Slot", m_set:"Set", m_main:"Main",
+  m_slot:"Slot", m_set:"Set", m_main:"Main", m_subs_k:"Subs",
   m_subs:"Subs — click to select 4 (main excluded)",
   m_pick:n=>`Select 4 subs (${n}/4) to get the verdict.`,
   m_kept:names=>"✓ Kept by "+names,
@@ -1218,20 +1267,25 @@ function explainPiece(piece){
   const out = { matched:[], near:[], off:0 };
   for(const r of (tab?tab.rules:[])){
     if(!r.sets.includes(piece.set)){ out.off++; continue; }
-    if(r.mains.length && !r.mains.includes(piece.main)){
-      out.near.push({r, why:t("why_main", piece.main, r.mains.join(" / "))}); continue;
-    }
+    // On cumule TOUTES les raisons d'échec (pas seulement la première) : plus lisible pour ajuster
+    // la pièce ou la règle d'un coup d'œil.
+    const reasons = [];
+    if(r.mains.length && !r.mains.includes(piece.main)) reasons.push(t("why_main", piece.main, r.mains.join(" / ")));
     const effEss = r.ess.filter(e=>e!==piece.main);
-    const miss = effEss.filter(e=>!piece.subs.includes(e));
-    if(miss.length){ out.near.push({r, why:t("why_ess", miss.join(", "))}); continue; }
+    const missEss = effEss.filter(e=>!piece.subs.includes(e));
+    if(missEss.length) reasons.push(t("why_ess", missEss.join(", ")));
     const effPool = r.pool.filter(x=>x!==piece.main);
-    const k = piece.subs.filter(x=>effPool.includes(x)).length;
-    if(k < r.req){ out.near.push({r, why:t("why_count", k, r.req)}); continue; }
-    out.matched.push(r);
+    const have = piece.subs.filter(x=>effPool.includes(x));
+    if(have.length < r.req){
+      const missing = effPool.filter(x=>!piece.subs.includes(x));
+      reasons.push(t("why_count", have.length, r.req, sortStats(have).join(", "), sortStats(missing).join(", ")));
+    }
+    if(reasons.length) out.near.push({r, reasons});
+    else out.matched.push(r);
   }
   return out;
 }
-function matchedNames(ids){ return ids.map(id=>{ const r=getRule(id); return r?r.name:id; }); }
+function matchedNames(ids){ return ids.map(id=>{ const r=getRule(id); return r ? r.id+" · "+r.name : id; }); }
 
 /* ══════════════ ÉNUMÉRATION (couverture) ══════════════ */
 const comboCache = new Map();
@@ -1631,7 +1685,7 @@ function pieceCard(p, i){
   if(open){
     const ex = explainPiece(p);
     const parts = [
-      ...ex.near.map(x=>`<div class="xr"><b>${x.r.id}</b> — ${esc(x.why)}</div>`),
+      ...ex.near.map(x=>`<div class="xr"><b>${x.r.id}</b> · ${esc(x.r.name)}${x.reasons.map(w=>`<div class="xr-line">${esc(w)}</div>`).join("")}</div>`),
       ex.off?`<div class="xr" style="color:var(--faint)">${t("xr_off", ex.off)}</div>`:""
     ].filter(Boolean);
     body = `<div class="p-body">${parts.length?parts.join(""):`<div class="xr" style="color:var(--faint)">${kept?t("xr_close"):t("xr_none")}</div>`}</div>`;
@@ -1663,6 +1717,24 @@ function coveragePanel(){
   const uncov = SETS.filter(s=>c.perSet[s.n].kept===0);
   const uncovSide = side => uncov.filter(s=>s.side===side)
     .map(s=>`<span class="chip set t${s.t}" style="margin:2px 4px 2px 0" title="${esc(setBonus(s))}">${esc(setName(s.n))}</span>`).join("") || `<span class="hint">${t("uncov_none")}</span>`;
+  const rref = id => { const r = getRule(id); return `<button type="button" class="ruleref" data-goto="${id}" title="${esc(r?r.name:"")}">${id}</button>`; };
+  // paires de règles se recouvrant, triées par nombre de profils partagés décroissant
+  const seenPairs = new Set(), pairs = [];
+  for(const r of tab.rules){
+    const ov = c.overlap[r.id]||{};
+    for(const oid in ov){
+      const key = [r.id, oid].sort().join("|");
+      if(seenPairs.has(key)) continue;
+      seenPairs.add(key);
+      pairs.push({a:r.id, b:oid, n:ov[oid]});
+    }
+  }
+  pairs.sort((x,y)=>y.n-x.n);
+  const pairRows = pairs.map(p=>{
+    const pa = Math.round(100*p.n/c.perRule[p.a]), pb = Math.round(100*p.n/c.perRule[p.b]);
+    return `<div class="slot-row"><span style="min-width:120px">${rref(p.a)} <span class="arrow">↔</span> ${rref(p.b)}</span>
+      <span style="font-size:12px;color:var(--muted)">${t("ov_row", p.n.toLocaleString(t("date_locale")), pa, p.a, pb, p.b)}</span></div>`;
+  }).join("");
   return `
     <div class="cov-strip">
       <div class="cov-card"><div class="num">${c.total.toLocaleString(t("date_locale"))}</div><div class="lbl">${t("cov_total")}</div></div>
@@ -1688,6 +1760,13 @@ function coveragePanel(){
           return `<tr><td data-th="${t("th_rule")}" class="td-name"><b>${r.id}</b> ${esc(r.name)}</td><td data-th="${t("th_kept")}" class="td-mid">${n.toLocaleString(t("date_locale"))}</td><td data-th="${t("th_pct")}" class="td-mid">${den?pct(n/den):"—"}</td><td data-th="${t("th_read")}">${diag}</td></tr>`;
         }).join("")}
       </tbody></table></div>
+      <details class="acc" style="margin-top:12px">
+        <summary>${t("ov_sum", pairs.length)}</summary>
+        <div class="acc-body">
+          <p class="hint" style="margin:4px 0 8px">${t("ov_hint")}</p>
+          ${pairRows || `<span class="hint">${t("ov_none")}</span>`}
+        </div>
+      </details>
     </div>
     <div class="panel">
       <h4>${t("cov_rate_h")}</h4>
@@ -1778,7 +1857,44 @@ function manualPanel(){
   m.subs = m.subs.filter(s=>s!==m.main).slice(0,4);
   const subChips = ALLSTATS.filter(a=>a!==m.main).map(a=>
     `<button type="button" class="chip ${STAT[a]} pick${m.subs.includes(a)?' sel':''}" data-msub="${a}">${a}</button>`).join("");
-  let verdict = "";
+  // Dès 2 subs saisies : quels sets ce (slot, main, subs) peut-il encore satisfaire ?
+  // Une règle reste « possible » si les subs manquantes (★ incluses) tiennent dans les
+  // positions libres restantes de la pièce. À 4 subs, « possible » = réellement gardé.
+  let rulesCov = "";
+  if(m.subs.length>=2){
+    const tab = activeTab();
+    const free = 4 - m.subs.length;
+    const feasible = [];
+    for(const r of (tab?tab.rules:[])){
+      if(r.section!==slot.side) continue;
+      if(r.mains.length && !r.mains.includes(m.main)) continue;
+      const missEss = r.ess.filter(e=>e!==m.main && !m.subs.includes(e));
+      if(missEss.length > free) continue;
+      const effPool = r.pool.filter(x=>x!==m.main);
+      const have = m.subs.filter(x=>effPool.includes(x)).length;
+      const remaining = effPool.filter(x=>!m.subs.includes(x));
+      if(have + Math.min(free, remaining.length) < r.req) continue;
+      // ce qu'il reste à poser sur les positions libres pour que cette règle garde la pièce
+      const needMore = Math.max(0, r.req - have - missEss.length);
+      feasible.push({r, missEss, needMore, cands: remaining.filter(x=>!missEss.includes(x))});
+    }
+    const rows = feasible.map(f=>{
+      const bits = [];
+      if(f.missEss.length) bits.push("★ "+sortStats(f.missEss).join(", ★ "));
+      if(f.needMore) bits.push(t("rc_miss_more", f.needMore, sortStats(f.cands).join(", ")));
+      const missLine = bits.length
+        ? `<div class="xr-line" style="font-size:12px">${t("rc_miss_pre")} ${bits.join(" · ")}</div>`
+        : `<div class="xr-line" style="font-size:12px;color:var(--faint)">${t("rc_ok")}</div>`;
+
+      return `<div class="xr" style="font-size:12.5px;color:var(--muted);margin-bottom:6px"><button type="button" class="ruleref" data-goto="${f.r.id}">${f.r.id}</button> <b style="color:var(--ink)">${esc(f.r.name)}</b> <span style="color:var(--faint);font-size:11.5px">— ${sortSets(f.r.sets).map(setName).map(esc).join(", ")}</span>${missLine}</div>`;
+    }).join("");
+    rulesCov = `<div class="panel">
+      <span class="grp-label">${t(m.subs.length<4?"m_rulescov_part":"m_rulescov_full", m.subs.length)}</span>
+      <p class="hint" style="margin:0 0 8px">${t("m_rulescov_hint")}</p>
+      ${rows || `<div class="hint">${t("m_rulescov_none")}</div>`}
+    </div>`;
+  }
+  let verdict = "", nearPanel = "";
   if(m.subs.length<4){
     verdict = `<p class="hint">${t("m_pick", m.subs.length)}</p>`;
   } else {
@@ -1786,22 +1902,50 @@ function manualPanel(){
     const ex = explainPiece(piece);
     const kept = ex.matched.length>0;
     verdict = `<div class="panel" style="border-left:3px solid ${kept?"var(--util)":"var(--off)"}">
-      <h4>${kept?t("m_kept", ex.matched.map(r=>esc(r.name)).join(", ")):t("v_rej")}</h4>
-      ${ex.near.map(x=>`<div class="xr" style="font-size:13px;color:var(--muted)"><b style="font-family:var(--mono);color:var(--ink)">${x.r.id}</b> — ${esc(x.why)}</div>`).join("")}
-      ${ex.off?`<div class="xr" style="color:var(--faint);font-size:12px">${t("xr_off", ex.off)}</div>`:""}
+      <h4 style="margin-bottom:0">${kept?t("m_kept", ex.matched.map(r=>esc(r.id+" · "+r.name)).join(", ")):t("v_rej")}</h4>
     </div>`;
+    if(ex.near.length || ex.off){
+      nearPanel = `<div class="panel">
+        ${ex.near.length?`<span class="grp-label">${t("m_near_sub")}</span>`:""}
+        ${ex.near.map(x=>`<div class="xr" style="font-size:12.5px;color:var(--muted);margin-bottom:6px"><button type="button" class="ruleref" data-goto="${x.r.id}">${x.r.id}</button> <b style="color:var(--ink)">${esc(x.r.name)}</b>${x.reasons.map(w=>`<div class="xr-line" style="font-size:12px">${esc(w)}</div>`).join("")}</div>`).join("")}
+        ${ex.off?`<div class="xr" style="color:var(--faint);font-size:12px">${t("xr_off", ex.off)}</div>`:""}
+      </div>`;
+    }
   }
+  // Sélecteurs façon éditeur de règles : segmenté pour le slot, chips pour main et set
+  // (sélection unique), quick-filtres de tier en simple filtre d'AFFICHAGE de la grille de sets.
+  m.tierFilter = m.tierFilter || "all";
+  const slotSeg = `<div class="seg wrap">${SLOTS.map(s=>`<button type="button" class="${s.key===m.slot?'on':''}" data-tmslot="${s.key}">${slotLabel(s.key)}</button>`).join("")}</div>`;
+  const mainChips = legalMains.map(a=>`<button type="button" class="chip ${STAT[a]} pick${a===m.main?' sel':''}" data-tmmain="${a}">${a}</button>`).join("");
+  const tierBtns = [["all",t("f_alltiers")],["4","T∞"],["3","T3"],["2","T2"],["1","T1"],["0","T0"]].map(([v,l])=>
+    `<button type="button" class="fchip${m.tierFilter===v?' on':''}" data-tmtier="${v}">${l}</button>`).join(" ");
+  const setGrid = sideSets.filter(s=>m.tierFilter==="all"||String(s.t)===m.tierFilter).map(s=>
+    `<button type="button" class="chip set t${s.t} pick${s.n===m.set?' sel':''}" data-tmset="${esc(s.n)}" title="${esc((LANG==="fr"&&SET_FR[s.n]!==s.n ? s.n+" — " : "")+setBonus(s))}">${esc(setName(s.n))}</button>`).join("");
+  // Stepper : chaque étape porte un en-tête cliquable (label + valeur courante) et se replie
+  // au tap — toutes PRÉ-OUVERTES par défaut, l'utilisateur plie ce qu'il a fini de régler.
+  m.steps = m.steps || {slot:true, main:true, subs:true, set:true};
+  // L'en-tête est un <div role=button> (pas un <button>) pour pouvoir héberger un bouton
+  // d'action (« vider ») — le handler #tm-clear passe AVANT data-tmstep dans le listener click.
+  const stepBox = (key, label, value, body, headExtra="") => `<div class="tm-step${m.steps[key]?' open':''}">
+    <div class="step-head" data-tmstep="${key}" role="button" tabindex="0"><span class="k">${label}</span><span class="v">${value}</span>${headExtra}<span class="chev">▾</span></div>
+    <div class="step-body">${body}</div>
+  </div>`;
+  const subsSummary = m.subs.length ? `${sortStats(m.subs).join(" · ")} <span style="color:var(--faint)">(${m.subs.length}/4)</span>` : `<span style="color:var(--faint)">0/4</span>`;
   return `
-    <div class="panel">
-      <div class="ap-row" style="margin-bottom:6px">
-        <label>${t("m_slot")} <select id="tm-slot">${SLOTS.map(s=>`<option value="${s.key}"${s.key===m.slot?" selected":""}>${slotLabel(s.key)}</option>`).join("")}</select></label>
-        <label>${t("m_set")} <select id="tm-set">${sideSets.map(s=>`<option value="${esc(s.n)}"${s.n===m.set?" selected":""}>T${tierLabel(s.t)} · ${esc(setName(s.n))}</option>`).join("")}</select></label>
-        <label>${t("m_main")} <select id="tm-main">${legalMains.map(a=>`<option value="${a}"${a===m.main?" selected":""}>${a}</option>`).join("")}</select></label>
-      </div>
-      <span class="grp-label">${t("m_subs")}</span>
-      <div>${subChips}</div>
+    <div class="panel" style="padding:10px 13px">
+      ${stepBox("slot", t("m_slot"), slotLabel(m.slot), slotSeg)}
+      ${stepBox("main", t("m_main"), m.main||"—", `<div class="tm-stats">${mainChips}</div>`)}
+      ${stepBox("subs", t("m_subs_k"), subsSummary,
+        `<p class="hint" style="margin:0 0 7px">${t("m_subs")}</p>
+         <div class="tm-stats">${subChips}</div>`,
+        `<button type="button" class="sbtn" id="tm-clear"${m.subs.length?"":" disabled"}>${t("q_clear")}</button>`)}
+      ${stepBox("set", t("m_set"), `T${tierLabel(SETTIER[m.set])} · ${esc(setName(m.set))}`,
+        `<div style="margin:2px 0 8px">${tierBtns}</div>
+         <div class="tm-sets">${setGrid || `<span class="hint">${t("no_set_match")}</span>`}</div>`)}
     </div>
-    ${verdict}`;
+    ${verdict}
+    ${rulesCov}
+    ${nearPanel}`;
 }
 function constraintsInner(){
   const empty = SLOTS.filter(s=>!CONSTRAINTS[s.key].length);
@@ -1871,9 +2015,10 @@ function refFR(){
     <details class="panel">
       <summary class="p-sum">Taux de drop mesurés (Gear Raids, niveau 21)</summary>
       <ul class="clean">
-        <li><b>Raids 1 &amp; 3</b> (post-T∞) : ≈ <b>10,3 % T∞ · 20,6 % T2 · 69,1 % T1</b> — échantillon préliminaire de 40 runs GR3 niv. 21 (7 / 14 / 47 sur 68 pièces), à affiner avec le temps.</li>
-        <li><b>Raid 2</b> (sans T∞) : ≈ <b>38 % T2 · 62 % T1</b> — mesures pré-T∞ sur ~147 000 runs GR3 niv. 21 (même table de loot).</li>
-        <li><b>Pièces anciennes</b> : ≈ <b>0,87 %</b> des drops de raid — seules à pouvoir porter la sub RR sur arme/torse.</li>
+        <li><b>Raid 1</b> (post-T∞) : ≈ <b>16,8 % T∞ · 17,4 % T2 · 65,8 % T1</b> — 710 runs GR1 niv. 21 cumulés (183 / 189 / 717 sur 1 089 pièces). Nettement plus généreux en T∞ que le Raid 3 : les deux tables diffèrent.</li>
+        <li><b>Raid 3</b> (post-T∞) : ≈ <b>9,6 % T∞ · 18,2 % T2 · 72,2 % T1</b> — 279 runs GR3 niv. 21 cumulés (40 / 76 / 302 sur 418 pièces).</li>
+        <li><b>Raid 2</b> (sans T∞) : ≈ <b>38 % T2 · 62 % T1</b> — mesures pré-T∞ sur ~147 000 runs GR3 niv. 21.</li>
+        <li><b>Pièces anciennes</b> : ≈ <b>0,87 %</b> des drops de raid (mesure historique ~147 000 runs ; 8 observées sur 2 032 pièces depuis, compatible) — seules à pouvoir porter la sub RR sur arme/torse.</li>
         <li>Ce sont des moyennes mesurées au niveau 21, appliquées telles quelles à tous les niveaux par le générateur d'échantillon (donjons et niveaux à T0 : uniforme, faute de données).</li>
       </ul>
     </details>
@@ -2011,9 +2156,10 @@ function refEN(){
     <details class="panel">
       <summary class="p-sum">Measured drop rates (Gear Raids, level 21)</summary>
       <ul class="clean">
-        <li><b>Raids 1 &amp; 3</b> (post-T∞): ≈ <b>10.3% T∞ · 20.6% T2 · 69.1% T1</b> — preliminary sample of 40 GR3 lv. 21 runs (7 / 14 / 47 out of 68 pieces), to be refined over time.</li>
-        <li><b>Raid 2</b> (no T∞): ≈ <b>38% T2 · 62% T1</b> — pre-T∞ measurements over ~147,000 GR3 lv. 21 runs (same loot table).</li>
-        <li><b>Ancient pieces</b>: ≈ <b>0.87%</b> of raid drops — the only ones that can carry the RR sub on weapon/armor.</li>
+        <li><b>Raid 1</b> (post-T∞): ≈ <b>16.8% T∞ · 17.4% T2 · 65.8% T1</b> — 710 cumulative GR1 lv. 21 runs (183 / 189 / 717 out of 1,089 pieces). Noticeably more generous in T∞ than Raid 3: the two tables differ.</li>
+        <li><b>Raid 3</b> (post-T∞): ≈ <b>9.6% T∞ · 18.2% T2 · 72.2% T1</b> — 279 cumulative GR3 lv. 21 runs (40 / 76 / 302 out of 418 pieces).</li>
+        <li><b>Raid 2</b> (no T∞): ≈ <b>38% T2 · 62% T1</b> — pre-T∞ measurements over ~147,000 GR3 lv. 21 runs.</li>
+        <li><b>Ancient pieces</b>: ≈ <b>0.87%</b> of raid drops (historical measure over ~147,000 runs; 8 observed out of 2,032 pieces since, compatible) — the only ones that can carry the RR sub on weapon/armor.</li>
         <li>These are averages measured at level 21, applied as-is to every level by the sample generator (dungeons and T0 levels: uniform, for lack of data).</li>
       </ul>
     </details>
@@ -2724,6 +2870,17 @@ document.addEventListener("click", e=>{
     else if(subs.length<4) subs.push(a);
     updateTestBody(); return;
   }
+  if(el.closest("#tm-clear")){ UI.test.manual.subs = []; updateTestBody(); return; }
+  const tsl = el.closest("[data-tmslot]");
+  if(tsl){ UI.test.manual.slot = tsl.dataset.tmslot; updateTestBody(); return; }
+  const tmm = el.closest("[data-tmmain]");
+  if(tmm){ UI.test.manual.main = tmm.dataset.tmmain; UI.test.manual.subs = UI.test.manual.subs.filter(s=>s!==tmm.dataset.tmmain); updateTestBody(); return; }
+  const tms = el.closest("[data-tmset]");
+  if(tms){ UI.test.manual.set = tms.dataset.tmset; updateTestBody(); return; }
+  const tmt = el.closest("[data-tmtier]");
+  if(tmt){ UI.test.manual.tierFilter = tmt.dataset.tmtier; updateTestBody(); return; }
+  const tstp = el.closest("[data-tmstep]");
+  if(tstp){ const st = UI.test.manual.steps; st[tstp.dataset.tmstep] = !st[tstp.dataset.tmstep]; updateTestBody(); return; }
   const cs = el.closest("[data-cslot]");
   if(cs){
     const k = cs.dataset.cslot, a = cs.dataset.cstat;
@@ -2831,9 +2988,6 @@ document.addEventListener("change", e=>{
   if(e.target.id==="ts-lvl"){ const v = e.target.value; UI.test.lvl = v==="all" ? "all" : +v; updateTestBody(); return; }
   if(e.target.id==="ts-n"){ UI.test.n = +e.target.value; return; }
   if(e.target.id==="ap-section"){ applySide(e.target.value); return; }
-  if(e.target.id==="tm-slot"){ UI.test.manual.slot = e.target.value; updateTestBody(); return; }
-  if(e.target.id==="tm-set"){ UI.test.manual.set = e.target.value; updateTestBody(); return; }
-  if(e.target.id==="tm-main"){ UI.test.manual.main = e.target.value; UI.test.manual.subs = UI.test.manual.subs.filter(s=>s!==e.target.value); updateTestBody(); return; }
 });
 document.addEventListener("input", e=>{
   if(e.target.id === "rule-q"){ UI.q = e.target.value; updateRuleList(); }
