@@ -310,6 +310,7 @@
   .stepper button:focus-visible{outline:2px solid var(--acc);outline-offset:-2px;border-radius:var(--r-s)}
   .stepper .val{font-family:var(--mono);font-size:var(--fs-2);color:var(--ink);min-width:16px;text-align:center}
   .rc-warn{color:var(--off);font-family:var(--mono);font-size:var(--fs-0);margin-left:8px}
+  .rc-warn.soft{color:var(--faint)}
   .rb-actions{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
   .empty{border:1px dashed var(--border);border-radius:var(--r-l);padding:38px 20px;text-align:center;color:var(--muted);margin:18px 0}
   .empty p{margin-bottom:14px;font-size:var(--fs-2)}
@@ -1473,6 +1474,14 @@ function setChip(name){
   const title = tip ? ` title="${esc(tip)}"` : "";
   return `<span class="chip set t${tier}"${title}>${esc(label)}</span>`;
 }
+function updateRuleWarn(r){
+  const w = document.querySelector(`[data-warn="${r.id}"]`);
+  if(!w) return;
+  const isUnplayable = r.req > r.pool.length;
+  const eff = !isUnplayable && r.ess.length > r.req;
+  w.textContent = isUnplayable ? t("warn_unplayable").replace("&gt;",">") : (eff ? t("warn_eff", r.ess.length) : "");
+  w.classList.toggle("soft", eff);
+}
 function gauge(req){
   let d=""; for(let i=0;i<4;i++) d+=`<span class="dot${i<req?' fill':''}"></span>`;
   return `<span class="dots" title="${t("gauge", req)}" aria-label="${t("gauge", req)}">${d}</span>`;
@@ -1485,9 +1494,9 @@ function ruleRow(r){
     const state = inEss ? "ess" : (inPool ? "" : "stateoff");
     return `<button type="button" class="chip ${STAT[a]} ${state} tog" data-rule="${r.id}" data-stat="${a}" aria-pressed="${inPool}" title="${a} : ${inEss?t('st_ess'):(inPool?t('st_pool'):t('st_off'))}">${inEss?"★ "+a:a}</button>`;
   }).join("");
-  let warn = "";
-  if(r.req > r.pool.length) warn = `<span class="rc-warn">${t("warn_unplayable")}</span>`;
-  else if(r.ess.length > r.req) warn = `<span class="rc-warn" style="color:var(--faint)">${t("warn_eff", r.ess.length)}</span>`;
+  const isUnplayable = r.req > r.pool.length;
+  const warnTxt = isUnplayable ? t("warn_unplayable") : (r.ess.length > r.req ? t("warn_eff", r.ess.length) : "");
+  const warn = `<span class="rc-warn${!isUnplayable && warnTxt ? " soft" : ""}" data-warn="${r.id}">${warnTxt}</span>`;
   return `<article class="rule${open?' open':''}" id="card-${r.id}">
     <div class="row-head" role="button" tabindex="0" aria-expanded="${open}" data-toggle="${r.id}">
       <span class="drag" draggable="true" data-drag="${r.id}" title="${t("tip_drag")}">⠿</span>
@@ -1652,11 +1661,31 @@ function updateRuleList(){
   const fsum = document.querySelector("#filters-acc>summary");
   if(fsum) fsum.innerHTML = filtersSummary();
 }
+// Le remplacement outerHTML détruit l'élément actif (focus → body) : on mémorise une
+// signature STABLE du focus (tag + classe fonctionnelle + data-*) et on le repose après.
+// Les classes d'état (ess/stateoff/on…) sont volontairement exclues de la signature.
+const FOCUS_CLASSES = ["tog","st-minus","st-plus","rc-edit","rc-dup","rc-del","arch-tog","arch-plus","chk","row-head"];
+function focusSig(elm, root){
+  if(!elm || elm === document.body || !root.contains(elm)) return null;
+  let sel = elm.tagName.toLowerCase();
+  for(const c of FOCUS_CLASSES){ if(elm.classList.contains(c)){ sel += "."+c; break; } }
+  for(const [k,v] of Object.entries(elm.dataset||{})){
+    const attr = "data-"+k.replace(/[A-Z]/g, m=>"-"+m.toLowerCase());
+    sel += `[${attr}="${String(v).replace(/\\/g,"\\\\").replace(/"/g,'\\"')}"]`;
+  }
+  return sel;
+}
 function rerenderRule(id){
   const el = document.getElementById("card-"+id);
   const r = getRule(id);
   if(!el || !r){ updateRuleList(); return; }
+  const sig = focusSig(document.activeElement, el);
   el.outerHTML = ruleRow(r);
+  if(sig){
+    const card = document.getElementById("card-"+id);
+    const n = card && card.querySelector(sig);
+    if(n) n.focus({preventScroll:true});
+  }
 }
 function refreshTabBar(){
   const el = document.getElementById("tabbar");
@@ -2981,14 +3010,28 @@ document.addEventListener("click", e=>{
     if(r.ess.includes(a)){ r.ess=r.ess.filter(x=>x!==a); r.pool=r.pool.filter(x=>x!==a); }
     else if(r.pool.includes(a)){ r.ess=sortStats([...r.ess,a]); }
     else { r.pool=sortStats([...r.pool,a]); }
-    rerenderRule(r.id); scheduleSave(); return;
+    // patch-in-place : la chip cliquée garde son nœud (focus, hover) — seul son état change
+    const inPool = r.pool.includes(a), inEss = r.ess.includes(a);
+    tog.className = `chip ${STAT[a]} ${inEss ? "ess" : (inPool ? "" : "stateoff")} tog`;
+    tog.setAttribute("aria-pressed", String(inPool));
+    tog.title = `${a} : ${inEss?t("st_ess"):(inPool?t("st_pool"):t("st_off"))}`;
+    tog.textContent = inEss ? "★ "+a : a;
+    updateRuleWarn(r);
+    scheduleSave(); return;
   }
   const minus = el.closest(".st-minus"), plus = el.closest(".st-plus");
   if(minus||plus){
     const r = getRule((minus||plus).dataset.rule);
     if(!r) return;
     r.req = Math.min(4, Math.max(1, r.req + (plus?1:-1)));
-    rerenderRule(r.id); scheduleSave(); return;
+    // patch-in-place : valeur, points de requis du header et avertissement — le bouton garde le focus
+    const val = (minus||plus).closest(".stepper")?.querySelector(".val");
+    if(val) val.textContent = r.req;
+    const card = document.getElementById("card-"+r.id);
+    const dots = card && card.querySelector(".dots");
+    if(dots) dots.outerHTML = gauge(r.req);
+    updateRuleWarn(r);
+    scheduleSave(); return;
   }
   const at = el.closest(".arch-tog");
   if(at){
