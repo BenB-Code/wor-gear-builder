@@ -608,24 +608,29 @@
     @page{margin:14mm}
   }
 
-  /* ── Responsive : tiroir latéral mobile ── */
-  .burger{display:none}
+  /* ── Responsive : tab bar basse + tiroir de réglages (sheet « ⋯ ») ── */
+  .tabbar{display:none}
   .scrim{display:none}
   @media(max-width:920px){
     /* minmax(0,1fr) : sans le 0, l'item de grille garde min-width:auto et gonfle à la largeur
        de son contenu (rangée d'onglets…) → scroll latéral de toute la page */
     .app{grid-template-columns:minmax(0,1fr);height:auto;min-height:100vh}
-    .burger{display:flex;align-items:center;justify-content:center;position:fixed;top:10px;left:10px;z-index:70;
-      width:42px;height:42px;border-radius:var(--r-m);background:var(--panel);border:1px solid var(--border);color:var(--acc);
-      font-size:var(--fs-4);line-height:1;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.35)}
-    .burger:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+    .tabbar{position:fixed;left:0;right:0;bottom:0;z-index:58;display:flex;align-items:stretch;
+      background:color-mix(in srgb, var(--bg-side) 93%, transparent);backdrop-filter:blur(10px);
+      border-top:1px solid var(--border-soft);
+      padding:4px max(4px, env(safe-area-inset-right)) max(4px, env(safe-area-inset-bottom)) max(4px, env(safe-area-inset-left))}
+    .tb-btn{flex:1;min-height:48px;appearance:none;background:none;border:none;border-radius:var(--r-s);
+      display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;
+      color:var(--muted);font-family:var(--body);font-size:10px;font-weight:600;letter-spacing:.02em;padding:4px 2px}
+    .tb-btn svg{width:17px;height:17px}
+    .tb-btn.active{color:var(--acc)}
+    .tb-btn:focus-visible{outline:2px solid var(--acc);outline-offset:-2px}
     aside.side{position:fixed;top:0;left:0;bottom:0;height:100dvh;width:min(80vw,300px);z-index:60;
       transform:translateX(-105%);transition:transform .22s ease;box-shadow:8px 0 30px rgba(0,0,0,.45);overflow-y:auto}
     body.nav-open aside.side{transform:none}
-    body.nav-open .burger{display:none}
     input,select,textarea{font-size:16px}
     body.nav-open .scrim{display:block;position:fixed;inset:0;background:rgba(8,6,12,.55);backdrop-filter:blur(2px);z-index:56}
-    main#view{padding:64px 14px 70px;overflow:visible}
+    main#view{padding:18px 14px calc(84px + env(safe-area-inset-bottom));overflow:visible}
     .help::after{inset:-11px}
     .btn{min-height:40px}
     .btn.sm{min-height:32px}
@@ -637,7 +642,6 @@
     /* fondu de débord : indice visuel qu'une rangée de filtres scrolle */
     .fchips{-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 16px),transparent);mask-image:linear-gradient(90deg,#000 calc(100% - 16px),transparent)}
   }
-  body.light .burger{box-shadow:0 4px 14px rgba(60,50,30,.2)}
 </style>
 </head>
 <body>
@@ -700,8 +704,28 @@
   <main id="view" tabindex="-1"></main>
 </div>
 
-<button id="burger" class="burger" data-i18n-aria="burger" aria-label="ouvrir le menu">☰</button>
 <div id="scrim" class="scrim" aria-hidden="true"></div>
+
+<nav class="tabbar" id="tabbar" aria-label="navigation">
+  <button class="tb-btn" data-nav="regles">
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 4h12M2 8h12M2 12h12"/><circle cx="6" cy="4" r="1.7" fill="var(--bg-side)"/><circle cx="11" cy="8" r="1.7" fill="var(--bg-side)"/><circle cx="5" cy="12" r="1.7" fill="var(--bg-side)"/></svg>
+    <span data-i18n="tb_rules">Règles</span></button>
+  <button class="tb-btn" data-nav="simulation">
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M6 2h4M7 2v4.5L3.5 12a1.6 1.6 0 0 0 1.4 2.5h6.2a1.6 1.6 0 0 0 1.4-2.5L9 6.5V2"/><path d="M5 10.5h6"/></svg>
+    <span data-i18n="tb_sim">Simul.</span></button>
+  <button class="tb-btn" data-nav="session">
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2.5" y="3" width="11" height="10" rx="1.5"/><path d="M5.5 8.2l1.8 1.8 3.4-3.6"/></svg>
+    <span data-i18n="tb_session">Session</span></button>
+  <button class="tb-btn" data-nav="saisie">
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 13l.8-3L11 2.8a1.3 1.3 0 0 1 1.8 0l.4.4a1.3 1.3 0 0 1 0 1.8L6 12.2 3 13Z"/><path d="M10 4l2 2"/></svg>
+    <span data-i18n="tb_entry">Saisie</span></button>
+  <button class="tb-btn" data-nav="reference">
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 2.5h7a3 3 0 0 1 3 3V14H6a3 3 0 0 1-3-3V2.5Z"/><path d="M6 5.5h4M6 8h4"/></svg>
+    <span data-i18n="tb_ref">Réf.</span></button>
+  <button class="tb-btn" id="tb-more">
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="3.5" cy="8" r="1.1" fill="currentColor" stroke="none"/><circle cx="8" cy="8" r="1.1" fill="currentColor" stroke="none"/><circle cx="12.5" cy="8" r="1.1" fill="currentColor" stroke="none"/></svg>
+    <span data-i18n="tb_more">Plus</span></button>
+</nav>
 
 <div id="toasts" aria-live="polite"></div>
 
@@ -917,6 +941,7 @@ fr:{
   app_title:"Tri d'équipement", doc_title:"Tri d'équipement · Watcher of Realms",
   nav_rules:"Règles", nav_tester:"Testeur", nav_sets:"Sets & transfo", nav_ref:"Référence",
   nav_sim:"Simulation", nav_session:"Session", nav_entry:"Saisie en jeu", ref_doc:"Doctrine",
+  tb_rules:"Règles", tb_sim:"Simul.", tb_session:"Session", tb_entry:"Saisie", tb_ref:"Réf.", tb_more:"Plus",
   v_sim_h:"Simulation", v_sim_lede:"Vérifie ce que ton jeu de règles garde et recycle avant de le saisir dans le jeu — sur un échantillon réaliste de pièces tirées.",
   v_session_h:"Session — vérifier une pièce", v_session_lede:"Construis la pièce que tu viens de dropper : le verdict tombe sur la carte, en direct.",
   v_entry_h:"Saisie en jeu", v_entry_lede:"L'état de recopie du jeu de règles actif : coche chaque règle une fois saisie dans le builder du jeu.",
@@ -1087,6 +1112,7 @@ en:{
   app_title:"Gear Sorting", doc_title:"Gear Sorting · Watcher of Realms",
   nav_rules:"Rules", nav_tester:"Tester", nav_sets:"Sets & transform", nav_ref:"Reference",
   nav_sim:"Simulation", nav_session:"Session", nav_entry:"In-game entry", ref_doc:"Doctrine",
+  tb_rules:"Rules", tb_sim:"Simul.", tb_session:"Session", tb_entry:"Entry", tb_ref:"Ref.", tb_more:"More",
   v_sim_h:"Simulation", v_sim_lede:"Check what your ruleset keeps and recycles before entering it in the game — on a realistic sample of drawn pieces.",
   v_session_h:"Session — check a piece", v_session_lede:"Build the piece you just dropped: the verdict lands on the card, live.",
   v_entry_h:"In-game entry", v_entry_lede:"The copy state of the active ruleset: tick each rule once entered in the in-game builder.",
@@ -2823,7 +2849,7 @@ function viewReference(){
 /* ══════════════ ROUTEUR + RENDU ══════════════ */
 function renderView(){
   const main = document.getElementById("view");
-  document.querySelectorAll(".nav-btn").forEach(b=>b.classList.toggle("active", b.dataset.nav===UI.view));
+  document.querySelectorAll(".nav-btn,.tb-btn").forEach(b=>b.classList.toggle("active", b.dataset.nav===UI.view));
   if(UI.view==="reference"){ main.innerHTML = viewReference(); }
   else if(UI.view==="simulation"){ main.innerHTML = viewSimulation(); }
   else if(UI.view==="session"){ main.innerHTML = viewSession(); }
@@ -3431,7 +3457,7 @@ document.addEventListener("click", e=>{
   }
 
   // tiroir mobile
-  if(el.closest("#burger")){ document.body.classList.toggle("nav-open"); return; }
+  if(el.closest("#tb-more")){ document.body.classList.toggle("nav-open"); return; }
   if(el.closest("#scrim")){ document.body.classList.remove("nav-open"); return; }
 
   // testeur
