@@ -349,28 +349,50 @@
   .covbar .pct{font-family:var(--mono);font-size:var(--fs-0);color:var(--muted);min-width:52px;text-align:right}
   .warn-txt{color:var(--off);font-family:var(--mono);font-size:var(--fs-0)}
   .ok-txt{color:var(--util);font-family:var(--mono);font-size:var(--fs-0)}
-  .piece-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(215px,1fr));gap:10px;margin-top:12px}
-  .piece{background:var(--panel);border:1px solid var(--border-soft);border-radius:var(--r-m);overflow:hidden;box-shadow:var(--top-light)}
-  .piece.rej{opacity:.72}
-  .p-verd-ico{width:8px;height:8px;border-radius:50%;flex:0 0 auto}
-  .piece.ok .p-verd-ico{background:var(--util)}
-  .piece.rej .p-verd-ico{background:var(--off)}
-  .p-head{display:flex;align-items:center;gap:7px;padding:9px 11px 6px;cursor:pointer;flex-wrap:wrap}
-  .p-head:focus-visible{outline:2px solid var(--acc);outline-offset:-2px}
-  .p-slot{font-family:var(--body);font-size:11.5px;font-weight:600;letter-spacing:.08em;color:var(--label)}
-  .p-main{font-family:var(--mono);font-size:var(--fs-1);font-weight:700;color:var(--ink);margin-left:auto;background:var(--panel2);border:1px solid var(--border);border-radius:var(--r-s);padding:1px 7px}
-  .p-subs{display:flex;gap:4px;flex-wrap:wrap;padding:0 11px 9px}
-  .p-verdict{font-family:var(--mono);font-size:var(--fs-0);padding:0 11px 9px}
-  .p-verdict .v-ok,.p-verdict .v-rej{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .v-list{list-style:none;margin:3px 0 0;padding:0}
-  .v-list li{padding:1px 0 1px 14px;position:relative;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .v-list li::before{content:"·";position:absolute;left:5px;color:var(--faint)}
-  .p-verdict .v-list li{color:var(--util)}
-  .p-verdict .v-ok{color:var(--util)}
-  .p-verdict .v-rej{color:var(--off)}
-  .p-body{display:none;border-top:1px dashed var(--border-soft);padding:9px 11px;font-size:var(--fs-1);color:var(--muted)}
-  .piece.open .p-body{display:block}
-  .p-body .xr{margin:3px 0}
+  .piece-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px;margin-top:12px}
+  /* ── La carte d'item vivante — composant canonique. Le verdict est un ÉTAT de la carte
+        (bandeau bas), jamais un panneau à côté. États : kept / rec / prov (en construction). ── */
+  .icard{position:relative;background:var(--panel);border:1px solid var(--border-soft);border-radius:var(--r-m);
+    overflow:hidden;box-shadow:var(--top-light)}
+  .icard .tierline{position:absolute;left:0;top:0;bottom:0;width:3px}
+  .icard.kept{border-color:var(--acc-bd);box-shadow:var(--top-light),0 0 0 1px var(--acc-dim)}
+  .icard.rec .ic-head,.icard.rec .ic-body{opacity:.6;filter:saturate(.4)}
+  .icard.rec .tierline{opacity:.35;filter:saturate(.4)}
+  .ic-head{display:flex;align-items:center;gap:9px;padding:10px 12px 8px 15px;border-bottom:1px solid var(--hairline)}
+  .ic-head[data-piece]{cursor:pointer}
+  .ic-head:focus-visible{outline:2px solid var(--acc);outline-offset:-2px}
+  .ic-head svg{width:18px;height:18px;flex:0 0 auto;stroke:var(--label);fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+  .ic-slot{font-size:var(--fs-2);font-weight:600;color:var(--ink-hi);white-space:nowrap}
+  .ic-set{margin-left:auto;display:inline-flex;align-items:center;gap:6px;font-size:var(--fs-1);font-weight:600;color:var(--ink);
+    min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .ic-body{display:flex;gap:12px;padding:10px 12px 10px 15px}
+  .ic-main{flex:0 0 82px;display:flex;flex-direction:column;gap:3px;padding-right:11px;border-right:1px solid var(--hairline)}
+  .ic-main .v{font-family:var(--mono);font-size:24px;font-weight:600;color:var(--ink-hi);line-height:1.1}
+  .ic-sig{font-size:var(--fs-0);color:var(--faint)}
+  .ic-subs{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
+  .ic-subs .k-row{display:flex;align-items:center;gap:8px}
+  .ic-subs .k-row .req{margin-left:auto}
+  .icard .lab{margin-bottom:0}
+  .icard .req .bar i{background:var(--head)}
+  .ic-sub{display:flex;align-items:baseline;gap:7px;min-height:22px;padding:1px 7px;margin:0 -7px;
+    border-radius:var(--r-s);font-family:var(--mono);font-size:var(--fs-2);color:var(--ink)}
+  .ic-sub .ic-sig{font-family:var(--body);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .ic-sub.blank{color:var(--deco)}
+  .ic-sub.win{background:var(--util-dim);color:var(--util-hi)}
+  .ic-sub.win .tick{margin-left:auto;font-size:var(--fs-0);color:var(--util);align-self:center}
+  .ic-band{border-top:1px solid var(--hairline);padding:9px 12px 10px 15px;display:flex;flex-direction:column;gap:6px}
+  .ic-band .v-line{display:flex;align-items:center;gap:7px;font-size:var(--fs-2);font-weight:600}
+  .icard.kept .v-line{color:var(--acc)}
+  .icard.rec .v-line{color:var(--off)}
+  .icard.prov .v-line{color:var(--head)}
+  .rrefs{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px}
+  .rrefs li{display:flex;align-items:center;gap:7px;font-size:var(--fs-1);font-weight:600;color:var(--ink);min-width:0}
+  .rrefs li::before{content:"·";color:var(--deco)}
+  .rrefs li .rname{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .ic-pills{display:flex;gap:5px;flex-wrap:wrap}
+  .ic-details{display:none;border-top:1px dashed var(--border-soft);padding:9px 12px 10px 15px;font-size:var(--fs-1);color:var(--muted)}
+  .icard.open .ic-details,.ic-details.fixed{display:block}
+  .ic-details .xr{margin:3px 0}
   .xr-line{padding-left:16px;position:relative;color:var(--muted)}
   .xr-line::before{content:"·";position:absolute;left:6px;color:var(--faint)}
   /* ── Pièce manuelle : stepper ── */
@@ -934,6 +956,10 @@ fr:{
   res_kept:(k,n)=>`${k} gardée(s) / ${n} — `,
   btn_gen:"Générer", empty_sample:"Choisis un scope puis génère un échantillon.",
   v_ok:names=>"✓ Gardée par "+names, v_ok_multi:"✓ Gardée par :", v_rej:"✗ Recyclée",
+  sn_ATK:"Attaque", sn_DEF:"Défense", sn_HP:"PV", sn_ATKp:"Attaque %", sn_DEFp:"Défense %", sn_HPp:"PV %",
+  sn_RR:"Résistance", sn_CC:"Chance crit.", sn_CD:"DGT crit.", sn_HE:"Précision", sn_AS:"Vitesse d'ATQ",
+  ic_main:"Main", ic_subs:"Subs", ic_kept:"Gardée par", ic_rec:"Recyclée",
+  ic_poss:n=>n+" règle"+(n>1?"s":"")+" encore possible"+(n>1?"s":""), ic_poss_none:"aucune règle encore possible",
   c_change:"modification", c_subs:id=>"subs de "+id, c_req:id=>"requis de "+id, c_dup:id=>"duplication de "+id,
   c_del:id=>"suppression de "+id, c_move:id=>"déplacement de "+id, c_entered:id=>"coche « saisie » de "+id, c_rule:id=>"règle "+id,
   t_undone:l=>"↶ Annulé : "+l, t_redone:l=>"↷ Rétabli : "+l, t_undo_empty:"Rien à annuler.", t_redo_empty:"Rien à rétablir.",
@@ -1079,6 +1105,10 @@ en:{
   res_kept:(k,n)=>`${k} kept / ${n} — `,
   btn_gen:"Generate", empty_sample:"Pick a scope, then generate a sample.",
   v_ok:names=>"✓ Kept by "+names, v_ok_multi:"✓ Kept by:", v_rej:"✗ Recycled",
+  sn_ATK:"Attack", sn_DEF:"Defense", sn_HP:"HP", sn_ATKp:"Attack %", sn_DEFp:"Defense %", sn_HPp:"HP %",
+  sn_RR:"Resistance", sn_CC:"Crit. Rate", sn_CD:"Crit. DMG", sn_HE:"Accuracy", sn_AS:"ATK Speed",
+  ic_main:"Main", ic_subs:"Subs", ic_kept:"Kept by", ic_rec:"Recycled",
+  ic_poss:n=>n+" rule"+(n>1?"s":"")+" still possible", ic_poss_none:"no rule still possible",
   c_change:"change", c_subs:id=>id+" subs", c_req:id=>id+" required count", c_dup:id=>id+" duplicated",
   c_del:id=>id+" deleted", c_move:id=>id+" moved", c_entered:id=>id+" entered mark", c_rule:id=>"rule "+id,
   t_undone:l=>"↶ Undone: "+l, t_redone:l=>"↷ Redone: "+l, t_undo_empty:"Nothing to undo.", t_redo_empty:"Nothing to redo.",
@@ -1883,34 +1913,82 @@ function updateSetsTables(){
 }
 
 /* ══════════════ VUE : TESTEUR ══════════════ */
+/* ── La carte d'item vivante — composant canonique (échantillon, pièce manuelle,
+      demain Session / Simulation / share card). Le verdict est un état de la carte. ── */
+const SLOT_GLYPH = {
+  arme:'<path d="M4 20l2.6-.6.6-2.6L17.5 6.5 15 4 4.8 14.2z"/><path d="M14 5.5l3.5 3.5"/>',
+  torse:'<path d="M12 3l7 3v5c0 5-3 8-7 10-4-2-7-5-7-10V6z"/>',
+  bracelet:'<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4.5"/>',
+  collier:'<path d="M5 4a7 7 0 0014 0M12 11v2"/><path d="M12 13l2.4 2.6L12 20l-2.4-4.4z"/>',
+  bague:'<circle cx="12" cy="14" r="6"/><path d="M9.5 6l2.5-2.5L14.5 6l-2.5 2.5z"/>'
+};
+function statSig(a){ return t("sn_"+a.replace("%","p")); }
+// Subs comptés par au moins une règle gagnante (pool effectif, main exclu) — surlignés en teinte utilitaire, jamais d'or
+function winningSubs(p){
+  const win = new Set();
+  for(const id of p.matched||[]){
+    const r = getRule(id);
+    if(!r) continue;
+    for(const s of p.subs) if(s!==p.main && r.pool.includes(s)) win.add(s);
+  }
+  return win;
+}
+function itemCard(p, o={}){
+  const state = o.prov ? "prov" : (p.matched && p.matched.length ? "kept" : "rec");
+  const tier = SETTIER[p.set];
+  const sdef = SETS.find(s=>s.n===p.set);
+  const win = state==="kept" ? winningSubs(p) : new Set();
+  const subLines = [];
+  for(let i=0;i<4;i++){
+    const s = p.subs[i];
+    subLines.push(s
+      ? `<span class="ic-sub${win.has(s)?' win':''}">${s} <span class="ic-sig">${statSig(s)}</span>${win.has(s)?'<span class="tick">✓</span>':""}</span>`
+      : `<span class="ic-sub blank">—</span>`);
+  }
+  let band;
+  if(state==="kept"){
+    band = `<div class="v-line"><span>✓</span> ${t("ic_kept")}</div>
+      <ul class="rrefs">${p.matched.map(id=>{ const r=getRule(id);
+        return `<li><button type="button" class="ruleref" data-goto="${id}">${id}</button> <span class="rname">${esc(r?r.name:"")}</span></li>`; }).join("")}</ul>`;
+  } else if(state==="rec"){
+    band = `<div class="v-line"><span>⚒</span> ${t("ic_rec")}</div>`;
+  } else {
+    const f = o.prov.feasible;
+    band = `<div class="v-line"><span>◌</span> ${f.length?t("ic_poss",f.length):t("ic_poss_none")}</div>
+      ${f.length?`<div class="ic-pills">${f.map(x=>`<button type="button" class="ruleref" data-goto="${x.r.id}" title="${esc(x.r.name)}">${x.r.id}</button>`).join("")}</div>`:""}`;
+  }
+  const headAttrs = o.idx!=null ? ` role="button" tabindex="0" data-piece="${o.idx}"` : "";
+  return `<article class="icard ${state}${o.open?" open":""}">
+    <span class="tierline" style="background:var(--t${tier})"></span>
+    <div class="ic-head"${headAttrs}>
+      <svg viewBox="0 0 24 24" aria-hidden="true">${SLOT_GLYPH[p.slot]||""}</svg>
+      <span class="ic-slot">${slotLabel(p.slot)}</span>
+      <span class="ic-set"${sdef?` title="${esc(setBonus(sdef))}"`:""}>${esc(setName(p.set))} <span class="tier-badge b${tier}">T${tierLabel(tier)}</span></span>
+    </div>
+    <div class="ic-body">
+      <div class="ic-main"><span class="lab">${t("ic_main")}</span><span class="v">${p.main||"—"}</span><span class="ic-sig">${p.main?statSig(p.main):""}</span></div>
+      <div class="ic-subs">
+        <div class="k-row"><span class="lab">${t("ic_subs")}</span>
+          <span class="req"><span class="bar"><i style="width:${p.subs.length*25}%"></i></span><span class="n">${p.subs.length}/4</span></span></div>
+        ${subLines.join("")}
+      </div>
+    </div>
+    <div class="ic-band">${band}</div>
+    ${o.details||""}
+  </article>`;
+}
 function pieceCard(p, i){
-  const kept = p.matched.length>0;
   const open = UI.test.openPieces.has(i);
-  const sl = slotLabel(p.slot);
-  let body = "";
+  let details = "";
   if(open){
     const ex = explainPiece(p);
     const parts = [
       ...ex.near.map(x=>`<div class="xr"><b>${x.r.id}</b> · ${esc(x.r.name)}${x.reasons.map(w=>`<div class="xr-line">${esc(w)}</div>`).join("")}</div>`),
       ex.off?`<div class="xr" style="color:var(--faint)">${t("xr_off", ex.off)}</div>`:""
     ].filter(Boolean);
-    body = `<div class="p-body">${parts.length?parts.join(""):`<div class="xr" style="color:var(--faint)">${kept?t("xr_close"):t("xr_none")}</div>`}</div>`;
+    details = `<div class="ic-details">${parts.length?parts.join(""):`<div class="xr" style="color:var(--faint)">${p.matched.length?t("xr_close"):t("xr_none")}</div>`}</div>`;
   }
-  return `<div class="piece ${kept?"ok":"rej"}${open?" open":""}">
-    <div class="p-head" role="button" tabindex="0" data-piece="${i}">
-      <span class="p-verd-ico"></span>
-      <span class="p-slot">${sl}</span>
-      ${setChip(p.set)}
-      <span class="p-main" title="${t("tip_mainattr")}">${p.main}</span>
-    </div>
-    <div class="p-subs">${p.subs.map(s=>`<span class="mini">${s}</span>`).join("")}</div>
-    <div class="p-verdict">${kept
-      ? (p.matched.length>1
-        ? `<span class="v-ok">${t("v_ok_multi")}</span><ul class="v-list">${matchedNames(p.matched).map(n=>`<li>${esc(n)}</li>`).join("")}</ul>`
-        : `<span class="v-ok">${t("v_ok", matchedNames(p.matched).map(esc).join(", "))}</span>`)
-      : `<span class="v-rej">${t("v_rej")}</span>`}</div>
-    ${body}
-  </div>`;
+  return itemCard(p, {idx:i, open, details});
 }
 function coveragePanel(){
   const tab = activeTab();
@@ -2068,11 +2146,13 @@ function manualPanel(){
   m.subs = m.subs.filter(s=>s!==m.main).slice(0,4);
   const subChips = ALLSTATS.filter(a=>a!==m.main).map(a=>
     `<button type="button" class="chip ${STAT[a]} pick${m.subs.includes(a)?' sel':''}" data-msub="${a}">${a}</button>`).join("");
-  // Dès 2 subs saisies : quels sets ce (slot, main, subs) peut-il encore satisfaire ?
-  // Une règle reste « possible » si les subs manquantes (★ incluses) tiennent dans les
-  // positions libres restantes de la pièce. À 4 subs, « possible » = réellement gardé.
-  let rulesCov = "";
-  if(m.subs.length>=2){
+  // Le verdict est un ÉTAT de la carte (jamais un panneau à côté) : la carte d'item se
+  // construit en live. Incomplète → règles encore possibles (une règle reste « possible »
+  // si les subs manquantes, ★ incluses, tiennent dans les positions libres restantes).
+  // À 4 subs, le verdict tombe sur la carte, détails proches en pied de carte.
+  const piece = {slot:m.slot, set:m.set, main:m.main, subs:sortStats(m.subs), matched:[]};
+  let card;
+  if(m.subs.length<4){
     const tab = activeTab();
     const free = 4 - m.subs.length;
     const feasible = [];
@@ -2089,43 +2169,34 @@ function manualPanel(){
       const needMore = Math.max(0, r.req - have - missEss.length);
       feasible.push({r, missEss, needMore, cands: remaining.filter(x=>!missEss.includes(x))});
     }
-    const rows = feasible.map(f=>{
-      const bits = [];
-      if(f.missEss.length) bits.push("★ "+sortStats(f.missEss).join(", ★ "));
-      if(f.needMore) bits.push(t("rc_miss_more", f.needMore, sortStats(f.cands).join(", ")));
-      const missLine = bits.length
-        ? `<div class="xr-line" style="font-size:12px">${t("rc_miss_pre")} ${bits.join(" · ")}</div>`
-        : `<div class="xr-line" style="font-size:12px;color:var(--faint)">${t("rc_ok")}</div>`;
+    // Le détail « ce qu'il manque » n'apparaît qu'à partir de 2 subs — avant, tout est possible
+    let details = "";
+    if(m.subs.length>=2 && feasible.length){
+      const rows = feasible.map(f=>{
+        const bits = [];
+        if(f.missEss.length) bits.push("★ "+sortStats(f.missEss).join(", ★ "));
+        if(f.needMore) bits.push(t("rc_miss_more", f.needMore, sortStats(f.cands).join(", ")));
+        const missLine = bits.length
+          ? `<div class="xr-line" style="font-size:12px">${t("rc_miss_pre")} ${bits.join(" · ")}</div>`
+          : `<div class="xr-line" style="font-size:12px;color:var(--faint)">${t("rc_ok")}</div>`;
 
-      return `<div class="xr" style="font-size:12.5px;color:var(--muted);margin-bottom:6px"><button type="button" class="ruleref" data-goto="${f.r.id}">${f.r.id}</button> <b style="color:var(--ink)">${esc(f.r.name)}</b> <span style="color:var(--faint);font-size:11.5px">— ${sortSets(f.r.sets).map(setName).map(esc).join(", ")}</span>${missLine}</div>`;
-    }).join("");
-    rulesCov = `<div class="panel">
-      <span class="lab">${t(m.subs.length<4?"m_rulescov_part":"m_rulescov_full", m.subs.length)}</span>
-      <p class="hint" style="margin:0 0 8px">${t("m_rulescov_hint")}</p>
-      ${rows || `<div class="hint">${t("m_rulescov_none")}</div>`}
-    </div>`;
-  }
-  let verdict = "", nearPanel = "";
-  if(m.subs.length<4){
-    verdict = `<p class="hint">${t("m_pick", m.subs.length)}</p>`;
+        return `<div class="xr" style="font-size:12.5px;color:var(--muted);margin-bottom:6px"><button type="button" class="ruleref" data-goto="${f.r.id}">${f.r.id}</button> <b style="color:var(--ink)">${esc(f.r.name)}</b> <span style="color:var(--faint);font-size:11.5px">— ${sortSets(f.r.sets).map(setName).map(esc).join(", ")}</span>${missLine}</div>`;
+      }).join("");
+      details = `<div class="ic-details fixed"><p class="hint" style="margin:0 0 8px">${t("m_rulescov_hint")}</p>${rows}</div>`;
+    }
+    card = itemCard(piece, {prov:{feasible}, details});
   } else {
-    const piece = {slot:m.slot, set:m.set, main:m.main, subs:sortStats(m.subs)};
     const ex = explainPiece(piece);
-    const kept = ex.matched.length>0;
-    const vList = kept && ex.matched.length>1
-      ? `<ul class="v-list" style="margin-top:6px">${ex.matched.map(r=>`<li><button type="button" class="ruleref" data-goto="${r.id}">${r.id}</button> <b style="color:var(--ink)">${esc(r.name)}</b></li>`).join("")}</ul>`
-      : "";
-    verdict = `<div class="panel" style="border-left:3px solid ${kept?"var(--util)":"var(--off)"}">
-      <h4 style="margin-bottom:0">${kept?(ex.matched.length>1?t("v_ok_multi"):t("m_kept", ex.matched.map(r=>esc(r.id+" · "+r.name)).join(", "))):t("v_rej")}</h4>
-      ${vList}
-    </div>`;
+    piece.matched = ex.matched.map(r=>r.id);
+    let details = "";
     if(ex.near.length || ex.off){
-      nearPanel = `<div class="panel">
+      details = `<div class="ic-details fixed">
         ${ex.near.length?`<span class="lab">${t("m_near_sub")}</span>`:""}
         ${ex.near.map(x=>`<div class="xr" style="font-size:12.5px;color:var(--muted);margin-bottom:6px"><button type="button" class="ruleref" data-goto="${x.r.id}">${x.r.id}</button> <b style="color:var(--ink)">${esc(x.r.name)}</b>${x.reasons.map(w=>`<div class="xr-line" style="font-size:12px">${esc(w)}</div>`).join("")}</div>`).join("")}
         ${ex.off?`<div class="xr" style="color:var(--faint);font-size:12px">${t("xr_off", ex.off)}</div>`:""}
       </div>`;
     }
+    card = itemCard(piece, {details});
   }
   // Sélecteurs façon éditeur de règles : segmenté pour le slot, chips pour main et set
   // (sélection unique), quick-filtres de tier en simple filtre d'AFFICHAGE de la grille de sets.
@@ -2147,6 +2218,7 @@ function manualPanel(){
   </div>`;
   const subsSummary = m.subs.length ? `${sortStats(m.subs).join(" · ")} <span style="color:var(--faint)">(${m.subs.length}/4)</span>` : `<span style="color:var(--faint)">0/4</span>`;
   return `
+    ${card}
     <div class="panel" style="padding:10px 13px">
       ${stepBox("slot", t("m_slot"), slotLabel(m.slot), slotSeg)}
       ${stepBox("main", t("m_main"), m.main||"—", `<div class="tm-stats">${mainChips}</div>`)}
@@ -2157,10 +2229,7 @@ function manualPanel(){
       ${stepBox("set", t("m_set"), `T${tierLabel(SETTIER[m.set])} · ${esc(setName(m.set))}`,
         `<div style="margin:2px 0 8px">${tierBtns}</div>
          <div class="tm-sets">${setGrid || `<span class="hint">${t("no_set_match")}</span>`}</div>`)}
-    </div>
-    ${verdict}
-    ${rulesCov}
-    ${nearPanel}`;
+    </div>`;
 }
 function constraintsInner(){
   const empty = SLOTS.filter(s=>!CONSTRAINTS[s.key].length);
