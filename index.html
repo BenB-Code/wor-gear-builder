@@ -584,6 +584,29 @@
   .tp-done h3{font-family:var(--display);font-variant:small-caps;font-size:var(--fs-5);color:var(--acc);letter-spacing:.05em}
   .tp-done p{color:var(--muted);max-width:40ch}
   .tp-wrap.gold{box-shadow:inset 0 0 90px var(--acc-glow)}
+  /* ── Palette Ctrl+K ── */
+  dialog.pal{background:var(--panel);color:inherit;border:1px solid var(--border);border-radius:var(--r-l);
+    padding:0;width:min(560px,calc(100% - 32px));margin:10vh auto auto;overflow:hidden}
+  dialog.pal::backdrop{background:rgba(10,8,14,.55);backdrop-filter:blur(2px)}
+  body.light dialog.pal::backdrop{background:rgba(50,42,60,.3)}
+  .pal-in{width:100%;appearance:none;background:transparent;border:none;border-bottom:1px solid var(--border-soft);
+    color:var(--ink);font:inherit;font-size:var(--fs-3);padding:13px 16px;outline:none}
+  .pal-list{max-height:min(400px,55vh);overflow-y:auto;padding:6px}
+  .pal-cat{font-family:var(--body);font-size:11.5px;font-weight:600;letter-spacing:.08em;color:var(--label);padding:9px 11px 3px}
+  .pal-it{display:flex;align-items:center;gap:10px;padding:8px 11px;border-radius:var(--r-s);cursor:pointer;
+    font-size:var(--fs-2);color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .pal-it .kbd{margin-left:auto}
+  .pal-it.sel{background:var(--acc-dim);color:var(--ink-hi)}
+  .pal-empty{padding:14px;color:var(--faint);font-size:var(--fs-2)}
+  kbd{font-family:var(--mono);font-size:var(--fs-0);background:var(--panel2);border:1px solid var(--border-soft);
+    border-radius:4px;padding:1px 6px;color:var(--muted);white-space:nowrap}
+  /* ── Panneau ? ── */
+  .hp-cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:8px 28px}
+  #help-dlg h4{color:var(--head);font-family:var(--display);font-variant:small-caps;letter-spacing:.05em;
+    font-size:var(--fs-35);font-weight:600;margin:4px 0 6px}
+  #help-dlg ul{list-style:none;margin:0 0 6px;padding:0;display:flex;flex-direction:column;gap:7px;
+    font-size:var(--fs-2);color:var(--muted);line-height:1.6}
+  #help-dlg b{color:var(--ink)}
   /* ── Session de farm ── */
   .fm-stats{font-family:var(--mono);font-size:var(--fs-1);color:var(--muted);margin-top:8px}
   .fm-stats .k{color:var(--util)}
@@ -755,6 +778,10 @@
       </div>
         </div>
       </details>
+      <div class="acc-row" style="gap:8px">
+        <button type="button" class="btn sm" id="pal-btn" style="flex:1">Ctrl+K · <span data-i18n="pal_name">Palette</span></button>
+        <button type="button" class="btn sm" id="help-btn" style="flex:1">? <span data-i18n="hp_name">Aide</span></button>
+      </div>
       <div class="save-line" id="save-line" role="button" tabindex="0" data-i18n-title="tip_backup" title="cliquer = exporter une sauvegarde complète (JSON)"><span class="dot"></span><span id="save-status">local</span></div>
     </div>
   </aside>
@@ -826,6 +853,8 @@
     </div>
 </dialog>
 
+<dialog class="pal" id="pal-dlg" aria-label="palette de commandes"></dialog>
+<dialog class="dlg" id="help-dlg" aria-label="aide"></dialog>
 <dialog class="tp" id="tp-dlg" aria-label="recopie guidée"></dialog>
 <dialog class="tp fm" id="farm-dlg" aria-label="session de farm"></dialog>
 
@@ -1149,6 +1178,27 @@ fr:{
   lbl_desc:"Description", ph_tabdesc:"décris ce jeu de règles (optionnel — visible à l'export et au partage)",
   c_tabdesc:"description du jeu", tip_backup:"cliquer = exporter une sauvegarde complète (JSON)",
   t_backup:"Sauvegarde complète exportée — un JSON qui réimporte tous les jeux de règles via « Importer ».",
+  pal_name:"Palette", hp_name:"Aide", pal_ph:"Naviguer, lancer une commande, trouver une règle…",
+  pal_none:"rien ne correspond", pal_cat_nav:"Navigation", pal_cat_jeux:"Jeux de règles", pal_cat_cmd:"Commandes", pal_cat_regles:"Règles",
+  pal_nav:v=>"Aller : "+v, pal_tab:n=>"Activer : "+n, pal_new:"Nouvelle règle…", pal_tp:"Recopie guidée",
+  pal_farm:"Session de farm", pal_sample:"Rejouer un échantillon (Simulation)", pal_backup:"Exporter une sauvegarde complète",
+  pal_theme:"Basculer le thème", pal_undo:"Annuler la dernière action", pal_redo:"Rétablir", pal_help:"Aide & raccourcis",
+  hp_title:"Aide — raccourcis, légende, recherche", hp_close:"Fermer", hp_shortcuts_h:"Raccourcis",
+  hp_shortcuts_html:`<ul>
+    <li><kbd>Ctrl+K</kbd> palette · <kbd>Ctrl+Z</kbd> annuler · <kbd>Ctrl+Shift+Z</kbd> rétablir · <kbd>?</kbd> cette aide</li>
+    <li>Liste des règles, carte focalisée : <kbd>j</kbd>/<kbd>k</kbd> ou <kbd>↑</kbd><kbd>↓</kbd> naviguer · <kbd>o</kbd>/<kbd>Espace</kbd> déplier · <kbd>x</kbd> coche « saisie » · <kbd>+</kbd>/<kbd>−</kbd> requis · <kbd>d</kbd> dupliquer · <kbd>Alt+↑↓</kbd> déplacer</li>
+    <li>Recopie guidée : <kbd>Entrée</kbd> coché → suivante · <kbd>Retour</kbd> décocher-revenir · <kbd>←</kbd><kbd>→</kbd> naviguer · <kbd>c</kbd> copier la clé</li>
+  </ul>`,
+  hp_legend_h:"Légende", hp_legend_html:`<ul>
+    <li>◆ marque et têtes de section — jamais un état</li>
+    <li>★ sub obligatoire · ✓ coché / validé · ⚒ recyclée</li>
+    <li>liseré or = pièce gardée · filet coloré = tier du set</li>
+    <li>familles de stats : <b>offense</b> (rouge) · <b>défense</b> (bleu) · <b>utilitaire</b> (vert)</li>
+  </ul>`,
+  hp_search_h:"Recherche", hp_search_html:`<ul>
+    <li>La recherche de la vue Règles couvre id, nom, sets (EN + FR), mains et rôles.</li>
+    <li>La palette (<kbd>Ctrl+K</kbd>) trouve les règles de tous les jeux, commandes et vues comprises.</li>
+  </ul>`,
   oracle_ok:(k,n,p)=>`Ton tri est sain — il garde ${k} pièce${k>1?"s":""} sur ${n} (${p})`,
   oracle_multi0:"rien n'est gardé deux fois par accident",
   oracle_multiN:m=>`${m} pièce${m>1?"s":""} gardée${m>1?"s":""} par ≥ 2 règles — surveille les chevauchements en tête de Règles`,
@@ -1340,6 +1390,27 @@ en:{
   lbl_desc:"Description", ph_tabdesc:"describe this ruleset (optional — visible on export and share)",
   c_tabdesc:"ruleset description", tip_backup:"click = export a full backup (JSON)",
   t_backup:"Full backup exported — a JSON that re-imports every ruleset via “Import”.",
+  pal_name:"Palette", hp_name:"Help", pal_ph:"Navigate, run a command, find a rule…",
+  pal_none:"nothing matches", pal_cat_nav:"Navigation", pal_cat_jeux:"Rulesets", pal_cat_cmd:"Commands", pal_cat_regles:"Rules",
+  pal_nav:v=>"Go to: "+v, pal_tab:n=>"Activate: "+n, pal_new:"New rule…", pal_tp:"Guided copy",
+  pal_farm:"Farm session", pal_sample:"Replay a sample (Simulation)", pal_backup:"Export a full backup",
+  pal_theme:"Toggle theme", pal_undo:"Undo last action", pal_redo:"Redo", pal_help:"Help & shortcuts",
+  hp_title:"Help — shortcuts, legend, search", hp_close:"Close", hp_shortcuts_h:"Shortcuts",
+  hp_shortcuts_html:`<ul>
+    <li><kbd>Ctrl+K</kbd> palette · <kbd>Ctrl+Z</kbd> undo · <kbd>Ctrl+Shift+Z</kbd> redo · <kbd>?</kbd> this help</li>
+    <li>Rule list, focused card: <kbd>j</kbd>/<kbd>k</kbd> or <kbd>↑</kbd><kbd>↓</kbd> navigate · <kbd>o</kbd>/<kbd>Space</kbd> expand · <kbd>x</kbd> “entered” tick · <kbd>+</kbd>/<kbd>−</kbd> required · <kbd>d</kbd> duplicate · <kbd>Alt+↑↓</kbd> move</li>
+    <li>Guided copy: <kbd>Enter</kbd> ticked → next · <kbd>Backspace</kbd> untick & back · <kbd>←</kbd><kbd>→</kbd> navigate · <kbd>c</kbd> copy key</li>
+  </ul>`,
+  hp_legend_h:"Legend", hp_legend_html:`<ul>
+    <li>◆ brand & section heads — never a state</li>
+    <li>★ mandatory sub · ✓ ticked / validated · ⚒ recycled</li>
+    <li>gold edging = kept piece · colored strip = set tier</li>
+    <li>stat families: <b>offense</b> (red) · <b>defense</b> (blue) · <b>utility</b> (green)</li>
+  </ul>`,
+  hp_search_h:"Search", hp_search_html:`<ul>
+    <li>The Rules view search covers id, name, sets (EN + FR), mains and roles.</li>
+    <li>The palette (<kbd>Ctrl+K</kbd>) finds rules across all rulesets, plus commands and views.</li>
+  </ul>`,
   oracle_ok:(k,n,p)=>`Your sorting is healthy — it keeps ${k} piece${k>1?"s":""} out of ${n} (${p})`,
   oracle_multi0:"nothing is kept twice by accident",
   oracle_multiN:m=>`${m} piece${m>1?"s":""} kept by ≥ 2 rules — watch the overlaps atop the Rules view`,
@@ -2635,6 +2706,97 @@ function saisieRows(){
 
   return html;
 }
+/* ── Palette Ctrl+K : navigation, jeux de règles, commandes (toutes couvertes par
+      l'undo quand elles mutent), et TOUTES les règles de TOUS les jeux (data-goto+flash).
+      « La palette EST le tutoriel » : les raccourcis s'affichent à droite. ── */
+let PAL = {q:"", sel:0, list:[]};
+function palNorm(s){ return String(s).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,""); }
+function exportBackup(){
+  const blob = new Blob([payload()], {type:"application/json"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "wor-tri-sauvegarde-" + new Date().toISOString().slice(0,10) + ".json";
+  a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href), 4000);
+  toast(t("t_backup"));
+}
+function palItems(){
+  const items = [];
+  const add = (cat, label, kbd, fn, keys) => items.push({cat, label, kbd, fn, hay: palNorm(label+" "+(keys||""))});
+  add("nav", t("pal_nav", t("nav_rules")), "", ()=>goto("/regles"));
+  add("nav", t("pal_nav", t("nav_sim")), "", ()=>goto("/simulation"));
+  add("nav", t("pal_nav", t("nav_session")), "", ()=>goto("/session"));
+  add("nav", t("pal_nav", t("nav_entry")), "", ()=>goto("/saisie"));
+  add("nav", t("pal_nav", t("nav_ref")), "", ()=>goto("/reference"));
+  add("nav", t("pal_nav", t("nav_sets")), "", ()=>{ UI.refMode = "sets"; goto("/reference"); renderView(); });
+  for(const tb of TABS)
+    add("jeux", t("pal_tab", tb.name), "", ()=>{ activeTabId = tb.id; UI.open.clear(); scheduleSave(); renderView(); refreshTabBar(); updateSidebar(); });
+  add("cmd", t("pal_new"), "", ()=>openDlg(null));
+  add("cmd", t("pal_tp"), "", openTp);
+  add("cmd", t("pal_farm"), "", openFarm);
+  add("cmd", t("pal_sample"), "", ()=>{ generateSample(); goto("/simulation"); });
+  add("cmd", t("pal_backup"), "", exportBackup);
+  add("cmd", t("pal_theme"), "", ()=>{ theme = (theme==="light")?"dark":"light"; applyTheme(); scheduleSave(); });
+  add("cmd", t("pal_undo"), "Ctrl+Z", undoCmd);
+  add("cmd", t("pal_redo"), "Ctrl+Shift+Z", redoCmd);
+  add("cmd", t("pal_help"), "?", openHelp);
+  for(const tb of TABS) for(const r of tb.rules)
+    add("regles", r.id+" · "+r.name+(tb.id!==activeTabId ? " — "+tb.name : ""), "",
+        ()=>{ activeTabId = tb.id; UI.open.clear(); scheduleSave(); goto("/regles/"+r.id); },
+        r.sets.map(setName).join(" ")+" "+r.sets.join(" ")+" "+r.mains.join(" ")+" "+(r.arch||[]).map(archLabel).join(" "));
+
+  return items;
+}
+function palRender(){
+  const d = document.getElementById("pal-dlg");
+  const q = palNorm(PAL.q.trim());
+  let list = palItems();
+  // sans requête : nav + jeux + commandes (les règles arrivent dès qu'on tape)
+  list = q ? list.filter(x=>x.hay.includes(q)) : list.filter(x=>x.cat!=="regles");
+  list = list.slice(0, 40);
+  PAL.sel = Math.max(0, Math.min(PAL.sel, list.length-1));
+  PAL.list = list;
+  let html = "", lastCat = null;
+  list.forEach((x,i)=>{
+    if(x.cat !== lastCat){ lastCat = x.cat; html += `<div class="pal-cat">${t("pal_cat_"+x.cat)}</div>`; }
+    html += `<div class="pal-it${i===PAL.sel?" sel":""}" data-pi="${i}">${esc(x.label)}${x.kbd?`<span class="kbd">${x.kbd}</span>`:""}</div>`;
+  });
+  const lst = d.querySelector(".pal-list");
+  if(lst){
+    lst.innerHTML = html || `<div class="pal-empty">${t("pal_none")}</div>`;
+    const sel = lst.querySelector(".pal-it.sel");
+    if(sel) sel.scrollIntoView({block:"nearest"});
+  }
+}
+function openPal(){
+  if(document.querySelector("dialog[open]")) return;
+  PAL.q = ""; PAL.sel = 0;
+  const d = document.getElementById("pal-dlg");
+  d.innerHTML = `<input class="pal-in" id="pal-in" type="text" placeholder="${t("pal_ph")}" autocomplete="off"><div class="pal-list"></div>`;
+  palRender();
+  d.showModal();
+  const inp = document.getElementById("pal-in");
+  inp.focus();
+  inp.addEventListener("input", ()=>{ PAL.q = inp.value; PAL.sel = 0; palRender(); });
+}
+function palExec(i){
+  const x = PAL.list[i];
+  if(!x) return;
+  document.getElementById("pal-dlg").close();
+  setTimeout(()=>x.fn(), 30); // laisser le top-layer se libérer avant d'ouvrir un autre dialogue
+}
+function openHelp(){
+  if(document.querySelector("dialog[open]")) return;
+  const d = document.getElementById("help-dlg");
+  d.innerHTML = `<h3>${t("hp_title")}</h3>
+    <div class="hp-cols">
+      <div><h4>${t("hp_shortcuts_h")}</h4>${t("hp_shortcuts_html")}</div>
+      <div><h4>${t("hp_legend_h")}</h4>${t("hp_legend_html")}
+        <h4 style="margin-top:16px">${t("hp_search_h")}</h4>${t("hp_search_html")}</div>
+    </div>
+    <div class="ap-actions" style="margin-top:16px"><button type="button" class="btn" id="help-close">${t("hp_close")}</button></div>`;
+  d.showModal();
+}
 /* ── Téléprompteur de recopie : une règle plein écran, Entrée = coché → suivante,
       Retour = décocher-revenir, c = copier la clé ; reprise auto, dorure à n/n. ── */
 let TP = {idx:0, lock:null};
@@ -3856,14 +4018,16 @@ document.addEventListener("click", e=>{
     else if(subs.length<4) subs.push(a);
   }); return; }
   if(el.closest("#fm-verd")){ if(FARM.timer){ clearTimeout(FARM.timer); FARM.timer = null; farmRender(); } return; }
-  if(el.closest("#save-line")){
-    const blob = new Blob([payload()], {type:"application/json"});
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = "wor-tri-sauvegarde-" + new Date().toISOString().slice(0,10) + ".json";
-    a.click();
-    setTimeout(()=>URL.revokeObjectURL(a.href), 4000);
-    toast(t("t_backup"));
+  if(el.closest("#save-line")){ exportBackup(); return; }
+  if(el.closest("#pal-btn")){ openPal(); return; }
+  if(el.closest("#help-btn")){ openHelp(); return; }
+  if(el.closest("#help-close")){ const hd = document.getElementById("help-dlg"); if(hd && hd.open) hd.close(); return; }
+  const pit = el.closest(".pal-it");
+  if(pit){ palExec(+pit.dataset.pi); return; }
+  if(el.id === "pal-dlg" || el.id === "help-dlg"){
+    // clic sur le ::backdrop (cible = le <dialog> hors de son rectangle) = fermer
+    const r = el.getBoundingClientRect();
+    if(e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) el.close();
     return;
   }
   if(el.closest("#tp-open")){ openTp(); return; }
@@ -4038,6 +4202,27 @@ document.addEventListener("input", e=>{
   if(e.target.id === "tab-desc"){ const tab = activeTab(); if(tab){ tab.desc = e.target.value.slice(0,300); scheduleSave(t("c_tabdesc")); } }
 });
 document.addEventListener("keydown", e=>{
+  // Ctrl+K : la palette (toggle) — depuis n'importe où, sauf autre dialogue ouvert
+  if((e.ctrlKey || e.metaKey) && !e.altKey && (e.key==="k" || e.key==="K")){
+    e.preventDefault();
+    const pal = document.getElementById("pal-dlg");
+    if(pal && pal.open){ pal.close(); return; }
+    openPal();
+    return;
+  }
+  {
+    const pal = document.getElementById("pal-dlg");
+    if(pal && pal.open){
+      if(e.key==="ArrowDown"){ e.preventDefault(); PAL.sel++; palRender(); return; }
+      if(e.key==="ArrowUp"){ e.preventDefault(); PAL.sel = Math.max(0, PAL.sel-1); palRender(); return; }
+      if(e.key==="Enter"){ e.preventDefault(); palExec(PAL.sel); return; }
+      return; // le reste va à l'input de recherche (Échap = fermeture native)
+    }
+  }
+  if(e.key==="?" && !e.ctrlKey && !e.metaKey){
+    const typing = e.target.closest && e.target.closest("input,textarea,select,[contenteditable]");
+    if(!typing && !document.querySelector("dialog[open]")){ e.preventDefault(); openHelp(); return; }
+  }
   // Ctrl+Z global — sauf pendant la frappe (undo natif du champ) et dialogue ouvert
   if((e.ctrlKey || e.metaKey) && !e.altKey && ["z","Z","y","Y"].includes(e.key)){
     const typing = e.target.closest && e.target.closest("input,textarea,select,[contenteditable]");
