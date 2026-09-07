@@ -239,6 +239,7 @@
   .btn.primary:hover{filter:brightness(1.08);border-color:var(--acc);color:var(--acc-ink)}
   .btn.danger:hover{border-color:var(--off);color:var(--off)}
   .btn.arm{color:#f4efe6!important;background:var(--off-strong);border-color:var(--off-strong)!important}
+  .btn:disabled{opacity:.45;cursor:not-allowed}
   .hint{color:var(--faint);font-size:var(--fs-1);margin:8px 0 0}
   .hint b{color:var(--muted);font-weight:600}
   .help{appearance:none;display:inline-flex;align-items:center;justify-content:center;width:19px;height:19px;border-radius:50%;
@@ -342,6 +343,7 @@
   .cov-card .num{font-family:var(--display);font-size:var(--fs-5);color:var(--ink-hi);line-height:1.15}
   .cov-card .num b{color:var(--acc);font-weight:400;font-size:.72em}
   .cov-card .num.bad{color:var(--off)}
+  .cov-card .num.good{color:var(--util)}
   .cov-card .lbl{font-family:var(--body);font-size:11.5px;font-weight:600;letter-spacing:.08em;color:var(--label);margin-top:3px}
   .covbar{display:flex;align-items:center;gap:8px}
   .covbar .track{flex:1;height:6px;border-radius:3px;background:var(--panel2);overflow:hidden;min-width:60px}
@@ -484,6 +486,16 @@
   .ap-grp{margin:10px 0}
   .ap-actions{display:flex;align-items:center;gap:10px;margin-top:16px;flex-wrap:wrap}
   .ap-warn{color:var(--off);font-family:var(--mono);font-size:var(--fs-1)}
+  /* Micro-label d'état ÉPHÉMÈRE au clic-cycle — un seul style codifié, jamais de couleur d'état */
+  .microlab{position:fixed;transform:translate(-50%,-100%);z-index:70;pointer-events:none;
+    background:var(--panel2);border:1px solid var(--border-soft);border-radius:var(--r-pill);padding:2px 10px;
+    font-family:var(--body);font-size:11.5px;font-weight:600;letter-spacing:.08em;color:var(--label);
+    white-space:nowrap;box-shadow:0 2px 8px rgba(0,0,0,.25);animation:mlfade .95s ease forwards}
+  @keyframes mlfade{0%{opacity:0;margin-top:3px}12%{opacity:1;margin-top:0}72%{opacity:1}100%{opacity:0}}
+  /* Phrase de règle générée — encart éditorial (éditeur + carte dépliée uniquement) */
+  .rule-phrase{border-left:2px solid var(--acc-bd);background:var(--acc-glow);border-radius:0 var(--r-s) var(--r-s) 0;
+    padding:7px 11px;margin:10px 0 2px;color:var(--muted);font-size:var(--fs-2);line-height:1.55}
+  .rule-phrase b{color:var(--ink);font-weight:600}
   .ap-hint{color:var(--faint);font-size:var(--fs-1);margin-top:10px}
 
   /* ── Toasts ── */
@@ -669,6 +681,7 @@
       <span class="stepper"><button type="button" id="ap-req-minus" data-i18n-aria="aria_minus" aria-label="réduire">−</button><span class="val" id="ap-req-val">1</span><button type="button" id="ap-req-plus" data-i18n-aria="aria_plus" aria-label="augmenter">+</button></span>
       <span class="rc-warn" id="ap-req-warn"></span>
     </div>
+    <p class="rule-phrase" id="ap-phrase" hidden></p>
     <div class="ap-actions">
       <button class="btn primary" id="ap-create" data-i18n="btn_create">Créer la règle</button>
       <button class="btn" id="ap-cancel" data-i18n="btn_cancel">Annuler</button>
@@ -960,6 +973,8 @@ fr:{
   sn_RR:"Résistance", sn_CC:"Chance crit.", sn_CD:"DGT crit.", sn_HE:"Précision", sn_AS:"Vitesse d'ATQ",
   ic_main:"Main", ic_subs:"Subs", ic_kept:"Gardée par", ic_rec:"Recyclée",
   ic_poss:n=>n+" règle"+(n>1?"s":"")+" encore possible"+(n>1?"s":""), ic_poss_none:"aucune règle encore possible",
+  cov_all_catch:"toutes les règles attrapent", ord_one:n=>"≈ 1 sur "+n, phrase_free:"libre", phrase_or:" ou ",
+  phrase_rule:(sets,mains,poolTxt,req,hasEss)=>`Garde une pièce <b>${sets}</b> — main <b>${mains}</b> — qui aligne au moins <b>${req}</b> sub${req>1?"s":""} parmi ${poolTxt}${hasEss?" ; les ★ sont obligatoires":""}.`,
   c_change:"modification", c_subs:id=>"subs de "+id, c_req:id=>"requis de "+id, c_dup:id=>"duplication de "+id,
   c_del:id=>"suppression de "+id, c_move:id=>"déplacement de "+id, c_entered:id=>"coche « saisie » de "+id, c_rule:id=>"règle "+id,
   t_undone:l=>"↶ Annulé : "+l, t_redone:l=>"↷ Rétabli : "+l, t_undo_empty:"Rien à annuler.", t_redo_empty:"Rien à rétablir.",
@@ -1109,6 +1124,8 @@ en:{
   sn_RR:"Resistance", sn_CC:"Crit. Rate", sn_CD:"Crit. DMG", sn_HE:"Accuracy", sn_AS:"ATK Speed",
   ic_main:"Main", ic_subs:"Subs", ic_kept:"Kept by", ic_rec:"Recycled",
   ic_poss:n=>n+" rule"+(n>1?"s":"")+" still possible", ic_poss_none:"no rule still possible",
+  cov_all_catch:"every rule catches something", ord_one:n=>"≈ 1 in "+n, phrase_free:"any", phrase_or:" or ",
+  phrase_rule:(sets,mains,poolTxt,req,hasEss)=>`Keeps a <b>${sets}</b> piece — main <b>${mains}</b> — lining up at least <b>${req}</b> sub${req>1?"s":""} among ${poolTxt}${hasEss?"; ★ are mandatory":""}.`,
   c_change:"change", c_subs:id=>id+" subs", c_req:id=>id+" required count", c_dup:id=>id+" duplicated",
   c_del:id=>id+" deleted", c_move:id=>id+" moved", c_entered:id=>id+" entered mark", c_rule:id=>"rule "+id,
   t_undone:l=>"↶ Undone: "+l, t_redone:l=>"↷ Redone: "+l, t_undo_empty:"Nothing to undo.", t_redo_empty:"Nothing to redo.",
@@ -1602,6 +1619,29 @@ function updateRuleWarn(r){
   w.textContent = isUnplayable ? t("warn_unplayable").replace("&gt;",">") : (eff ? t("warn_eff", r.ess.length) : "");
   w.classList.toggle("soft", eff);
 }
+// Micro-label d'état éphémère : nomme le nouvel état au clic-cycle — « éphémère pour
+// nommer, persistant pour décider » : l'état durable reste porté par la chip elle-même.
+function microLabel(anchor, txt){
+  document.querySelectorAll(".microlab").forEach(e=>e.remove());
+  const m = document.createElement("span");
+  m.className = "microlab";
+  m.textContent = txt;
+  const r = anchor.getBoundingClientRect();
+  m.style.left = (r.left + r.width/2) + "px";
+  m.style.top = (r.top - 6) + "px";
+  document.body.appendChild(m);
+  setTimeout(()=>m.remove(), 950);
+}
+// Phrase de règle en langage naturel — éditeur et carte dépliée uniquement.
+// La liste affichée = le pool complet, ★ préfixées : le requis se compte ★ incluses.
+function rulePhraseFrom(sets, mains, ess, pool, req){
+  const setsTxt = esc(sortSets(sets).map(setName).join(" / "));
+  const mainsTxt = mains.length ? esc(mains.join(t("phrase_or"))) : t("phrase_free");
+  const poolTxt = pool.map(x=>ess.includes(x) ? "★ "+x : x).join(", ");
+
+  return t("phrase_rule", setsTxt, mainsTxt, poolTxt, req, ess.length>0);
+}
+function rulePhrase(r){ return rulePhraseFrom(r.sets, r.mains, r.ess, r.pool, r.req); }
 function gauge(req){
   return `<span class="req" title="${t("gauge", req)}" aria-label="${t("gauge", req)}"><span class="bar"><i style="width:${req*25}%"></i></span><span class="n">${req}/4</span></span>`;
 }
@@ -1637,6 +1677,7 @@ function ruleRow(r){
         <span class="k">${t("k_subs")}</span><span>${chips}</span>
         <span class="k">${t("k_req")}</span><span><span class="stepper"><button type="button" class="st-minus" data-rule="${r.id}" aria-label="${t("aria_minus")}">−</button><span class="val">${r.req}</span><button type="button" class="st-plus" data-rule="${r.id}" aria-label="${t("aria_plus")}">+</button></span>${warn}</span>
       </div>
+      ${r.pool.length ? `<p class="rule-phrase">${rulePhrase(r)}</p>` : ""}
       <div class="rb-actions">
         <button type="button" class="btn sm rc-dup" data-rule="${r.id}">${t("b_dup")}</button>
         <button type="button" class="btn sm danger rc-del" data-rule="${r.id}">${t("b_del")}</button>
@@ -2027,9 +2068,11 @@ function coveragePanel(){
   return `
     <div class="cov-strip">
       <div class="cov-card"><div class="num">${c.total.toLocaleString(t("date_locale"))}</div><div class="lbl">${t("cov_total")}</div></div>
-      <div class="cov-card"><div class="num">${c.kept.toLocaleString(t("date_locale"))} <b>· ${pct(c.kept/c.total)}</b></div><div class="lbl">${t("cov_kept")}</div></div>
+      <div class="cov-card"${c.kept?` title="${t("ord_one", Math.round(c.total/c.kept).toLocaleString(t("date_locale")))}"`:""}><div class="num">${c.kept.toLocaleString(t("date_locale"))} <b>· ${pct(c.kept/c.total)}</b></div><div class="lbl">${t("cov_kept")}</div></div>
       <div class="cov-card"><div class="num">${c.multi.toLocaleString(t("date_locale"))}</div><div class="lbl">${t("cov_multi")}</div></div>
-      <div class="cov-card"><div class="num${mute.length?' bad':''}">${mute.length}</div><div class="lbl">${t("cov_mute")}</div></div>
+      <div class="cov-card">${mute.length
+        ? `<div class="num bad">${mute.length}</div><div class="lbl">${t("cov_mute")}</div>`
+        : `<div class="num good">✓</div><div class="lbl">${t("cov_all_catch")}</div>`}</div>
     </div>
     <div class="panel">
       <h4>${t("cov_catch_h")}${helpBtn("covcatch")}</h4>
@@ -2046,7 +2089,7 @@ function coveragePanel(){
               .map(([id])=>{ const pr = getRule(id); return `<button type="button" class="ruleref" data-goto="${id}" title="${esc(pr?pr.name:"")}">${id}</button>`; });
             diag = `<span class="warn-txt">${t("diag_dup")}</span> ${partners.join(" ")}`;
           }
-          return `<tr><td data-th="${t("th_rule")}" class="td-name"><b>${r.id}</b> ${esc(r.name)}</td><td data-th="${t("th_kept")}" class="td-mid">${n.toLocaleString(t("date_locale"))}</td><td data-th="${t("th_pct")}" class="td-mid">${den?pct(n/den):"—"}</td><td data-th="${t("th_read")}">${diag}</td></tr>`;
+          return `<tr><td data-th="${t("th_rule")}" class="td-name"><b>${r.id}</b> ${esc(r.name)}</td><td data-th="${t("th_kept")}" class="td-mid">${n.toLocaleString(t("date_locale"))}</td><td data-th="${t("th_pct")}" class="td-mid"${n?` title="${t("ord_one", Math.round(den/n).toLocaleString(t("date_locale")))}"`:""}>${den?pct(n/den):"—"}</td><td data-th="${t("th_read")}">${diag}</td></tr>`;
         }).join("")}
       </tbody></table></div>
       <details class="acc" style="margin-top:12px">
@@ -2119,7 +2162,7 @@ function samplePanel(){
     ${sample.length?`
       <div class="controls">
         <div class="ctl">${ctlLabel("result",t("lbl_result"))}
-          <span style="font-family:var(--mono);font-size:13px;padding:5px 0">${t("res_kept", kept, sample.length)}<b style="color:var(--acc)">${(100*kept/sample.length).toFixed(1).replace(".", LANG==="fr"?",":".")} %</b></span>
+          <span style="font-family:var(--mono);font-size:13px;padding:5px 0">${t("res_kept", kept, sample.length)}<b style="color:var(--acc)"${kept?` title="${t("ord_one", Math.round(sample.length/kept))}"`:""}>${(100*kept/sample.length).toFixed(1).replace(".", LANG==="fr"?",":".")} %</b></span>
         </div>
         <div class="ctl">${ctlLabel("tier",t("lbl_bytier"))}
           <span style="display:inline-flex;align-items:center;gap:12px;flex-wrap:wrap;font-family:var(--mono);font-size:12px;padding:5px 0">
@@ -2800,6 +2843,17 @@ function renderAddPanel(){
   document.getElementById("ap-sets-label").textContent = t("sets_lab", AP.side);
   document.getElementById("ap-sets").innerHTML = SIDE_SETS[AP.side].map(n=>
     `<button type="button" class="chip set t${SETTIER[n]} pick${AP.sets.has(n)?' sel':''}" data-role="ap-set" data-set="${esc(n)}" title="${esc((LANG==="fr"&&SET_FR[n]!==n ? n+" — " : "")+setBonus(SET_BY[n]))}">${esc(setName(n))}</button>`).join("");
+  // Lisibilité : phrase de règle en live ; « injouable » bloque la création (la raison vit dans ap-req-warn)
+  const phEl = document.getElementById("ap-phrase");
+  if(phEl){
+    const pool = sortStats([...AP.pool]);
+    const essArr = sortStats([...AP.ess].filter(a=>pool.includes(a)));
+    const html = (AP.sets.size && pool.length) ? rulePhraseFrom([...AP.sets], sortStats([...AP.mains]), essArr, pool, Math.min(4,Math.max(1,AP.req))) : "";
+    phEl.innerHTML = html;
+    phEl.hidden = !html;
+  }
+  const createBtn = document.getElementById("ap-create");
+  if(createBtn) createBtn.disabled = AP.req > AP.pool.size;
 }
 function applySide(side){
   AP.side = side;
@@ -2844,6 +2898,7 @@ function saveRule(){
   if(!mainsArr.length) missing.push(t("miss_main"));
   if(!AP.pool.size) missing.push(t("miss_sub"));
   if(missing.length){ document.getElementById("ap-warn").textContent = t("miss", missing.join(", ")); return; }
+  if(AP.req > AP.pool.size){ document.getElementById("ap-warn").textContent = t("warn_unplayable").replace("&gt;",">"); return; }
   const pool = sortStats([...AP.pool]);
   const ess = sortStats([...AP.ess].filter(a=>pool.includes(a)));
   const fields = { name, section:AP.side, sets, mains:mainsArr,
@@ -3213,6 +3268,7 @@ document.addEventListener("click", e=>{
     tog.setAttribute("aria-pressed", String(inPool));
     tog.title = `${a} : ${inEss?t("st_ess"):(inPool?t("st_pool"):t("st_off"))}`;
     tog.textContent = inEss ? "★ "+a : a;
+    microLabel(tog, inEss ? t("st_ess") : (inPool ? t("st_pool") : t("st_off")));
     updateRuleWarn(r);
     scheduleSave(t("c_subs", r.id)); return;
   }
