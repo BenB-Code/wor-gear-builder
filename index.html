@@ -579,6 +579,23 @@
   .tp-done h3{font-family:var(--display);font-variant:small-caps;font-size:var(--fs-5);color:var(--acc);letter-spacing:.05em}
   .tp-done p{color:var(--muted);max-width:40ch}
   .tp-wrap.gold{box-shadow:inset 0 0 90px var(--acc-glow)}
+  /* ── Session de farm ── */
+  .fm-stats{font-family:var(--mono);font-size:var(--fs-1);color:var(--muted);margin-top:8px}
+  .fm-stats .k{color:var(--util)}
+  .fm-stats .r{color:var(--off)}
+  .fm-verdict{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:8px;
+    border:1px dashed var(--border-soft);border-radius:var(--r-l);margin:12px 0;padding:14px;min-height:110px}
+  .fm-verdict .big{font-family:var(--display);font-variant:small-caps;letter-spacing:.04em;font-size:var(--fs-5);font-weight:600;color:var(--head)}
+  .fm-verdict.kept{border-color:var(--acc-bd);background:var(--acc-glow)}
+  .fm-verdict.kept .big{color:var(--acc)}
+  .fm-verdict.rec{border-color:var(--off-bd);background:var(--off-dim)}
+  .fm-verdict.rec .big{color:var(--off)}
+  .fm-piece{font-family:var(--mono);font-size:var(--fs-1);color:var(--faint)}
+  .fm-why{color:var(--muted);font-size:var(--fs-2);max-width:44ch}
+  .fm-hint{color:var(--faint);font-size:var(--fs-0)}
+  .fm-taps{display:flex;flex-direction:column;gap:12px;padding-bottom:4px}
+  .fm-row{display:flex;gap:7px;flex-wrap:wrap}
+  .fm-row .chip,.fm-row .fchip{min-height:44px;display:inline-flex;align-items:center;font-size:var(--fs-2);padding:6px 14px}
   .ap-hint{color:var(--faint);font-size:var(--fs-1);margin-top:10px}
 
   /* ── Toasts ── */
@@ -673,6 +690,7 @@
     .rm-mains{display:none}
     .rm-cov{display:none}
     .sr-row .sr-meta{display:none}
+    #session-wrap{position:sticky;top:0;z-index:12;background:var(--bg);padding-bottom:8px}
     /* fondu de débord : indice visuel qu'une rangée de filtres scrolle */
     .fchips{-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 16px),transparent);mask-image:linear-gradient(90deg,#000 calc(100% - 16px),transparent)}
   }
@@ -802,6 +820,7 @@
 </dialog>
 
 <dialog class="tp" id="tp-dlg" aria-label="recopie guidée"></dialog>
+<dialog class="tp fm" id="farm-dlg" aria-label="session de farm"></dialog>
 
 <div id="print-view" aria-hidden="true"></div>
 
@@ -984,6 +1003,14 @@ fr:{
   tp_nokey:"renseigne la clé in-game dans la vue Saisie",
   tp_done_t:"Jeu complet", tp_done_p:n=>`Les ${n} règles sont saisies — le tri in-game est aligné sur ce jeu de règles.`,
   tp_help:"Entrée = coché → suivante · Retour = décocher-revenir · ← → = naviguer · c = copier la clé",
+  fm_start:"Session de farm", fm_seen:"vues", fm_idle:"choisis le set, le slot et la main du drop",
+  fm_prov:n=>`en cours — ${n}/4 subs`, fm_keep:"Garder", fm_recycle:"Recycler",
+  fm_why_rec:n=>`exclue après ${n} sub${n>1?"s":""} — plus aucune règle possible`,
+  fm_why_base:"recyclée dès la base — corrige la main, ou passe au drop suivant (non comptée)",
+  fm_why_kept:r=>`satisfait ${r} — le reste des subs est indifférent`,
+  fm_autoreset:"auto-reset 1,5 s — toucher pour garder la saisie", fm_next:"pièce suivante",
+  fm_sets_recent:"Set — récents d'abord", fm_allsets:"tous les sets",
+  fm_slotmain:"Slot · Main — mémorisés du drop précédent", fm_subs:n=>`Subs ${n}/4`,
   v_sim_h:"Simulation", v_sim_lede:"Vérifie ce que ton jeu de règles garde et recycle avant de le saisir dans le jeu — sur un échantillon réaliste de pièces tirées.",
   v_session_h:"Session — vérifier une pièce", v_session_lede:"Construis la pièce que tu viens de dropper : le verdict tombe sur la carte, en direct.",
   v_entry_h:"Saisie en jeu", v_entry_lede:"L'état de recopie du jeu de règles actif : coche chaque règle une fois saisie dans le builder du jeu.",
@@ -1161,6 +1188,14 @@ en:{
   tp_nokey:"set the in-game key in the Entry view",
   tp_done_t:"Full set", tp_done_p:n=>`All ${n} rules are entered — the in-game sorting matches this ruleset.`,
   tp_help:"Enter = ticked → next · Backspace = untick & back · ← → = navigate · c = copy key",
+  fm_start:"Farm session", fm_seen:"seen", fm_idle:"pick the drop's set, slot and main",
+  fm_prov:n=>`in progress — ${n}/4 subs`, fm_keep:"Keep", fm_recycle:"Recycle",
+  fm_why_rec:n=>`ruled out after ${n} sub${n>1?"s":""} — no rule possible anymore`,
+  fm_why_base:"recycled from the base — fix the main, or move to the next drop (not counted)",
+  fm_why_kept:r=>`satisfies ${r} — the remaining subs don't matter`,
+  fm_autoreset:"auto-reset 1.5 s — touch to keep the entry", fm_next:"next piece",
+  fm_sets_recent:"Set — recent first", fm_allsets:"all sets",
+  fm_slotmain:"Slot · Main — remembered from the previous drop", fm_subs:n=>`Subs ${n}/4`,
   v_sim_h:"Simulation", v_sim_lede:"Check what your ruleset keeps and recycles before entering it in the game — on a realistic sample of drawn pieces.",
   v_session_h:"Session — check a piece", v_session_lede:"Build the piece you just dropped: the verdict lands on the card, live.",
   v_entry_h:"In-game entry", v_entry_lede:"The copy state of the active ruleset: tick each rule once entered in the in-game builder.",
@@ -2494,7 +2529,7 @@ function manualPanel(){
   </div>`;
   const subsSummary = m.subs.length ? `${sortStats(m.subs).join(" · ")} <span style="color:var(--faint)">(${m.subs.length}/4)</span>` : `<span style="color:var(--faint)">0/4</span>`;
   return `
-    ${card}
+    <div id="session-wrap">${card}</div>
     <div class="panel" style="padding:10px 13px">
       ${stepBox("slot", t("m_slot"), slotLabel(m.slot), slotSeg)}
       ${stepBox("main", t("m_main"), m.main||"—", `<div class="tm-stats">${mainChips}</div>`)}
@@ -2548,6 +2583,7 @@ function viewSession(){
     </div>
     <div class="controls">
       ${tabPicker()}
+      <button type="button" class="btn primary" id="fm-open">▸ ${t("fm_start")}</button>
     </div>
     <div id="test-body">${manualPanel()}</div>
   </div>`;
@@ -2680,6 +2716,118 @@ function tpBack(uncheck){
   }
   tpRender();
 }
+/* ── Session de farm : mode focus plein écran, compteur de pièces PAR SESSION,
+      verdict AU PLUS TÔT (gardée dès qu'une règle est déjà satisfaite, recyclée dès
+      que plus aucune n'est possible — la saisie s'arrête au verdict, pas à la
+      complétude), auto-reset 1,5 s, set/slot/main conservés. Zéro mutation de données. ── */
+let FARM = {m:{slot:"bracelet", set:null, main:null, subs:[]}, seen:0, kept:0, rec:0,
+            locked:false, timer:null, recent:[], allSets:false};
+function farmVerdict(m){
+  const tab = activeTab();
+  const slot = SLOTS.find(s=>s.key===m.slot);
+  if(!tab || !slot || !m.set || !m.main) return {state:"idle"};
+  let anyPossible = false;
+  for(const r of tab.rules){
+    if(r.section!==slot.side) continue;
+    if(!r.sets.includes(m.set)) continue;
+    if(r.mains.length && !r.mains.includes(m.main)) continue;
+    const effPool = r.pool.filter(x=>x!==m.main);
+    const missEss = r.ess.filter(e=>e!==m.main && !m.subs.includes(e));
+    const have = m.subs.filter(x=>effPool.includes(x)).length;
+    if(!missEss.length && have >= r.req) return {state:"kept", rule:r}; // déjà satisfaite : le reste des subs est indifférent
+    const free = 4 - m.subs.length;
+    const remaining = effPool.filter(x=>!m.subs.includes(x));
+    if(missEss.length <= free && have + Math.min(free, remaining.length) >= r.req) anyPossible = true;
+  }
+  if(m.subs.length >= 4 || !anyPossible) return {state:"rec"};
+
+  return {state:"prov"};
+}
+function farmReset(render){
+  clearTimeout(FARM.timer); FARM.timer = null;
+  FARM.m.subs = []; // set, slot et main sont conservés — la croisière du farm
+  FARM.locked = false;
+  if(render) farmRender();
+}
+function farmJudge(){
+  const v = farmVerdict(FARM.m);
+  if((v.state==="kept" || v.state==="rec") && !FARM.locked){
+    FARM.locked = true;
+    FARM.recent = [FARM.m.set, ...FARM.recent.filter(s=>s!==FARM.m.set)].slice(0,3);
+    // un verdict tombé DÈS LA BASE (0 sub) s'affiche mais ne compte pas — corriger la
+    // main après coup ne doit pas gonfler le compteur de pièces fantômes
+    if(v.state==="kept" || FARM.m.subs.length >= 1){
+      FARM.seen++;
+      if(v.state==="kept") FARM.kept++; else FARM.rec++;
+      FARM.timer = setTimeout(()=>farmReset(true), 1500);
+    }
+  }
+  farmRender();
+}
+// toute saisie après un verdict démarre la pièce suivante — pas de tap mort
+function farmApply(fn){
+  if(FARM.locked) farmReset(false);
+  fn();
+  farmJudge();
+}
+function farmRender(){
+  const d = document.getElementById("farm-dlg");
+  if(!d) return;
+  const tab = activeTab();
+  const m = FARM.m;
+  const slot = SLOTS.find(s=>s.key===m.slot);
+  const legal = CONSTRAINTS[m.slot] || [];
+  if(m.main && !legal.includes(m.main)) m.main = legal[0] || null;
+  if(m.set && SETSIDE[m.set] !== slot.side) m.set = null;
+  const v = farmVerdict(m);
+  const sideSets = SETS.filter(s=>s.side===slot.side);
+  const recents = FARM.recent.filter(n=>SETSIDE[n]===slot.side);
+  let verd;
+  if(v.state==="idle") verd = `<div class="fm-why">${t("fm_idle")}</div>`;
+  else if(v.state==="prov") verd = `<div class="big">◌ ${t("fm_prov", m.subs.length)}</div>`;
+  else if(v.state==="kept") verd = `<div class="big">✓ ${t("fm_keep")}</div><div class="fm-why">${t("fm_why_kept", v.rule.id+" · "+esc(v.rule.name))}</div>`;
+  else verd = `<div class="big">⚒ ${t("fm_recycle")}</div><div class="fm-why">${m.subs.length ? t("fm_why_rec", m.subs.length) : t("fm_why_base")}</div>`;
+  const pieceLine = (m.set||m.main) ? `<div class="fm-piece">${m.set?esc(setName(m.set)):"—"} · ${slotLabel(m.slot)} · ${m.main||"—"}${m.subs.length?` — ${sortStats(m.subs).join(", ")}`:""}</div>` : "";
+  const hold = FARM.timer ? `<div class="fm-hint">${t("fm_autoreset")}</div>`
+             : (FARM.locked ? `<button type="button" class="btn sm" id="fm-next">↻ ${t("fm_next")}</button>` : "");
+  d.innerHTML = `<div class="tp-wrap">
+    <div class="tp-head">
+      <button type="button" class="btn sm" id="fm-close">✕ ${t("tp_end")}</button>
+      <span class="tp-title">${t("nav_session")} · ${esc(tab?tab.name:"")}</span>
+      <span class="tp-prog"><b>${FARM.seen}</b> ${t("fm_seen")}</span>
+    </div>
+    <div class="fm-stats"><span class="k">✓ ${FARM.kept}</span> · <span class="r">⚒ ${FARM.rec}</span></div>
+    <div class="fm-verdict ${v.state}" id="fm-verd">${pieceLine}${verd}${hold}</div>
+    <div class="fm-taps">
+      <div><div class="tp-k">${t("fm_sets_recent")}</div>
+        <div class="fm-row">
+          ${recents.map(n=>`<button type="button" class="chip set t${SETTIER[n]} pick${m.set===n?' sel':''}" data-fmset="${esc(n)}">${esc(setName(n))}</button>`).join("")}
+          <button type="button" class="fchip${FARM.allSets?' on':''}" id="fm-allsets">${t("fm_allsets")} ▾</button>
+        </div>
+        ${FARM.allSets?`<div class="fm-row" style="margin-top:7px">${sideSets.map(s=>`<button type="button" class="chip set t${s.t} pick${m.set===s.n?' sel':''}" data-fmset="${esc(s.n)}">${esc(setName(s.n))}</button>`).join("")}</div>`:""}
+      </div>
+      <div><div class="tp-k">${t("fm_slotmain")}</div>
+        <div class="fm-row">${SLOTS.map(s=>`<button type="button" class="fchip${s.key===m.slot?' on':''}" data-fmslot="${s.key}">${slotLabel(s.key)}</button>`).join("")}</div>
+        <div class="fm-row" style="margin-top:7px">${legal.map(a=>`<button type="button" class="chip ${STAT[a]} pick${a===m.main?' sel':''}" data-fmmain="${a}">${a}</button>`).join("")}</div>
+      </div>
+      <div><div class="tp-k">${t("fm_subs", m.subs.length)}</div>
+        <div class="fm-row">${ALLSTATS.filter(a=>a!==m.main).map(a=>`<button type="button" class="chip ${STAT[a]} pick${m.subs.includes(a)?' sel':''}" data-fmsub="${a}">${a}</button>`).join("")}</div>
+      </div>
+    </div>
+  </div>`;
+}
+function openFarm(){
+  // une ouverture = une session : les compteurs repartent à zéro
+  FARM.seen = 0; FARM.kept = 0; FARM.rec = 0;
+  farmReset(false);
+  const legal = CONSTRAINTS[FARM.m.slot] || [];
+  if(!FARM.m.main) FARM.m.main = legal[0] || null;
+  farmRender();
+  const d = document.getElementById("farm-dlg");
+  if(!d.open) d.showModal();
+  tpWakeLock(true);
+}
+function closeFarm(){ const d = document.getElementById("farm-dlg"); if(d && d.open) d.close(); }
 function viewSaisie(){
   const tab = activeTab();
   return `<div class="wrap">
@@ -3614,6 +3762,28 @@ document.addEventListener("click", e=>{
   }
 
   // tiroir mobile
+  if(el.closest("#fm-open")){ openFarm(); return; }
+  if(el.closest("#fm-close")){ closeFarm(); return; }
+  if(el.closest("#fm-next")){ farmReset(true); return; }
+  if(el.closest("#fm-allsets")){ FARM.allSets = !FARM.allSets; farmRender(); return; }
+  const fset = el.closest("[data-fmset]");
+  if(fset){ farmApply(()=>{ FARM.m.set = fset.dataset.fmset; }); return; }
+  const fslot = el.closest("[data-fmslot]");
+  if(fslot){ farmApply(()=>{
+    FARM.m.slot = fslot.dataset.fmslot;
+    const legal = CONSTRAINTS[FARM.m.slot] || [];
+    if(!legal.includes(FARM.m.main)) FARM.m.main = legal[0] || null;
+    FARM.m.subs = FARM.m.subs.filter(s=>s!==FARM.m.main);
+  }); return; }
+  const fmain = el.closest("[data-fmmain]");
+  if(fmain){ farmApply(()=>{ FARM.m.main = fmain.dataset.fmmain; FARM.m.subs = FARM.m.subs.filter(s=>s!==FARM.m.main); }); return; }
+  const fsub = el.closest("[data-fmsub]");
+  if(fsub){ farmApply(()=>{
+    const a = fsub.dataset.fmsub, subs = FARM.m.subs;
+    if(subs.includes(a)) FARM.m.subs = subs.filter(x=>x!==a);
+    else if(subs.length<4) subs.push(a);
+  }); return; }
+  if(el.closest("#fm-verd")){ if(FARM.timer){ clearTimeout(FARM.timer); FARM.timer = null; farmRender(); } return; }
   if(el.closest("#tp-open")){ openTp(); return; }
   if(el.closest("#tp-close") || el.closest("#tp-close2")){ closeTp(); return; }
   if(el.closest("#tp-next")){ tpNext(true); return; }
@@ -3920,6 +4090,8 @@ document.addEventListener("drop", e=>{
 document.addEventListener("dragend", ()=>{ if(DRAG){ DRAG = null; updateRuleList(); } });
 // l'Échap natif du <dialog> contourne closeDlg() : le nettoyage vit sur l'événement close
 { const d = document.getElementById("dlg-overlay"); if(d) d.addEventListener("close", ()=>{ AP.editing = null; }); }
+{ const d = document.getElementById("farm-dlg");
+  if(d) d.addEventListener("close", ()=>{ clearTimeout(FARM.timer); FARM.timer = null; tpWakeLock(false); }); }
 { const d = document.getElementById("tp-dlg");
   if(d){
     d.addEventListener("close", ()=>{ tpWakeLock(false); renderView(); });
