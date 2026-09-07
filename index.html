@@ -545,6 +545,40 @@
   .prog-wrap[data-nav]{cursor:pointer;border-radius:var(--r-s)}
   .prog-wrap[data-nav]:hover .prog-label{color:var(--ink)}
   .prog-wrap[data-nav]:focus-visible{outline:2px solid var(--acc);outline-offset:3px}
+  /* ── Téléprompteur de recopie (mode focus plein écran) ── */
+  dialog.tp{width:100vw;height:100dvh;max-width:none;max-height:none;margin:0;padding:0;border:none;background:var(--bg);color:var(--ink)}
+  dialog.tp::backdrop{background:var(--bg)}
+  .tp-wrap{height:100%;display:flex;flex-direction:column;max-width:560px;margin:0 auto;
+    padding:14px 18px calc(14px + env(safe-area-inset-bottom))}
+  .tp-head{display:flex;align-items:center;gap:12px}
+  .tp-title{font-family:var(--body);font-size:11.5px;font-weight:600;letter-spacing:.08em;color:var(--label);
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .tp-prog{margin-left:auto;font-family:var(--mono);font-size:var(--fs-2);color:var(--faint)}
+  .tp-prog b{color:var(--ink-hi);font-weight:600}
+  .tp-pb{margin-top:10px}
+  .tp-body{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:16px;padding:20px 2px}
+  .tp-rid{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .tp-rid .rc-id{font-size:var(--fs-2);padding:3px 10px}
+  .tp-name{font-family:var(--display);font-variant:small-caps;letter-spacing:.03em;font-size:var(--fs-5);font-weight:600;color:var(--ink-hi)}
+  .tp-entered{font-family:var(--mono);font-size:var(--fs-0);color:var(--util)}
+  .tp-k{font-family:var(--body);font-size:11.5px;font-weight:600;letter-spacing:.08em;color:var(--label);margin-bottom:4px}
+  .tp-v{font-family:var(--mono);font-size:18px;line-height:1.5;color:var(--ink-hi)}
+  .tp-v .sig,.tp-sub .sig{font-family:var(--body);font-size:var(--fs-1);color:var(--faint)}
+  .tp-subs{display:flex;flex-direction:column;gap:6px}
+  .tp-sub{font-family:var(--mono);font-size:18px;color:var(--ink);display:flex;align-items:baseline;gap:8px}
+  .tp-sub.ess{color:var(--ink-hi)}
+  .tp-keyrow{display:flex;align-items:center;gap:9px;margin-top:4px;flex-wrap:wrap}
+  .tp-keyval{font-family:var(--mono);font-size:var(--fs-3);color:var(--ink-hi);background:var(--panel2);
+    border:1px solid var(--border-soft);border-radius:var(--r-s);padding:4px 10px;word-break:break-all}
+  .tp-foot{display:flex;gap:10px;padding-top:14px;border-top:1px solid var(--border-soft)}
+  .tp-foot .btn{min-height:48px;flex:1}
+  .tp-foot .btn.primary{flex:2}
+  .tp-hint{font-size:var(--fs-0);color:var(--faint);text-align:center;margin-top:8px}
+  .tp-done{align-items:center;justify-content:center;text-align:center;gap:10px}
+  .tp-done .tp-done-d{font-size:44px;color:var(--acc);text-shadow:0 0 24px var(--acc-dim)}
+  .tp-done h3{font-family:var(--display);font-variant:small-caps;font-size:var(--fs-5);color:var(--acc);letter-spacing:.05em}
+  .tp-done p{color:var(--muted);max-width:40ch}
+  .tp-wrap.gold{box-shadow:inset 0 0 90px var(--acc-glow)}
   .ap-hint{color:var(--faint);font-size:var(--fs-1);margin-top:10px}
 
   /* ── Toasts ── */
@@ -767,6 +801,8 @@
     </div>
 </dialog>
 
+<dialog class="tp" id="tp-dlg" aria-label="recopie guidée"></dialog>
+
 <div id="print-view" aria-hidden="true"></div>
 
 <script>
@@ -942,6 +978,12 @@ fr:{
   nav_rules:"Règles", nav_tester:"Testeur", nav_sets:"Sets & transfo", nav_ref:"Référence",
   nav_sim:"Simulation", nav_session:"Session", nav_entry:"Saisie en jeu", ref_doc:"Doctrine",
   tb_rules:"Règles", tb_sim:"Simul.", tb_session:"Session", tb_entry:"Saisie", tb_ref:"Réf.", tb_more:"Plus",
+  tp_start:"Recopie guidée", tp_end:"Fin", tp_prev:"Précéd.", tp_next:"Saisie ✓ Suivant", tp_star:"★ obligatoires",
+  tp_req:req=>`au moins ${req} sub${req>1?"s":""} de la liste, ★ incluses`,
+  tp_key_hint:"à coller dans le jeu : Réglages ▸ Tri automatique ▸ Importer",
+  tp_nokey:"renseigne la clé in-game dans la vue Saisie",
+  tp_done_t:"Jeu complet", tp_done_p:n=>`Les ${n} règles sont saisies — le tri in-game est aligné sur ce jeu de règles.`,
+  tp_help:"Entrée = coché → suivante · Retour = décocher-revenir · ← → = naviguer · c = copier la clé",
   v_sim_h:"Simulation", v_sim_lede:"Vérifie ce que ton jeu de règles garde et recycle avant de le saisir dans le jeu — sur un échantillon réaliste de pièces tirées.",
   v_session_h:"Session — vérifier une pièce", v_session_lede:"Construis la pièce que tu viens de dropper : le verdict tombe sur la carte, en direct.",
   v_entry_h:"Saisie en jeu", v_entry_lede:"L'état de recopie du jeu de règles actif : coche chaque règle une fois saisie dans le builder du jeu.",
@@ -1113,6 +1155,12 @@ en:{
   nav_rules:"Rules", nav_tester:"Tester", nav_sets:"Sets & transform", nav_ref:"Reference",
   nav_sim:"Simulation", nav_session:"Session", nav_entry:"In-game entry", ref_doc:"Doctrine",
   tb_rules:"Rules", tb_sim:"Simul.", tb_session:"Session", tb_entry:"Entry", tb_ref:"Ref.", tb_more:"More",
+  tp_start:"Guided copy", tp_end:"Done", tp_prev:"Prev.", tp_next:"Entered ✓ Next", tp_star:"★ mandatory",
+  tp_req:req=>`at least ${req} sub${req>1?"s":""} from the list, ★ included`,
+  tp_key_hint:"paste in game: Settings ▸ Auto-sort ▸ Import",
+  tp_nokey:"set the in-game key in the Entry view",
+  tp_done_t:"Full set", tp_done_p:n=>`All ${n} rules are entered — the in-game sorting matches this ruleset.`,
+  tp_help:"Enter = ticked → next · Backspace = untick & back · ← → = navigate · c = copy key",
   v_sim_h:"Simulation", v_sim_lede:"Check what your ruleset keeps and recycles before entering it in the game — on a realistic sample of drawn pieces.",
   v_session_h:"Session — check a piece", v_session_lede:"Build the piece you just dropped: the verdict lands on the card, live.",
   v_entry_h:"In-game entry", v_entry_lede:"The copy state of the active ruleset: tick each rule once entered in the in-game builder.",
@@ -2524,6 +2572,114 @@ function saisieRows(){
 
   return html;
 }
+/* ── Téléprompteur de recopie : une règle plein écran, Entrée = coché → suivante,
+      Retour = décocher-revenir, c = copier la clé ; reprise auto, dorure à n/n. ── */
+let TP = {idx:0, lock:null};
+async function tpWakeLock(on){
+  // le mode focus garde l'écran allumé quand le navigateur l'autorise — sinon il marche sans
+  try{
+    if(on && navigator.wakeLock){ TP.lock = await navigator.wakeLock.request("screen"); }
+    else if(TP.lock){ TP.lock.release(); TP.lock = null; }
+  }catch(_){ TP.lock = null; }
+}
+function tpRules(){
+  const tab = activeTab();
+  if(!tab) return [];
+
+  return SECTIONS.flatMap(sec=>tab.rules.filter(r=>r.section===sec));
+}
+function tpRender(){
+  const d = document.getElementById("tp-dlg");
+  if(!d) return;
+  const tab = activeTab();
+  const rules = tpRules();
+  const done = rules.filter(r=>isEntered(r.id)).length;
+  const total = rules.length;
+  const allDone = total>0 && done===total;
+  let body;
+  if(!total){
+    body = `<div class="tp-body"><p class="hint">${t("empty_tab")}</p></div>`;
+  } else if(allDone){
+    body = `<div class="tp-body tp-done"><div class="tp-done-d">◆</div><h3>${t("tp_done_t")}</h3><p>${t("tp_done_p", total)}</p>
+      <button type="button" class="btn primary" id="tp-close2">${t("tp_end")}</button></div>`;
+  } else {
+    TP.idx = Math.max(0, Math.min(TP.idx, total-1));
+    const r = rules[TP.idx];
+    // les ★ obligatoires d'abord, puis le reste de la liste — l'ordre de lecture de la recopie
+    const poolOrdered = [...sortStats(r.pool.filter(a=>r.ess.includes(a))), ...sortStats(r.pool.filter(a=>!r.ess.includes(a)))];
+    const subs = poolOrdered.map(a=>{
+      const isEss = r.ess.includes(a);
+      return `<div class="tp-sub${isEss?" ess":""}">${isEss?"★ ":""}${esc(statSig(a))} <span class="sig">(${a})</span></div>`;
+    }).join("");
+    body = `<div class="tp-body">
+      <div class="tp-rid"><span class="rc-id">${r.id}</span><span class="tp-name">${esc(r.name)}</span>${isEntered(r.id)?`<span class="tp-entered">✓ ${t("pr_entered")}</span>`:""}</div>
+      <div><div class="tp-k">${t("k_sets")}</div><div class="tp-v">${sortSets(r.sets).map(setName).map(esc).join(" · ")}</div></div>
+      <div><div class="tp-k">${t("k_mains")}</div><div class="tp-v">${r.mains.length?r.mains.map(a=>`${esc(statSig(a))} <span class="sig">(${a})</span>`).join(" · "):"—"}</div></div>
+      <div><div class="tp-k">${t("k_subs")} — ${t("tp_star")}</div><div class="tp-subs">${subs}</div></div>
+      <div><div class="tp-k">${t("k_req")}</div><div class="tp-v">${t("tp_req", r.req)}</div></div>
+      <div><div class="tp-k">${t("lbl_gamekey")}</div>
+        <div class="tp-keyrow">${tab.key?`<span class="tp-keyval">${esc(tab.key)}</span><button type="button" class="btn sm" id="tp-copy">${t("b_copykey")}</button>`:`<span class="hint">${t("tp_nokey")}</span>`}</div>
+        <p class="hint" style="margin:5px 0 0">${t("tp_key_hint")}</p>
+      </div>
+    </div>`;
+  }
+  d.innerHTML = `<div class="tp-wrap${allDone?" gold":""}">
+    <div class="tp-head">
+      <button type="button" class="btn sm" id="tp-close">✕ ${t("tp_end")}</button>
+      <span class="tp-title">${t("prog")} · ${esc(tab?tab.name:"")}</span>
+      <span class="tp-prog"><b>${done}</b>/${total}</span>
+    </div>
+    <div class="prog-bar tp-pb"><i style="width:${total?Math.round(done/total*100):0}%"></i></div>
+    ${body}
+    ${(!allDone && total) ? `<div class="tp-foot">
+      <button type="button" class="btn" id="tp-prev">‹ ${t("tp_prev")}</button>
+      <button type="button" class="btn primary" id="tp-next">${t("tp_next")}</button>
+    </div>
+    <p class="tp-hint">${t("tp_help")}</p>` : ""}
+  </div>`;
+  const nx = document.getElementById("tp-next") || document.getElementById("tp-close2");
+  if(nx) nx.focus({preventScroll:true});
+}
+function openTp(){
+  const rules = tpRules();
+  TP.idx = Math.max(0, rules.findIndex(r=>!isEntered(r.id)));
+  tpRender();
+  const d = document.getElementById("tp-dlg");
+  if(!d.open) d.showModal();
+  tpWakeLock(true);
+}
+function closeTp(){ const d = document.getElementById("tp-dlg"); if(d && d.open) d.close(); }
+function tpSetEntered(r, on){
+  on ? ENTERED.add(entKey(activeTabId, r.id)) : ENTERED.delete(entKey(activeTabId, r.id));
+  updateSidebar();
+  scheduleSave(t("c_entered", r.id));
+}
+function tpNext(mark){
+  const rules = tpRules();
+  if(!rules.length) return;
+  if(mark){
+    const r = rules[TP.idx];
+    if(r && !isEntered(r.id)) tpSetEntered(r, true);
+    // prochaine non cochée, en bouclant — la dorure tombe d'elle-même quand il n'en reste plus
+    for(let k=1;k<=rules.length;k++){
+      const cand = (TP.idx+k)%rules.length;
+      if(!isEntered(rules[cand].id)){ TP.idx = cand; break; }
+    }
+  } else {
+    TP.idx = Math.min(rules.length-1, TP.idx+1);
+  }
+  tpRender();
+}
+function tpBack(uncheck){
+  const rules = tpRules();
+  if(!rules.length) return;
+  if(TP.idx > 0) TP.idx--;
+  if(uncheck){
+    const r = rules[TP.idx];
+    if(r && isEntered(r.id)) tpSetEntered(r, false);
+  }
+  tpRender();
+}
 function viewSaisie(){
   const tab = activeTab();
   return `<div class="wrap">
@@ -2540,6 +2696,7 @@ function viewSaisie(){
         </div>
       </div>
     </div>
+    ${tab && tab.rules.length ? `<button type="button" class="btn primary" id="tp-open" style="margin:2px 0 14px">▸ ${t("tp_start")}</button>` : ""}
     <div class="prog-wrap wide">
       <div class="prog-label"><span>${t("prog")}</span><b id="saisie-num">0/0</b></div>
       <div class="prog-bar"><i id="saisie-fill" style="width:0%"></i></div>
@@ -3457,6 +3614,11 @@ document.addEventListener("click", e=>{
   }
 
   // tiroir mobile
+  if(el.closest("#tp-open")){ openTp(); return; }
+  if(el.closest("#tp-close") || el.closest("#tp-close2")){ closeTp(); return; }
+  if(el.closest("#tp-next")){ tpNext(true); return; }
+  if(el.closest("#tp-prev")){ tpBack(false); return; }
+  if(el.closest("#tp-copy")){ const k = (activeTab()||{}).key; if(k) doCopy(k, el.closest("#tp-copy")); return; }
   if(el.closest("#tb-more")){ document.body.classList.toggle("nav-open"); return; }
   if(el.closest("#scrim")){ document.body.classList.remove("nav-open"); return; }
 
@@ -3621,12 +3783,21 @@ document.addEventListener("keydown", e=>{
   // Ctrl+Z global — sauf pendant la frappe (undo natif du champ) et dialogue ouvert
   if((e.ctrlKey || e.metaKey) && !e.altKey && ["z","Z","y","Y"].includes(e.key)){
     const typing = e.target.closest && e.target.closest("input,textarea,select,[contenteditable]");
-    const dlg = document.getElementById("dlg-overlay");
-    if(!typing && !(dlg && dlg.open)){
+    const dlg = document.querySelector("dialog[open]");
+    if(!typing && !dlg){
       e.preventDefault();
       (e.key.toLowerCase()==="y" || e.shiftKey) ? redoCmd() : undoCmd();
       return;
     }
+  }
+  const tpd = document.getElementById("tp-dlg");
+  if(tpd && tpd.open){
+    if(e.key==="Enter"){ e.preventDefault(); tpNext(true); return; }
+    if(e.key==="Backspace"){ e.preventDefault(); tpBack(true); return; }
+    if(e.key==="ArrowRight"){ e.preventDefault(); tpNext(false); return; }
+    if(e.key==="ArrowLeft"){ e.preventDefault(); tpBack(false); return; }
+    if((e.key==="c"||e.key==="C") && !e.ctrlKey && !e.metaKey){ const b=document.getElementById("tp-copy"); if(b) b.click(); e.preventDefault(); return; }
+    return; // rien ne fuit vers les raccourcis de la liste (Échap = fermeture native)
   }
   if(e.target && e.target.id==="arch-input"){
     if(e.key==="Enter"){ e.preventDefault(); commitRole(e.target.dataset.ctx, e.target.value); }
@@ -3749,6 +3920,20 @@ document.addEventListener("drop", e=>{
 document.addEventListener("dragend", ()=>{ if(DRAG){ DRAG = null; updateRuleList(); } });
 // l'Échap natif du <dialog> contourne closeDlg() : le nettoyage vit sur l'événement close
 { const d = document.getElementById("dlg-overlay"); if(d) d.addEventListener("close", ()=>{ AP.editing = null; }); }
+{ const d = document.getElementById("tp-dlg");
+  if(d){
+    d.addEventListener("close", ()=>{ tpWakeLock(false); renderView(); });
+    // swipe horizontal = naviguer (en plus des boutons et des flèches)
+    let sx = null;
+    d.addEventListener("touchstart", e=>{ sx = e.touches[0].clientX; }, {passive:true});
+    d.addEventListener("touchend", e=>{
+      if(sx===null) return;
+      const dx = e.changedTouches[0].clientX - sx;
+      sx = null;
+      if(dx < -60) tpNext(false);
+      else if(dx > 60) tpBack(false);
+    }, {passive:true});
+  } }
 document.addEventListener("toggle", e=>{ if(e.target && e.target.id==="ov-acc") UI.ovOpen = e.target.open; }, true);
 window.addEventListener("hashchange", route);
 window.addEventListener("beforeprint", ()=>{ const pv = document.getElementById("print-view"); if(pv) pv.innerHTML = printDoc(); });
