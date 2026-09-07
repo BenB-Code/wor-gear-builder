@@ -855,7 +855,7 @@ fr:{
   k_sets:"Sets", k_mains:"Main(s)", k_subs:"Subs", k_req:"Requis", k_roles:"Rôles",
   flt_sum:"Recherche &amp; filtres", lbl_set:"Set",
   lbl_gamekey:"Clé in-game", ph_gamekey:"ex. AB12CD34", b_copykey:"copier",
-  tip_drag:"glisser pour réordonner", tip_entered:"saisie en jeu", aria_entered:"règle saisie en jeu",
+  tip_drag:"glisser pour réordonner — ou Alt+↑/↓ au clavier", tip_entered:"saisie en jeu", aria_entered:"règle saisie en jeu",
   warn_unplayable:"requis &gt; liste — injouable", warn_eff:n=>"requis effectif "+n+" (★ obligatoires)",
   st_ess:"essentiel", st_pool:"dans le pool", st_off:"hors pool",
   gauge:req=>req+" subs requis sur 4",
@@ -997,7 +997,7 @@ en:{
   k_sets:"Sets", k_mains:"Main(s)", k_subs:"Subs", k_req:"Required", k_roles:"Roles",
   flt_sum:"Search &amp; filters", lbl_set:"Set",
   lbl_gamekey:"In-game key", ph_gamekey:"e.g. AB12CD34", b_copykey:"copy",
-  tip_drag:"drag to reorder", tip_entered:"entered in game", aria_entered:"rule entered in game",
+  tip_drag:"drag to reorder — or Alt+↑/↓ on the keyboard", tip_entered:"entered in game", aria_entered:"rule entered in game",
   warn_unplayable:"required &gt; list — unplayable", warn_eff:n=>"effective required "+n+" (★ mandatory)",
   st_ess:"essential", st_pool:"in the pool", st_off:"off the pool",
   gauge:req=>req+" of 4 subs required",
@@ -1110,7 +1110,7 @@ function syncHelp(){
   document.querySelectorAll("[data-help-body]").forEach(b=>{ b.hidden = HELP_CLOSED.has(b.dataset.helpBody); });
 }
 
-const UI = { view:"regles", q:"", fSection:"all", fArch:"all", fMain:new Set(), fSubs:new Set(), fSet:"all", fTier:"all", filtersOpen:false, addingRole:null, open:new Set(),
+const UI = { view:"regles", rovingId:null, q:"", fSection:"all", fArch:"all", fMain:new Set(), fSubs:new Set(), fSet:"all", fTier:"all", filtersOpen:false, addingRole:null, open:new Set(),
              setsQ:"", setsTier:"all", pending:null, renaming:null,
              test:{ mode:"couverture", n:500, tiers:new Set(["4","3","2","1","0"]), sides:new Set(["right","left"]), scopeMode:"source", src:"gr1", lvl:21,
                     sample:[], openPieces:new Set(), filter:"all", consOpen:false,
@@ -1474,6 +1474,21 @@ function setChip(name){
   const title = tip ? ` title="${esc(tip)}"` : "";
   return `<span class="chip set t${tier}"${title}>${esc(label)}</span>`;
 }
+// Mutation du requis, en place (partagée clic stepper / raccourci clavier ±) — le focus ne bouge pas
+function bumpReq(r, delta){
+  const next = Math.min(4, Math.max(1, r.req + delta));
+  if(next === r.req) return;
+  r.req = next;
+  const card = document.getElementById("card-"+r.id);
+  if(card){
+    const val = card.querySelector(".stepper .val");
+    if(val) val.textContent = r.req;
+    const dots = card.querySelector(".dots");
+    if(dots) dots.outerHTML = gauge(r.req);
+  }
+  updateRuleWarn(r);
+  scheduleSave();
+}
 function updateRuleWarn(r){
   const w = document.querySelector(`[data-warn="${r.id}"]`);
   if(!w) return;
@@ -1660,6 +1675,15 @@ function updateRuleList(){
   if(tg) tg.textContent = UI.open.size ? t("btn_collapse") : t("btn_expand");
   const fsum = document.querySelector("#filters-acc>summary");
   if(fsum) fsum.innerHTML = filtersSummary();
+  applyRoving();
+}
+// Roving tabindex : une seule carte est un arrêt Tab, j/k et les flèches naviguent ensuite
+function applyRoving(){
+  const rows = [...document.querySelectorAll("#rule-list .row-head")];
+  if(!rows.length) return;
+  const cur = rows.find(h=>h.dataset.toggle===UI.rovingId) || rows[0];
+  UI.rovingId = cur.dataset.toggle;
+  rows.forEach(h=>{ h.tabIndex = (h===cur) ? 0 : -1; });
 }
 // Le remplacement outerHTML détruit l'élément actif (focus → body) : on mémorise une
 // signature STABLE du focus (tag + classe fonctionnelle + data-*) et on le repose après.
@@ -1675,6 +1699,17 @@ function focusSig(elm, root){
   }
   return sel;
 }
+function duplicateRule(id){
+  const r = getRule(id); if(!r) return;
+  const tab = tabOfRule(r.id) || activeTab();
+  const copy = {...JSON.parse(JSON.stringify(r)), id:nextRuleId(tab, r.section), name:r.name+t("copy_sfx")};
+  ENTERED.delete(entKey(tab.id, copy.id)); // un numéro libéré par suppression peut resservir
+  const idx = tab.rules.indexOf(r);
+  tab.rules.splice(idx+1, 0, copy);
+  UI.open.add(copy.id);
+  updateRuleList(); refreshTabBar(); updateSidebar(); scheduleSave();
+  toast(t("t_rule_dup", copy.id));
+}
 function rerenderRule(id){
   const el = document.getElementById("card-"+id);
   const r = getRule(id);
@@ -1686,6 +1721,7 @@ function rerenderRule(id){
     const n = card && card.querySelector(sig);
     if(n) n.focus({preventScroll:true});
   }
+  applyRoving();
 }
 function refreshTabBar(){
   const el = document.getElementById("tabbar");
@@ -3022,16 +3058,8 @@ document.addEventListener("click", e=>{
   const minus = el.closest(".st-minus"), plus = el.closest(".st-plus");
   if(minus||plus){
     const r = getRule((minus||plus).dataset.rule);
-    if(!r) return;
-    r.req = Math.min(4, Math.max(1, r.req + (plus?1:-1)));
-    // patch-in-place : valeur, points de requis du header et avertissement — le bouton garde le focus
-    const val = (minus||plus).closest(".stepper")?.querySelector(".val");
-    if(val) val.textContent = r.req;
-    const card = document.getElementById("card-"+r.id);
-    const dots = card && card.querySelector(".dots");
-    if(dots) dots.outerHTML = gauge(r.req);
-    updateRuleWarn(r);
-    scheduleSave(); return;
+    if(r) bumpReq(r, plus?1:-1);
+    return;
   }
   const at = el.closest(".arch-tog");
   if(at){
@@ -3047,15 +3075,7 @@ document.addEventListener("click", e=>{
   if(ed){ openDlg(ed.dataset.rule); return; }
   const dup = el.closest(".rc-dup");
   if(dup){
-    const r = getRule(dup.dataset.rule); if(!r) return;
-    const tab = tabOfRule(r.id) || activeTab();
-    const copy = {...JSON.parse(JSON.stringify(r)), id:nextRuleId(tab, r.section), name:r.name+t("copy_sfx")};
-    ENTERED.delete(entKey(tab.id, copy.id)); // un numéro libéré par suppression peut resservir
-    const idx = tab.rules.indexOf(r);
-    tab.rules.splice(idx+1, 0, copy);
-    UI.open.add(copy.id);
-    updateRuleList(); refreshTabBar(); updateSidebar(); scheduleSave();
-    toast(t("t_rule_dup", copy.id));
+    duplicateRule(dup.dataset.rule);
     return;
   }
   const del = el.closest(".rc-del");
@@ -3136,13 +3156,51 @@ document.addEventListener("keydown", e=>{
     const q = document.getElementById("rule-q");
     if(q){ e.preventDefault(); q.focus(); }
   }
-  const head = e.target.closest && e.target.closest(".row-head");
-  if(head && (e.key===" "||e.key==="Enter") && !e.target.closest("input,button")){
-    e.preventDefault();
+  const head = e.target.closest && e.target.closest("#rule-list .row-head");
+  if(head && !e.target.closest("input,button")){
     const id = head.dataset.toggle;
-    UI.open.has(id) ? UI.open.delete(id) : UI.open.add(id);
-    rerenderRule(id);
+    const rows = [...document.querySelectorAll("#rule-list .row-head")];
+    const i = rows.indexOf(head);
+    if(e.key===" " || e.key==="Enter" || e.key==="o"){
+      e.preventDefault();
+      UI.open.has(id) ? UI.open.delete(id) : UI.open.add(id);
+      rerenderRule(id);
+    } else if(!e.altKey && (e.key==="ArrowDown" || e.key==="j")){
+      e.preventDefault(); if(rows[i+1]) rows[i+1].focus();
+    } else if(!e.altKey && (e.key==="ArrowUp" || e.key==="k")){
+      e.preventDefault(); if(rows[i-1]) rows[i-1].focus();
+    } else if(e.altKey && (e.key==="ArrowUp" || e.key==="ArrowDown")){
+      // miroir clavier du drag & drop, contraint à la même section
+      e.preventDefault();
+      const up = e.key==="ArrowUp";
+      const r = getRule(id);
+      const sib = rows[i + (up ? -1 : 1)];
+      const sr = sib && getRule(sib.dataset.toggle);
+      if(!r || !sr || sr.section !== r.section) return;
+      if(reorderRule(id, sr.id, up)) scheduleSave();
+      updateRuleList(); refreshTabBar();
+      const nh = document.getElementById("card-"+id)?.querySelector(".row-head");
+      if(nh) nh.focus();
+    } else if(e.key==="x"){
+      e.preventDefault();
+      const chk = head.querySelector(".chk");
+      if(chk) chk.click();
+    } else if(e.key==="d"){
+      e.preventDefault();
+      duplicateRule(id);
+      const nh = document.getElementById("card-"+id)?.querySelector(".row-head");
+      if(nh) nh.focus();
+    } else if(e.key==="+" || e.key==="="){
+      e.preventDefault(); const r = getRule(id); if(r) bumpReq(r, +1);
+    } else if(e.key==="-"){
+      e.preventDefault(); const r = getRule(id); if(r) bumpReq(r, -1);
+    }
+    return;
   }
+});
+document.addEventListener("focusin", e=>{
+  const h = e.target.closest && e.target.closest("#rule-list .row-head");
+  if(h && h.dataset.toggle !== UI.rovingId){ UI.rovingId = h.dataset.toggle; applyRoving(); }
 });
 document.addEventListener("focusout", e=>{
   if(e.target && e.target.id==="tab-rename-input"){ setTimeout(()=>{ if(UI.renaming) commitRename(true); }, 120); }
