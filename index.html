@@ -515,6 +515,25 @@
   .op-banner .d{color:var(--acc)}
   .op-banner .x{margin-left:auto;flex:0 0 auto}
   .ic-note{font-size:var(--fs-0);color:var(--faint);font-style:italic}
+  /* ── Couverture en tête de Règles ── */
+  #cov-head{margin:2px 0 14px;display:flex;flex-direction:column;gap:10px}
+  #cov-head:empty{display:none}
+  .alerts{display:flex;flex-direction:column;gap:4px}
+  .al{font-size:var(--fs-1);color:var(--muted);display:flex;align-items:baseline;gap:7px;flex-wrap:wrap}
+  .al .al-i{color:var(--off)}
+  .al.soft .al-i{color:var(--faint)}
+  .rm-cov{position:relative;font-family:var(--mono);font-size:var(--fs-0);color:var(--faint);
+    min-width:96px;display:inline-flex;align-items:center;justify-content:flex-end;gap:6px}
+  .rm-cov.bad{color:var(--off)}
+  .spec{position:relative;width:26px;height:4px;border-radius:2px;background:var(--panel2);flex:0 0 auto}
+  .spec i{position:absolute;top:-2px;width:4px;height:8px;border-radius:2px;background:var(--head);transform:translateX(-50%)}
+  .ovrow{display:flex;align-items:center;gap:9px;margin:5px 0;font-size:var(--fs-1)}
+  .ovmir{display:flex;width:130px;height:6px;border-radius:3px;overflow:hidden;flex:0 0 auto}
+  .ovmir .s{flex:1;position:relative;background:var(--panel2)}
+  .ovmir .s i{position:absolute;top:0;height:100%;background:var(--t1-bd)}
+  .ovmir .s.l i{right:0}
+  .ovmir .s.r i{left:0}
+  .ovn{font-family:var(--mono);font-size:var(--fs-0);color:var(--faint);margin-left:auto}
   .ap-hint{color:var(--faint);font-size:var(--fs-1);margin-top:10px}
 
   /* ── Toasts ── */
@@ -602,6 +621,7 @@
     .controls .btn.primary,.ap-actions .btn.primary{width:100%}
     .row-body{padding-left:16px}
     .rm-mains{display:none}
+    .rm-cov{display:none}
     /* fondu de débord : indice visuel qu'une rangée de filtres scrolle */
     .fchips{-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 16px),transparent);mask-image:linear-gradient(90deg,#000 calc(100% - 16px),transparent)}
   }
@@ -998,10 +1018,14 @@ fr:{
   scene_drawn:"pièces tirées", scene_kept:"gardées", scene_top:"règle la plus active", scene_replay:"Rejouer un échantillon",
   ban_patch:(n,u,names)=>`Données du jeu mises à jour : ${n} nouveau${n>1?"x":""} set${n>1?"s":""} — ${names}${u?` · ${u} non couvert${u>1?"s":""} par tes règles`:" · tous couverts par tes règles"}.`,
   ban_resume:n=>`Reprise — il te reste ${n} règle${n>1?"s":""} à saisir en jeu (coche-les au fil de la recopie).`,
+  al_mute:n=>n>1?`${n} règles ne gardent rien :`:"1 règle ne garde rien :",
+  al_dup:n=>n>1?`${n} règles sont entièrement recouvertes par d'autres :`:"1 règle est entièrement recouverte par d'autres :",
+  al_uncov:n=>`${n} set${n>1?"s":""} ne ${n>1?"sont":"est"} couvert${n>1?"s":""} par aucune règle — voir Sets & transfo.`,
+  spec_tip:"jauge stricte ↔ permissive",
   ic_onlyone:"il suffisait d'une seule",
   oracle_ok:(k,n,p)=>`Ton tri est sain — il garde ${k} pièce${k>1?"s":""} sur ${n} (${p})`,
   oracle_multi0:"rien n'est gardé deux fois par accident",
-  oracle_multiN:m=>`${m} pièce${m>1?"s":""} gardée${m>1?"s":""} par ≥ 2 règles — surveille les doublons en Couverture`,
+  oracle_multiN:m=>`${m} pièce${m>1?"s":""} gardée${m>1?"s":""} par ≥ 2 règles — surveille les chevauchements en tête de Règles`,
   oracle_none:n=>`Rien n'est gardé sur ${n} pièces — élargis le scope, ou vérifie les règles de l'onglet.`,
   oracle_wide:p=>`${p} des pièces gardées — inhabituel pour un tri de farm : une règle est peut-être trop large.`,
   phrase_rule:(sets,mains,poolTxt,req,hasEss)=>`Garde une pièce <b>${sets}</b> — main <b>${mains}</b> — qui aligne au moins <b>${req}</b> sub${req>1?"s":""} parmi ${poolTxt}${hasEss?" ; les ★ sont obligatoires":""}.`,
@@ -1160,10 +1184,14 @@ en:{
   scene_drawn:"pieces drawn", scene_kept:"kept", scene_top:"most active rule", scene_replay:"Replay a sample",
   ban_patch:(n,u,names)=>`Game data updated: ${n} new set${n>1?"s":""} — ${names}${u?` · ${u} not covered by your rules`:" · all covered by your rules"}.`,
   ban_resume:n=>`Resume — ${n} rule${n>1?"s":""} left to enter in game (tick them as you copy).`,
+  al_mute:n=>n>1?`${n} rules keep nothing:`:"1 rule keeps nothing:",
+  al_dup:n=>n>1?`${n} rules are fully covered by others:`:"1 rule is fully covered by others:",
+  al_uncov:n=>`${n} set${n>1?"s are":" is"} covered by no rule — see Sets & transform.`,
+  spec_tip:"strict ↔ permissive gauge",
   ic_onlyone:"any one of them suffices",
   oracle_ok:(k,n,p)=>`Your sorting is healthy — it keeps ${k} piece${k>1?"s":""} out of ${n} (${p})`,
   oracle_multi0:"nothing is kept twice by accident",
-  oracle_multiN:m=>`${m} piece${m>1?"s":""} kept by ≥ 2 rules — watch the overlaps in Coverage`,
+  oracle_multiN:m=>`${m} piece${m>1?"s":""} kept by ≥ 2 rules — watch the overlaps atop the Rules view`,
   oracle_none:n=>`Nothing is kept out of ${n} pieces — widen the scope, or check this tab's rules.`,
   oracle_wide:p=>`${p} of pieces kept — unusual for farm sorting: one rule may be too broad.`,
   phrase_rule:(sets,mains,poolTxt,req,hasEss)=>`Keeps a <b>${sets}</b> piece — main <b>${mains}</b> — lining up at least <b>${req}</b> sub${req>1?"s":""} among ${poolTxt}${hasEss?"; ★ are mandatory":""}.`,
@@ -1343,6 +1371,7 @@ function applyState(s){
   CONSTRAINTS = structuredClone(s.constraints);
   EXTRA_ARCHS = [...s.xarch];
   ensureTab(); bumpSeqs(); registerArchs();
+  COV_CACHE = null;
   const ids = new Set(allRules().map(r=>r.id));
   UI.open = new Set([...UI.open].filter(id=>ids.has(id)));
   PREV_STATE = snapState();
@@ -1364,7 +1393,12 @@ function redoCmd(){
   applyState(cmd.state);
   toast(t("t_redone", cmd.label));
 }
-function scheduleSave(label){ pushCmd(label); clearTimeout(saveTimer); saveTimer = setTimeout(persist, 600); }
+function scheduleSave(label){
+  pushCmd(label);
+  COV_CACHE = null;
+  clearTimeout(covTimer); covTimer = setTimeout(updateCovUI, 250);
+  clearTimeout(saveTimer); saveTimer = setTimeout(persist, 600);
+}
 function sanitizeRule(r){
   if(!r || typeof r.id!=="string") return null;
   const mains = Array.isArray(r.mains)?r.mains.map(fixStat).filter(x=>ALLSTATS.includes(x)):[];
@@ -1712,6 +1746,7 @@ function ruleRow(r){
         <span class="rm-mains">${r.mains.join(" · ")||"—"}</span>
         ${gauge(r.req)}
         <span class="rm-sets">${t("rm_sets", r.sets.length)}</span>
+        ${covMeta(r)}
         <svg class="chev" width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6l5 5 5-5"/></svg>
       </span>
     </div>
@@ -1731,6 +1766,92 @@ function ruleRow(r){
       </div>
     </div>
   </article>`;
+}
+
+/* ══════════════ COUVERTURE DANS RÈGLES (la Couverture n'est plus une destination) ══════════════ */
+let COV_CACHE = null, covTimer = null;
+function covActive(){
+  const tab = activeTab();
+  if(!tab || !tab.rules.length) return null;
+  if(COV_CACHE && COV_CACHE.tabId === tab.id) return COV_CACHE.cov;
+  const cov = computeCoverage();
+  COV_CACHE = {tabId: tab.id, cov};
+
+  return cov;
+}
+function covPct(v){ return (100*v).toFixed(v<0.001&&v>0?3:2).replace(".", LANG==="fr"?",":".")+" %"; }
+// L'attribut de couverture d'une carte de règle : « 36 · 2,14 % » + jauge stricte ↔ permissive
+// (position log de 0,1 % à 10 % du taux de garde sur les sets ciblés)
+function covMeta(r){
+  const cov = covActive();
+  if(!cov || cov.perRule[r.id] === undefined) return `<span class="rm-cov" data-cov="${r.id}"></span>`;
+  const n = cov.perRule[r.id];
+  const den = r.sets.reduce((acc,sn)=>acc+(cov.perSet[sn]?cov.perSet[sn].total:0),0);
+  const p = den ? n/den : 0;
+  const clamp = Math.min(10, Math.max(0.1, p*100));
+  const pos = Math.round(100*(Math.log10(clamp)+1)/2);
+  const tip = n ? `${t("spec_tip")} · ${t("ord_one", Math.round(den/n))}` : t("diag_none");
+
+  return `<span class="rm-cov${n?"":" bad"}" data-cov="${r.id}" title="${esc(tip)}">${n.toLocaleString(t("date_locale"))} · ${covPct(p)}${n?`<span class="spec"><i style="left:${pos}%"></i></span>`:""}</span>`;
+}
+function covHead(){
+  const c = covActive();
+  if(!c) return "";
+  const rref = id => { const r = getRule(id); return `<button type="button" class="ruleref" data-goto="${id}" title="${esc(r?r.name:"")}">${id}</button>`; };
+  const mute = c.rules.filter(r=>c.perRule[r.id]===0);
+  const dup = c.rules.filter(r=>c.perRule[r.id]>0 && c.uniq[r.id]===0);
+  const uncov = SETS.filter(s=>c.perSet[s.n].kept===0).length;
+  const alerts = [];
+  if(mute.length) alerts.push(`<div class="al"><span class="al-i">⚠</span> ${t("al_mute", mute.length)} ${mute.map(r=>rref(r.id)).join(" ")}</div>`);
+  if(dup.length) alerts.push(`<div class="al"><span class="al-i">⚠</span> ${t("al_dup", dup.length)} ${dup.map(r=>rref(r.id)).join(" ")}</div>`);
+  if(uncov) alerts.push(`<div class="al soft"><span class="al-i">·</span> ${t("al_uncov", uncov)}</div>`);
+  const seen = new Set(), pairs = [];
+  for(const r of c.rules){
+    const ov = c.overlap[r.id]||{};
+    for(const oid in ov){
+      const key = [r.id, oid].sort().join("|");
+      if(seen.has(key)) continue;
+      seen.add(key);
+      pairs.push({a:r.id, b:oid, n:ov[oid]});
+    }
+  }
+  pairs.sort((x,y)=>y.n-x.n);
+  // chevauchements en barres miroir : chaque moitié = la part du chevauchement chez cette règle
+  const rows = pairs.map(p=>{
+    const pa = Math.round(100*p.n/c.perRule[p.a]), pb = Math.round(100*p.n/c.perRule[p.b]);
+
+    return `<div class="ovrow" title="${esc(t("ov_row", p.n.toLocaleString(t("date_locale")), pa, p.a, pb, p.b))}">
+      ${rref(p.a)}
+      <span class="ovmir"><span class="s l"><i style="width:${Math.max(2,pa)}%"></i></span><span class="s r"><i style="width:${Math.max(2,pb)}%"></i></span></span>
+      ${rref(p.b)}
+      <span class="ovn">${p.n.toLocaleString(t("date_locale"))}</span>
+    </div>`;
+  }).join("");
+
+  return `
+    <div class="cov-strip">
+      <div class="cov-card"><div class="num">${c.total.toLocaleString(t("date_locale"))}</div><div class="lbl">${t("cov_total")}</div></div>
+      <div class="cov-card"${c.kept?` title="${t("ord_one", Math.round(c.total/c.kept).toLocaleString(t("date_locale")))}"`:""}><div class="num">${c.kept.toLocaleString(t("date_locale"))} <b>· ${covPct(c.kept/c.total)}</b></div><div class="lbl">${t("cov_kept")}</div></div>
+      <div class="cov-card"><div class="num">${c.multi.toLocaleString(t("date_locale"))}</div><div class="lbl">${t("cov_multi")}</div></div>
+      <div class="cov-card">${mute.length
+        ? `<div class="num bad">${mute.length}</div><div class="lbl">${t("cov_mute")}</div>`
+        : `<div class="num good">✓</div><div class="lbl">${t("cov_all_catch")}</div>`}</div>
+    </div>
+    ${alerts.length?`<div class="alerts">${alerts.join("")}</div>`:""}
+    ${pairs.length?`<details class="acc" id="ov-acc"${UI.ovOpen?" open":""}>
+      <summary>${t("ov_sum", pairs.length)}</summary>
+      <div class="acc-body"><p class="hint" style="margin:4px 0 8px">${t("ov_hint")}</p>${rows}</div>
+    </details>`:""}`;
+}
+// Rafraîchit tête + attributs par carte après une mutation à chaud (chips, requis) — débouncé
+function updateCovUI(){
+  if(UI.view !== "regles") return;
+  const ch = document.getElementById("cov-head");
+  if(ch) ch.innerHTML = covHead();
+  document.querySelectorAll("#rule-list [data-cov]").forEach(el=>{
+    const r = getRule(el.dataset.cov);
+    if(r) el.outerHTML = covMeta(r);
+  });
 }
 
 /* ══════════════ VUE : RÈGLES ══════════════ */
@@ -1807,6 +1928,7 @@ function viewRegles(){
     </div>
     ${openingBanner()}
     ${tabBar()}
+    <div id="cov-head"></div>
     <details class="controls-acc" id="filters-acc"${UI.filtersOpen?" open":""}>
       <summary class="p-sum">${filtersSummary()}</summary>
       <div class="controls">
@@ -1883,6 +2005,8 @@ function updateRuleList(){
     }
   }
   el.innerHTML = html;
+  const ch = document.getElementById("cov-head");
+  if(ch) ch.innerHTML = covHead();
   const tg = document.getElementById("toggle-all");
   if(tg) tg.textContent = UI.open.size ? t("btn_collapse") : t("btn_expand");
   const fsum = document.querySelector("#filters-acc>summary");
@@ -2098,90 +2222,6 @@ function pieceCard(p, i){
   }
   return itemCard(p, {idx:i, open, details});
 }
-function coveragePanel(){
-  const tab = activeTab();
-  if(!tab || !tab.rules.length) return `<div class="empty"><p>${t("empty_test")}</p></div>`;
-  const c = computeCoverage();
-  const pct = v => (100*v).toFixed(v<0.001&&v>0?3:2).replace(".",",")+" %";
-  const mute = tab.rules.filter(r=>c.perRule[r.id]===0);
-  const covered = side => SETS.filter(s=>s.side===side && c.perSet[s.n].kept>0)
-    .sort((a,b)=>(SET_ORDER[a.n]??1e9)-(SET_ORDER[b.n]??1e9))
-    .map(s=>{
-      const d = c.perSet[s.n], p = d.kept/d.total;
-      return `<div class="slot-row"><span class="sl" style="min-width:140px;font-size:12px">${esc(setName(s.n))}</span>
-        <span class="covbar" style="flex:1"><span class="track"><i style="width:${Math.max(1,100*p)}%"></i></span><span class="pct">${pct(p)}</span></span></div>`;
-    }).join("") || `<p class="hint">${t("no_side_cov")}</p>`;
-  const uncov = SETS.filter(s=>c.perSet[s.n].kept===0);
-  const uncovSide = side => uncov.filter(s=>s.side===side)
-    .map(s=>`<span class="chip set t${s.t}" style="margin:2px 4px 2px 0" title="${esc(setBonus(s))}">${esc(setName(s.n))}</span>`).join("") || `<span class="hint">${t("uncov_none")}</span>`;
-  const rref = id => { const r = getRule(id); return `<button type="button" class="ruleref" data-goto="${id}" title="${esc(r?r.name:"")}">${id}</button>`; };
-  // paires de règles se recouvrant, triées par nombre de profils partagés décroissant
-  const seenPairs = new Set(), pairs = [];
-  for(const r of tab.rules){
-    const ov = c.overlap[r.id]||{};
-    for(const oid in ov){
-      const key = [r.id, oid].sort().join("|");
-      if(seenPairs.has(key)) continue;
-      seenPairs.add(key);
-      pairs.push({a:r.id, b:oid, n:ov[oid]});
-    }
-  }
-  pairs.sort((x,y)=>y.n-x.n);
-  const pairRows = pairs.map(p=>{
-    const pa = Math.round(100*p.n/c.perRule[p.a]), pb = Math.round(100*p.n/c.perRule[p.b]);
-    return `<div class="slot-row"><span style="min-width:120px">${rref(p.a)} <span class="arrow">↔</span> ${rref(p.b)}</span>
-      <span style="font-size:12px;color:var(--muted)">${t("ov_row", p.n.toLocaleString(t("date_locale")), pa, p.a, pb, p.b)}</span></div>`;
-  }).join("");
-  return `
-    <div class="cov-strip">
-      <div class="cov-card"><div class="num">${c.total.toLocaleString(t("date_locale"))}</div><div class="lbl">${t("cov_total")}</div></div>
-      <div class="cov-card"${c.kept?` title="${t("ord_one", Math.round(c.total/c.kept).toLocaleString(t("date_locale")))}"`:""}><div class="num">${c.kept.toLocaleString(t("date_locale"))} <b>· ${pct(c.kept/c.total)}</b></div><div class="lbl">${t("cov_kept")}</div></div>
-      <div class="cov-card"><div class="num">${c.multi.toLocaleString(t("date_locale"))}</div><div class="lbl">${t("cov_multi")}</div></div>
-      <div class="cov-card">${mute.length
-        ? `<div class="num bad">${mute.length}</div><div class="lbl">${t("cov_mute")}</div>`
-        : `<div class="num good">✓</div><div class="lbl">${t("cov_all_catch")}</div>`}</div>
-    </div>
-    <div class="panel">
-      <h4>${t("cov_catch_h")}${helpBtn("covcatch")}</h4>
-      ${helpBody("covcatch", t("cov_catch_hint"))}
-      <div class="tbl-wrap rtable"><table><thead><tr><th>${t("th_rule")}</th><th>${t("th_kept")}</th><th>${t("th_pct")}</th><th>${t("th_read")}</th></tr></thead><tbody>
-        ${tab.rules.map(r=>{
-          const n = c.perRule[r.id], u = c.uniq[r.id];
-          const den = r.sets.reduce((acc,sn)=>acc+(c.perSet[sn]?c.perSet[sn].total:0),0);
-          let diag = `<span class="ok-txt">${t("diag_ok")}</span>`;
-          if(n===0) diag = `<span class="warn-txt">${t("diag_none")}</span>`;
-          else if(u===0){
-            // les règles recouvrantes, triées par nombre de profils partagés décroissant
-            const partners = Object.entries(c.overlap[r.id]||{}).sort((a,b)=>b[1]-a[1])
-              .map(([id])=>{ const pr = getRule(id); return `<button type="button" class="ruleref" data-goto="${id}" title="${esc(pr?pr.name:"")}">${id}</button>`; });
-            diag = `<span class="warn-txt">${t("diag_dup")}</span> ${partners.join(" ")}`;
-          }
-          return `<tr><td data-th="${t("th_rule")}" class="td-name"><b>${r.id}</b> ${esc(r.name)}</td><td data-th="${t("th_kept")}" class="td-mid">${n.toLocaleString(t("date_locale"))}</td><td data-th="${t("th_pct")}" class="td-mid"${n?` title="${t("ord_one", Math.round(den/n).toLocaleString(t("date_locale")))}"`:""}>${den?pct(n/den):"—"}</td><td data-th="${t("th_read")}">${diag}</td></tr>`;
-        }).join("")}
-      </tbody></table></div>
-      <details class="acc" style="margin-top:12px">
-        <summary>${t("ov_sum", pairs.length)}</summary>
-        <div class="acc-body">
-          <p class="hint" style="margin:4px 0 8px">${t("ov_hint")}</p>
-          ${pairRows || `<span class="hint">${t("ov_none")}</span>`}
-        </div>
-      </details>
-    </div>
-    <div class="panel">
-      <h4>${t("cov_rate_h")}</h4>
-      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:0 26px">
-        <div><h3 class="grp-head" style="position:static;padding-left:8px">${t("gh_l")}</h3>${covered("left")}</div>
-        <div><h3 class="grp-head" style="position:static;padding-left:8px">${t("gh_r")}</h3>${covered("right")}</div>
-      </div>
-      <details class="acc" style="margin-top:12px">
-        <summary>${t("uncov_sum", uncov.length)}</summary>
-        <div class="acc-body">
-          <div style="margin:4px 0"><b style="color:var(--ink)">${t("gh_l")} :</b> ${uncovSide("left")}</div>
-          <div style="margin:4px 0"><b style="color:var(--ink)">${t("gh_r")} :</b> ${uncovSide("right")}</div>
-        </div>
-      </details>
-    </div>`;
-}
 function samplePanel(){
   // Scène du verdict : à l'arrivée sans échantillon, la simulation se lance toute seule
   if(!UI.test.sample.length) generateSample();
@@ -2391,10 +2431,7 @@ function updateConsPanel(){
 }
 function viewTesteur(){
   const mode = UI.test.mode;
-  let body = "";
-  if(mode==="couverture") body = coveragePanel();
-  else if(mode==="echantillon") body = samplePanel();
-  else body = manualPanel();
+  const body = mode==="echantillon" ? samplePanel() : manualPanel();
   return `<div class="wrap">
     <div class="view-head">
       <h2>${t("v_test_h")}</h2>
@@ -2404,7 +2441,7 @@ function viewTesteur(){
       ${tabPicker()}
       <div class="ctl">${ctlLabel("mode",t("lbl_mode"),"sem")}
         <div class="seg">
-          ${[["couverture",t("mode_cov")],["echantillon",t("mode_sample")],["piece",t("mode_piece")]].map(([v,l])=>
+          ${[["echantillon",t("mode_sample")],["piece",t("mode_piece")]].map(([v,l])=>
             `<button type="button" class="${mode===v?'on':''}" data-tsmode="${v}">${l}</button>`).join("")}
         </div>
       </div>
@@ -2418,7 +2455,7 @@ function updateTestBody(){
   const el = document.getElementById("test-body");
   if(!el) return;
   const mode = UI.test.mode;
-  el.innerHTML = mode==="couverture" ? coveragePanel() : (mode==="echantillon" ? samplePanel() : manualPanel());
+  el.innerHTML = mode==="echantillon" ? samplePanel() : manualPanel();
 }
 
 /* ══════════════ VUE : RÉFÉRENCE ══════════════ */
@@ -3593,6 +3630,7 @@ document.addEventListener("drop", e=>{
 document.addEventListener("dragend", ()=>{ if(DRAG){ DRAG = null; updateRuleList(); } });
 // l'Échap natif du <dialog> contourne closeDlg() : le nettoyage vit sur l'événement close
 { const d = document.getElementById("dlg-overlay"); if(d) d.addEventListener("close", ()=>{ AP.editing = null; }); }
+document.addEventListener("toggle", e=>{ if(e.target && e.target.id==="ov-acc") UI.ovOpen = e.target.open; }, true);
 window.addEventListener("hashchange", route);
 window.addEventListener("beforeprint", ()=>{ const pv = document.getElementById("print-view"); if(pv) pv.innerHTML = printDoc(); });
 
