@@ -496,6 +496,19 @@
   .rule-phrase{border-left:2px solid var(--acc-bd);background:var(--acc-glow);border-radius:0 var(--r-s) var(--r-s) 0;
     padding:7px 11px;margin:10px 0 2px;color:var(--muted);font-size:var(--fs-2);line-height:1.55}
   .rule-phrase b{color:var(--ink);font-weight:600}
+  /* ── La scène du verdict ── */
+  .scene{margin:4px 0 22px;display:flex;flex-direction:column;gap:14px}
+  .scene-phrase{font-family:var(--display);font-size:var(--fs-4);line-height:1.45;color:var(--ink-hi);text-wrap:balance;max-width:56ch}
+  .scene-phrase .d{color:var(--acc)}
+  .scene-sub{color:var(--muted);font-size:var(--fs-2);margin-top:-8px;max-width:70ch}
+  .scene-cards{margin-top:0;max-width:980px}
+  .cov-card.act{cursor:pointer;text-align:left;font:inherit;color:inherit;appearance:none;transition:border-color .15s}
+  .cov-card.act:hover{border-color:var(--acc-bd)}
+  .oracle{border-left:2px solid var(--util);background:var(--util-dim);border-radius:0 var(--r-s) var(--r-s) 0;
+    padding:9px 13px;font-size:var(--fs-2);line-height:1.6;color:var(--ink);max-width:76ch}
+  .oracle .d{color:var(--util)}
+  .oracle.bad{border-left-color:var(--off-strong);background:var(--off-dim)}
+  .oracle.bad .d{color:var(--off)}
   .ap-hint{color:var(--faint);font-size:var(--fs-1);margin-top:10px}
 
   /* ── Toasts ── */
@@ -974,6 +987,14 @@ fr:{
   ic_main:"Main", ic_subs:"Subs", ic_kept:"Gardée par", ic_rec:"Recyclée",
   ic_poss:n=>n+" règle"+(n>1?"s":"")+" encore possible"+(n>1?"s":""), ic_poss_none:"aucune règle encore possible",
   cov_all_catch:"toutes les règles attrapent", ord_one:n=>"≈ 1 sur "+n, phrase_free:"libre", phrase_or:" ou ",
+  scene_phrase:(n,k)=>k?`Sur les ${n} pièces tirées, ce jeu de règles en garde ${k} — le reste part au recyclage.`:`Sur les ${n} pièces tirées, ce jeu de règles n'en garde aucune.`,
+  scene_sub:"Chaque pièce gardée l'est par une règle nommée — clique une carte pour voir laquelle, et pourquoi.",
+  scene_drawn:"pièces tirées", scene_kept:"gardées", scene_top:"règle la plus active", scene_replay:"Rejouer un échantillon",
+  oracle_ok:(k,n,p)=>`Ton tri est sain — il garde ${k} pièce${k>1?"s":""} sur ${n} (${p})`,
+  oracle_multi0:"rien n'est gardé deux fois par accident",
+  oracle_multiN:m=>`${m} pièce${m>1?"s":""} gardée${m>1?"s":""} par ≥ 2 règles — surveille les doublons en Couverture`,
+  oracle_none:n=>`Rien n'est gardé sur ${n} pièces — élargis le scope, ou vérifie les règles de l'onglet.`,
+  oracle_wide:p=>`${p} des pièces gardées — inhabituel pour un tri de farm : une règle est peut-être trop large.`,
   phrase_rule:(sets,mains,poolTxt,req,hasEss)=>`Garde une pièce <b>${sets}</b> — main <b>${mains}</b> — qui aligne au moins <b>${req}</b> sub${req>1?"s":""} parmi ${poolTxt}${hasEss?" ; les ★ sont obligatoires":""}.`,
   c_change:"modification", c_subs:id=>"subs de "+id, c_req:id=>"requis de "+id, c_dup:id=>"duplication de "+id,
   c_del:id=>"suppression de "+id, c_move:id=>"déplacement de "+id, c_entered:id=>"coche « saisie » de "+id, c_rule:id=>"règle "+id,
@@ -1125,6 +1146,14 @@ en:{
   ic_main:"Main", ic_subs:"Subs", ic_kept:"Kept by", ic_rec:"Recycled",
   ic_poss:n=>n+" rule"+(n>1?"s":"")+" still possible", ic_poss_none:"no rule still possible",
   cov_all_catch:"every rule catches something", ord_one:n=>"≈ 1 in "+n, phrase_free:"any", phrase_or:" or ",
+  scene_phrase:(n,k)=>k?`Out of ${n} drawn pieces, this ruleset keeps ${k} — the rest goes to recycling.`:`Out of ${n} drawn pieces, this ruleset keeps none.`,
+  scene_sub:"Every kept piece is kept by a named rule — click a card to see which one, and why.",
+  scene_drawn:"pieces drawn", scene_kept:"kept", scene_top:"most active rule", scene_replay:"Replay a sample",
+  oracle_ok:(k,n,p)=>`Your sorting is healthy — it keeps ${k} piece${k>1?"s":""} out of ${n} (${p})`,
+  oracle_multi0:"nothing is kept twice by accident",
+  oracle_multiN:m=>`${m} piece${m>1?"s":""} kept by ≥ 2 rules — watch the overlaps in Coverage`,
+  oracle_none:n=>`Nothing is kept out of ${n} pieces — widen the scope, or check this tab's rules.`,
+  oracle_wide:p=>`${p} of pieces kept — unusual for farm sorting: one rule may be too broad.`,
   phrase_rule:(sets,mains,poolTxt,req,hasEss)=>`Keeps a <b>${sets}</b> piece — main <b>${mains}</b> — lining up at least <b>${req}</b> sub${req>1?"s":""} among ${poolTxt}${hasEss?"; ★ are mandatory":""}.`,
   c_change:"change", c_subs:id=>id+" subs", c_req:id=>id+" required count", c_dup:id=>id+" duplicated",
   c_del:id=>id+" deleted", c_move:id=>id+" moved", c_entered:id=>id+" entered mark", c_rule:id=>"rule "+id,
@@ -1184,7 +1213,7 @@ function syncHelp(){
 
 const UI = { view:"regles", rovingId:null, q:"", fSection:"all", fArch:"all", fMain:new Set(), fSubs:new Set(), fSet:"all", fTier:"all", filtersOpen:false, addingRole:null, open:new Set(),
              setsQ:"", setsTier:"all", pending:null, renaming:null,
-             test:{ mode:"couverture", n:500, tiers:new Set(["4","3","2","1","0"]), sides:new Set(["right","left"]), scopeMode:"source", src:"gr1", lvl:21,
+             test:{ mode:"echantillon", n:500, tiers:new Set(["4","3","2","1","0"]), sides:new Set(["right","left"]), scopeMode:"source", src:"gr1", lvl:21,
                     sample:[], openPieces:new Set(), filter:"all", consOpen:false,
                     manual:{ slot:"bracelet", set:"Infernal Roar", main:"ATK%", subs:[] } } };
 
@@ -2116,13 +2145,45 @@ function coveragePanel(){
     </div>`;
 }
 function samplePanel(){
+  // Scène du verdict : à l'arrivée sans échantillon, la simulation se lance toute seule
+  if(!UI.test.sample.length) generateSample();
   const sets = scopeSets();
   const sample = UI.test.sample;
   const shown = sample.map((p,i)=>({p,i})).filter(({p})=>
     UI.test.filter==="all" || (UI.test.filter==="kept")===(p.matched.length>0));
   const kept = sample.filter(p=>p.matched.length>0).length;
   const isSrc = UI.test.scopeMode==="source";
+  // La scène du verdict — un hero, pas un dashboard : UNE phrase, 3 stat-cards, 2-3 cartes, UN CTA
+  let scene = "";
+  if(sample.length){
+    const n = sample.length;
+    const multi = sample.filter(p=>p.matched.length>1).length;
+    const pctTxt = (100*kept/n).toFixed(1).replace(".", LANG==="fr"?",":".")+" %";
+    const byRule = {};
+    for(const p of sample) for(const id of p.matched) byRule[id]=(byRule[id]||0)+1;
+    const top = Object.entries(byRule).sort((a,b)=>b[1]-a[1])[0];
+    const keptIdx = sample.map((p,i)=>({p,i})).filter(x=>x.p.matched.length>0).slice(0,2);
+    const recIdx = sample.map((p,i)=>({p,i})).find(x=>x.p.matched.length===0);
+    const showcase = [...keptIdx, ...(recIdx?[recIdx]:[])].slice(0,3);
+    let tone = "ok", oracle;
+    if(!kept){ tone = "bad"; oracle = t("oracle_none", n); }
+    else if(100*kept/n > 10){ tone = "bad"; oracle = t("oracle_wide", pctTxt); }
+    else oracle = `${t("oracle_ok", kept, n, pctTxt)} ; ${multi ? t("oracle_multiN", multi) : t("oracle_multi0")}.`;
+    scene = `<section class="scene">
+      <p class="scene-phrase"><span class="d">◆</span> ${t("scene_phrase", n, kept)}</p>
+      <p class="scene-sub">${t("scene_sub")}</p>
+      <div class="cov-strip">
+        <div class="cov-card"><div class="num">${n.toLocaleString(t("date_locale"))}</div><div class="lbl">${t("scene_drawn")}</div></div>
+        <button type="button" class="cov-card act" data-scn="kept"${kept?` title="${t("ord_one", Math.round(n/kept))}"`:""}><div class="num">${kept} <b>· ${pctTxt}</b></div><div class="lbl">${t("scene_kept")}</div></button>
+        ${top?`<div class="cov-card"><div class="num"><button type="button" class="ruleref" data-goto="${top[0]}">${top[0]}</button> · ${top[1]}</div><div class="lbl">${t("scene_top")}</div></div>`:""}
+      </div>
+      ${showcase.length?`<div class="piece-grid scene-cards">${showcase.map(({p,i})=>pieceCard(p,i)).join("")}</div>`:""}
+      <div class="oracle ${tone}"><b class="d">◆</b> ${oracle}</div>
+      <div><button type="button" class="btn primary" id="ts-scene-regen">↻ ${t("scene_replay")}</button></div>
+    </section>`;
+  }
   return `
+    ${scene}
     <div class="controls" style="margin-top:2px">
       <div class="ctl">${ctlLabel("mode",t("ts_scope"),"scope")}
         <div class="seg">
@@ -2161,9 +2222,6 @@ function samplePanel(){
     ${helpBody("scope", t("hint_scope", sets.length))}
     ${sample.length?`
       <div class="controls">
-        <div class="ctl">${ctlLabel("result",t("lbl_result"))}
-          <span style="font-family:var(--mono);font-size:13px;padding:5px 0">${t("res_kept", kept, sample.length)}<b style="color:var(--acc)"${kept?` title="${t("ord_one", Math.round(sample.length/kept))}"`:""}>${(100*kept/sample.length).toFixed(1).replace(".", LANG==="fr"?",":".")} %</b></span>
-        </div>
         <div class="ctl">${ctlLabel("tier",t("lbl_bytier"))}
           <span style="display:inline-flex;align-items:center;gap:12px;flex-wrap:wrap;font-family:var(--mono);font-size:12px;padding:5px 0">
             ${(()=>{ const byTier={}; for(const p of sample){ const tt=SETTIER[p.set]; byTier[tt]=(byTier[tt]||0)+1; }
@@ -3215,7 +3273,14 @@ document.addEventListener("click", e=>{
   if(tst){ const v=tst.dataset.tstier; UI.test.tiers.has(v)?UI.test.tiers.delete(v):UI.test.tiers.add(v); updateTestBody(); return; }
   const tss = el.closest("[data-tsside]");
   if(tss){ const v=tss.dataset.tsside; UI.test.sides.has(v)?UI.test.sides.delete(v):UI.test.sides.add(v); updateTestBody(); return; }
-  if(el.closest("#ts-gen")){ generateSample(); updateTestBody(); return; }
+  if(el.closest("#ts-gen") || el.closest("#ts-scene-regen")){ generateSample(); updateTestBody(); return; }
+  if(el.closest('[data-scn="kept"]')){
+    UI.test.filter = "kept"; updateTestBody();
+    const g = document.querySelectorAll(".piece-grid");
+    const grid = g[g.length-1];
+    if(grid) grid.scrollIntoView({behavior:"smooth", block:"start"});
+    return;
+  }
   const tsf = el.closest("[data-tsfilter]");
   if(tsf){ UI.test.filter = tsf.dataset.tsfilter; updateTestBody(); return; }
   const ph = el.closest("[data-piece]");
