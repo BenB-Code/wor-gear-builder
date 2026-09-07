@@ -534,6 +534,17 @@
   .ovmir .s.l i{right:0}
   .ovmir .s.r i{left:0}
   .ovn{font-family:var(--mono);font-size:var(--fs-0);color:var(--faint);margin-left:auto}
+  /* ── Saisie en jeu ── */
+  .sr-row{display:flex;align-items:center;gap:11px;background:var(--panel);border:1px solid var(--border-soft);
+    border-radius:var(--r-m);padding:9px 13px;margin:7px 0;cursor:pointer;box-shadow:var(--top-light)}
+  .sr-row .sr-name{font-weight:600;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .sr-row .sr-meta{margin-left:auto;font-family:var(--mono);font-size:var(--fs-0);color:var(--faint);white-space:nowrap}
+  .sr-row.done{opacity:.55}
+  .sr-row.done .sr-name{text-decoration:line-through;text-decoration-color:var(--faint)}
+  .prog-wrap.wide{max-width:460px;margin:2px 0 16px}
+  .prog-wrap[data-nav]{cursor:pointer;border-radius:var(--r-s)}
+  .prog-wrap[data-nav]:hover .prog-label{color:var(--ink)}
+  .prog-wrap[data-nav]:focus-visible{outline:2px solid var(--acc);outline-offset:3px}
   .ap-hint{color:var(--faint);font-size:var(--fs-1);margin-top:10px}
 
   /* ── Toasts ── */
@@ -622,6 +633,7 @@
     .row-body{padding-left:16px}
     .rm-mains{display:none}
     .rm-cov{display:none}
+    .sr-row .sr-meta{display:none}
     /* fondu de débord : indice visuel qu'une rangée de filtres scrolle */
     .fchips{-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 16px),transparent);mask-image:linear-gradient(90deg,#000 calc(100% - 16px),transparent)}
   }
@@ -640,18 +652,21 @@
       <button class="nav-btn" data-nav="regles">
         <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 4h12M2 8h12M2 12h12"/><circle cx="6" cy="4" r="1.7" fill="var(--bg-side)"/><circle cx="11" cy="8" r="1.7" fill="var(--bg-side)"/><circle cx="5" cy="12" r="1.7" fill="var(--bg-side)"/></svg>
         <span data-i18n="nav_rules">Règles</span> <span class="count" id="nav-count-rules">0</span></button>
-      <button class="nav-btn" data-nav="testeur">
+      <button class="nav-btn" data-nav="simulation">
         <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M6 2h4M7 2v4.5L3.5 12a1.6 1.6 0 0 0 1.4 2.5h6.2a1.6 1.6 0 0 0 1.4-2.5L9 6.5V2"/><path d="M5 10.5h6"/></svg>
-        <span data-i18n="nav_tester">Testeur</span></button>
-      <button class="nav-btn" data-nav="sets">
-        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2" y="2" width="5" height="5" rx="1"/><rect x="9" y="2" width="5" height="5" rx="1"/><rect x="2" y="9" width="5" height="5" rx="1"/><rect x="9" y="9" width="5" height="5" rx="1"/></svg>
-        <span data-i18n="nav_sets">Sets &amp; transfo</span> <span class="count">48</span></button>
+        <span data-i18n="nav_sim">Simulation</span></button>
+      <button class="nav-btn" data-nav="session">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2.5" y="3" width="11" height="10" rx="1.5"/><path d="M5.5 8.2l1.8 1.8 3.4-3.6"/></svg>
+        <span data-i18n="nav_session">Session</span></button>
+      <button class="nav-btn" data-nav="saisie">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 13l.8-3L11 2.8a1.3 1.3 0 0 1 1.8 0l.4.4a1.3 1.3 0 0 1 0 1.8L6 12.2 3 13Z"/><path d="M10 4l2 2"/></svg>
+        <span data-i18n="nav_entry">Saisie en jeu</span> <span class="count" id="nav-count-entry">0/0</span></button>
       <button class="nav-btn" data-nav="reference">
         <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 2.5h7a3 3 0 0 1 3 3V14H6a3 3 0 0 1-3-3V2.5Z"/><path d="M6 5.5h4M6 8h4"/></svg>
         <span data-i18n="nav_ref">Référence</span></button>
     </nav>
     <div class="side-foot">
-      <div class="prog-wrap">
+      <div class="prog-wrap" data-nav="saisie" role="button" tabindex="0">
         <div class="prog-label"><span data-i18n="prog">Saisie en jeu</span><b id="prog-num">0/0</b></div>
         <div class="prog-bar"><i id="prog-fill" style="width:0%"></i></div>
       </div>
@@ -901,6 +916,10 @@ const I18N = {
 fr:{
   app_title:"Tri d'équipement", doc_title:"Tri d'équipement · Watcher of Realms",
   nav_rules:"Règles", nav_tester:"Testeur", nav_sets:"Sets & transfo", nav_ref:"Référence",
+  nav_sim:"Simulation", nav_session:"Session", nav_entry:"Saisie en jeu", ref_doc:"Doctrine",
+  v_sim_h:"Simulation", v_sim_lede:"Vérifie ce que ton jeu de règles garde et recycle avant de le saisir dans le jeu — sur un échantillon réaliste de pièces tirées.",
+  v_session_h:"Session — vérifier une pièce", v_session_lede:"Construis la pièce que tu viens de dropper : le verdict tombe sur la carte, en direct.",
+  v_entry_h:"Saisie en jeu", v_entry_lede:"L'état de recopie du jeu de règles actif : coche chaque règle une fois saisie dans le builder du jeu.",
   prog:"Saisie en jeu", import_btn:"Importer des règles (JSON)", accent:"Accent", lang:"Langue", appearance:"Apparence",
   theme_light:"☀ Mode clair", theme_dark:"☾ Mode sombre", dens_comfort:"Densité : confort", dens_compact:"Densité : compacte",
   burger:"ouvrir le menu",
@@ -1067,6 +1086,10 @@ fr:{
 en:{
   app_title:"Gear Sorting", doc_title:"Gear Sorting · Watcher of Realms",
   nav_rules:"Rules", nav_tester:"Tester", nav_sets:"Sets & transform", nav_ref:"Reference",
+  nav_sim:"Simulation", nav_session:"Session", nav_entry:"In-game entry", ref_doc:"Doctrine",
+  v_sim_h:"Simulation", v_sim_lede:"Check what your ruleset keeps and recycles before entering it in the game — on a realistic sample of drawn pieces.",
+  v_session_h:"Session — check a piece", v_session_lede:"Build the piece you just dropped: the verdict lands on the card, live.",
+  v_entry_h:"In-game entry", v_entry_lede:"The copy state of the active ruleset: tick each rule once entered in the in-game builder.",
   prog:"Entered in game", import_btn:"Import rules (JSON)", accent:"Accent", lang:"Language", appearance:"Appearance",
   theme_light:"☀ Light mode", theme_dark:"☾ Dark mode", dens_comfort:"Density: comfy", dens_compact:"Density: compact",
   burger:"open menu",
@@ -2429,33 +2452,79 @@ function updateConsPanel(){
   const el = document.getElementById("cons-wrap");
   if(el) el.innerHTML = constraintsInner();
 }
-function viewTesteur(){
-  const mode = UI.test.mode;
-  const body = mode==="echantillon" ? samplePanel() : manualPanel();
+function viewSimulation(){
   return `<div class="wrap">
     <div class="view-head">
-      <h2>${t("v_test_h")}</h2>
-      <div class="lede">${t("v_test_lede")}</div>
+      <h2>${t("v_sim_h")}${helpBtn("sem")}</h2>
+      <div class="lede">${t("v_sim_lede")}</div>
+    </div>
+    ${helpBody("sem", t("hint_sem"))}
+    <div class="controls">
+      ${tabPicker()}
+    </div>
+    <div id="test-body">${samplePanel()}</div>
+    ${constraintsPanel()}
+  </div>`;
+}
+function viewSession(){
+  return `<div class="wrap">
+    <div class="view-head">
+      <h2>${t("v_session_h")}</h2>
+      <div class="lede">${t("v_session_lede")}</div>
     </div>
     <div class="controls">
       ${tabPicker()}
-      <div class="ctl">${ctlLabel("mode",t("lbl_mode"),"sem")}
-        <div class="seg">
-          ${[["echantillon",t("mode_sample")],["piece",t("mode_piece")]].map(([v,l])=>
-            `<button type="button" class="${mode===v?'on':''}" data-tsmode="${v}">${l}</button>`).join("")}
+    </div>
+    <div id="test-body">${manualPanel()}</div>
+  </div>`;
+}
+// Saisie en jeu — l'état de recopie du jeu de règles actif (le mode guidé se branchera ici)
+function saisieRows(){
+  const tab = activeTab();
+  const rules = tab ? tab.rules : [];
+  if(!rules.length) return `<div class="empty"><p>${t("empty_tab")}</p></div>`;
+  let html = "";
+  for(const sec of SECTIONS){
+    const rows = rules.filter(r=>r.section===sec);
+    if(!rows.length) continue;
+    html += `<h3 class="grp-head">${sideLabel(sec)} <span class="n">${rows.length}</span></h3>`;
+    html += rows.map(r=>`<label class="sr-row${isEntered(r.id)?" done":""}">
+      <input type="checkbox" class="chk" data-entered="${r.id}" ${isEntered(r.id)?"checked":""} aria-label="${t("aria_entered")}">
+      <span class="rc-id">${r.id}</span>
+      <span class="sr-name">${esc(r.name)}</span>
+      <span class="sr-meta">${r.mains.join("/")||"—"} · ${r.req}/4 · ${t("rm_sets", r.sets.length)}</span>
+    </label>`).join("");
+  }
+
+  return html;
+}
+function viewSaisie(){
+  const tab = activeTab();
+  return `<div class="wrap">
+    <div class="view-head">
+      <h2>${t("v_entry_h")}</h2>
+      <div class="lede">${t("v_entry_lede")}</div>
+    </div>
+    <div class="controls">
+      ${tabPicker()}
+      <div class="ctl">${ctlLabel("key",t("lbl_gamekey"))}
+        <div class="key-row" style="margin-top:0">
+          <input type="text" class="key-input" id="tab-key" maxlength="60" placeholder="${t("ph_gamekey")}" value="${esc((tab||{}).key||"")}">
+          <button type="button" class="btn sm" id="tab-key-copy">${t("b_copykey")}</button>
         </div>
       </div>
     </div>
-    ${helpBody("sem", t("hint_sem"))}
-    <div id="test-body">${body}</div>
-    ${constraintsPanel()}
+    <div class="prog-wrap wide">
+      <div class="prog-label"><span>${t("prog")}</span><b id="saisie-num">0/0</b></div>
+      <div class="prog-bar"><i id="saisie-fill" style="width:0%"></i></div>
+    </div>
+    <div id="saisie-list">${saisieRows()}</div>
   </div>`;
 }
 function updateTestBody(){
   const el = document.getElementById("test-body");
   if(!el) return;
-  const mode = UI.test.mode;
-  el.innerHTML = mode==="echantillon" ? samplePanel() : manualPanel();
+  el.innerHTML = UI.view==="session" ? manualPanel() : samplePanel();
 }
 
 /* ══════════════ VUE : RÉFÉRENCE ══════════════ */
@@ -2740,15 +2809,25 @@ function refEN(){
   </div>`;
 }
 
-function viewReference(){ return LANG==="fr" ? refFR() : refEN(); }
+function viewReference(){
+  const seg = `<div class="wrap" style="padding-bottom:0"><div class="controls" style="margin:0 0 2px">
+    <div class="seg">
+      <button type="button" class="${UI.refMode==="sets"?"":"on"}" data-refmode="doc">${t("ref_doc")}</button>
+      <button type="button" class="${UI.refMode==="sets"?"on":""}" data-refmode="sets">${t("nav_sets")}</button>
+    </div>
+  </div></div>`;
+
+  return seg + (UI.refMode==="sets" ? viewSets() : (LANG==="fr" ? refFR() : refEN()));
+}
 
 /* ══════════════ ROUTEUR + RENDU ══════════════ */
 function renderView(){
   const main = document.getElementById("view");
   document.querySelectorAll(".nav-btn").forEach(b=>b.classList.toggle("active", b.dataset.nav===UI.view));
-  if(UI.view==="sets"){ main.innerHTML = viewSets(); }
-  else if(UI.view==="reference"){ main.innerHTML = viewReference(); }
-  else if(UI.view==="testeur"){ main.innerHTML = viewTesteur(); }
+  if(UI.view==="reference"){ main.innerHTML = viewReference(); }
+  else if(UI.view==="simulation"){ main.innerHTML = viewSimulation(); }
+  else if(UI.view==="session"){ main.innerHTML = viewSession(); }
+  else if(UI.view==="saisie"){ main.innerHTML = viewSaisie(); }
   else { main.innerHTML = viewRegles(); updateRuleList(); }
   main.scrollTop = 0;
   if(UI.pending){
@@ -2772,6 +2851,16 @@ function updateSidebar(){
   if(pn) pn.textContent = done+"/"+rules.length;
   const pf = document.getElementById("prog-fill");
   if(pf) pf.style.width = (rules.length? Math.round(done/rules.length*100):0)+"%";
+  const ne = document.getElementById("nav-count-entry");
+  if(ne) ne.textContent = done+"/"+rules.length;
+  const sn = document.getElementById("saisie-num");
+  if(sn) sn.textContent = done+"/"+rules.length;
+  const sf = document.getElementById("saisie-fill");
+  if(sf) sf.style.width = (rules.length? Math.round(done/rules.length*100):0)+"%";
+  document.querySelectorAll("#saisie-list [data-entered]").forEach(c=>{
+    const row = c.closest(".sr-row");
+    if(row) row.classList.toggle("done", c.checked);
+  });
 }
 function route(){
   const h = location.hash.replace(/^#\/?/, "");
@@ -2790,7 +2879,11 @@ function route(){
     renderView(); return;
   }
   const [view, param] = h.split("/");
-  if(view==="sets" || view==="reference" || view==="testeur"){ UI.view = view; }
+  if(view==="reference"){ UI.view = "reference"; }
+  else if(view==="sets"){ UI.view = "reference"; UI.refMode = "sets"; }         // ancien lien : la vue Sets vit dans Référence
+  else if(view==="simulation" || view==="testeur"){ UI.view = "simulation"; }   // « testeur » = ancien nom
+  else if(view==="session"){ UI.view = "session"; }
+  else if(view==="saisie"){ UI.view = "saisie"; }
   else {
     UI.view = "regles";
     if(param){
@@ -3121,8 +3214,8 @@ document.addEventListener("click", e=>{
   }
 
   // navigation
-  const nav = el.closest(".nav-btn");
-  if(nav){ document.body.classList.remove("nav-open"); goto("/"+nav.dataset.nav); return; }
+  const nav = el.closest(".nav-btn,[data-nav]");
+  if(nav && nav.dataset.nav){ document.body.classList.remove("nav-open"); goto("/"+nav.dataset.nav); return; }
   const bx = el.closest("[data-banx]");
   if(bx){
     BANNER_DISMISSED = true;
@@ -3342,8 +3435,6 @@ document.addEventListener("click", e=>{
   if(el.closest("#scrim")){ document.body.classList.remove("nav-open"); return; }
 
   // testeur
-  const tsm = el.closest("[data-tsmode]");
-  if(tsm){ UI.test.mode = tsm.dataset.tsmode; renderView(); return; }
   const tsc = el.closest("[data-tsscope]");
   if(tsc){ UI.test.scopeMode = tsc.dataset.tsscope; updateTestBody(); return; }
   const tsr = el.closest("[data-tssrc]");
@@ -3364,6 +3455,8 @@ document.addEventListener("click", e=>{
     if(grid) grid.scrollIntoView({behavior:"smooth", block:"start"});
     return;
   }
+  const rm = el.closest("[data-refmode]");
+  if(rm){ UI.refMode = rm.dataset.refmode; renderView(); return; }
   const tsf = el.closest("[data-tsfilter]");
   if(tsf){ UI.test.filter = tsf.dataset.tsfilter; updateTestBody(); return; }
   const ph = el.closest("[data-piece]");
