@@ -497,6 +497,8 @@
     padding:7px 11px;margin:10px 0 2px;color:var(--muted);font-size:var(--fs-2);line-height:1.55}
   .rule-phrase b{color:var(--ink);font-weight:600}
   .rule-desc{color:var(--ink);font-size:var(--fs-2);font-style:italic;margin:10px 0 0;line-height:1.55;max-width:72ch}
+  .q-syntax{display:flex;gap:5px;margin-top:5px}
+  .q-syntax .fchip{font-family:var(--mono);padding:1px 8px}
   .desc-input{flex:1;min-width:0}
   .save-line[role="button"]{cursor:pointer}
   .save-line[role="button"]:hover{color:var(--muted)}
@@ -1197,6 +1199,8 @@ fr:{
   </ul>`,
   hp_search_h:"Recherche", hp_search_html:`<ul>
     <li>La recherche de la vue Règles couvre id, nom, sets (EN + FR), mains et rôles.</li>
+    <li>Préfixes : <kbd>set:</kbd> <kbd>sub:</kbd> <kbd>req:</kbd> <kbd>role:</kbd> — cumulables, ex. « set:tourbillon req:4 ».</li>
+    <li><kbd>/</kbd> ouvre la recherche (le champ dans Règles, la palette ailleurs) · <kbd>g</kbd> puis <kbd>r</kbd>/<kbd>s</kbd>/<kbd>c</kbd>/<kbd>j</kbd>/<kbd>f</kbd> = navigation · <kbd>1</kbd>–<kbd>9</kbd> = activer le n-ième jeu.</li>
     <li>La palette (<kbd>Ctrl+K</kbd>) trouve les règles de tous les jeux, commandes et vues comprises.</li>
   </ul>`,
   oracle_ok:(k,n,p)=>`Ton tri est sain — il garde ${k} pièce${k>1?"s":""} sur ${n} (${p})`,
@@ -1409,6 +1413,8 @@ en:{
   </ul>`,
   hp_search_h:"Search", hp_search_html:`<ul>
     <li>The Rules view search covers id, name, sets (EN + FR), mains and roles.</li>
+    <li>Prefixes: <kbd>set:</kbd> <kbd>sub:</kbd> <kbd>req:</kbd> <kbd>role:</kbd> — stackable, e.g. “set:whirlwind req:4”.</li>
+    <li><kbd>/</kbd> opens search (the field in Rules, the palette elsewhere) · <kbd>g</kbd> then <kbd>r</kbd>/<kbd>s</kbd>/<kbd>c</kbd>/<kbd>j</kbd>/<kbd>f</kbd> = navigation · <kbd>1</kbd>–<kbd>9</kbd> = activate the nth ruleset.</li>
     <li>The palette (<kbd>Ctrl+K</kbd>) finds rules across all rulesets, plus commands and views.</li>
   </ul>`,
   oracle_ok:(k,n,p)=>`Your sorting is healthy — it keeps ${k} piece${k>1?"s":""} out of ${n} (${p})`,
@@ -2088,11 +2094,31 @@ function matchFilters(r){
   for(const a of UI.fMain) if(!r.mains.includes(a)) return false;
   for(const a of UI.fSubs) if(!r.pool.includes(a)) return false;
   if(UI.q){
-    const q = UI.q.toLowerCase();
-    const hay = (r.id+" "+r.name+" "+r.sets.join(" ")+" "+r.sets.map(n=>SET_FR[n]||"").join(" ")+" "+r.mains.join(" ")+" "+(r.arch||[]).map(archLabel).join(" ")).toLowerCase();
-    if(!hay.includes(q)) return false;
+    const pq = parseQuery(UI.q);
+    if(pq.req !== null && r.req !== pq.req) return false;
+    for(const s of pq.set) if(!palNorm(r.sets.join(" ")+" "+r.sets.map(n=>SET_FR[n]||"").join(" ")).includes(s)) return false;
+    for(const s of pq.sub) if(!palNorm(r.pool.join(" ")).includes(s)) return false;
+    for(const s of pq.role) if(!palNorm((r.arch||[]).join(" ")+" "+(r.arch||[]).map(archLabel).join(" ")).includes(s)) return false;
+    const free = pq.free.join(" ");
+    if(free){
+      const hay = palNorm(r.id+" "+r.name+" "+r.sets.join(" ")+" "+r.sets.map(n=>SET_FR[n]||"").join(" ")+" "+r.mains.join(" ")+" "+(r.arch||[]).map(archLabel).join(" "));
+      if(!hay.includes(free)) return false;
+    }
   }
   return true;
+}
+// Syntaxe de recherche : les tokens préfixés filtrent un champ précis, le reste est libre.
+// « set:tourbillon req:4 tank » = sets contenant « tourbillon » ET requis 4 ET « tank » quelque part.
+function parseQuery(q){
+  const out = {free:[], set:[], sub:[], req:null, role:[]};
+  for(const tk of palNorm(q).split(/\s+/).filter(Boolean)){
+    const m = /^(set|sub|req|role):(.*)$/.exec(tk);
+    if(!m || !m[2]){ out.free.push(tk); continue; }
+    if(m[1]==="req") out.req = parseInt(m[2],10) || null;
+    else out[m[1]].push(m[2]);
+  }
+
+  return out;
 }
 function tabBar(){
   return `<div class="tabs" id="tabbar">
@@ -2166,6 +2192,7 @@ function viewRegles(){
           <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5 14 14"/></svg>
           <input type="search" id="rule-q" placeholder="${t("ph_rule_q")}" value="${esc(UI.q)}">
         </div>
+        <div class="q-syntax">${["set:","sub:","req:","role:"].map(p=>`<button type="button" class="fchip" data-qp="${p}">${p}</button>`).join("")}</div>
       </div>
       <div class="ctl">${ctlLabel("side",t("lbl_side"))}
         <div class="fchips" id="f-section">
@@ -4059,6 +4086,16 @@ document.addEventListener("click", e=>{
     if(grid) grid.scrollIntoView({behavior:"smooth", block:"start"});
     return;
   }
+  const qp = el.closest("[data-qp]");
+  if(qp){
+    const inp = document.getElementById("rule-q");
+    if(inp){
+      inp.value = (inp.value ? inp.value.trim()+" " : "") + qp.dataset.qp;
+      inp.focus();
+      inp.dispatchEvent(new Event("input", {bubbles:true}));
+    }
+    return;
+  }
   const rm = el.closest("[data-refmode]");
   if(rm){ UI.refMode = rm.dataset.refmode; renderView(); return; }
   const tsf = el.closest("[data-tsfilter]");
@@ -4222,6 +4259,41 @@ document.addEventListener("keydown", e=>{
   if(e.key==="?" && !e.ctrlKey && !e.metaKey){
     const typing = e.target.closest && e.target.closest("input,textarea,select,[contenteditable]");
     if(!typing && !document.querySelector("dialog[open]")){ e.preventDefault(); openHelp(); return; }
+  }
+  // « / » = recherche : le champ local dans Règles, la palette partout ailleurs
+  if(e.key==="/" && !e.ctrlKey && !e.metaKey){
+    const typing = e.target.closest && e.target.closest("input,textarea,select,[contenteditable]");
+    if(!typing && !document.querySelector("dialog[open]")){
+      e.preventDefault();
+      const inp = UI.view==="regles" ? document.getElementById("rule-q") : null;
+      if(inp){
+        const acc = document.getElementById("filters-acc");
+        if(acc) acc.open = true;
+        inp.focus();
+      } else openPal();
+      return;
+    }
+  }
+  // « g » puis r/s/c/j/f = destination · 1..9 = activer le n-ième jeu de règles
+  if(!e.ctrlKey && !e.metaKey && !e.altKey){
+    const typing = e.target.closest && e.target.closest("input,textarea,select,[contenteditable]");
+    if(!typing && !document.querySelector("dialog[open]")){
+      if(UI.gChord && Date.now() - UI.gChord < 900){
+        UI.gChord = 0;
+        const dest = ({r:"/regles", s:"/simulation", c:"/session", j:"/saisie", f:"/reference"})[e.key.toLowerCase()];
+        if(dest){ e.preventDefault(); goto(dest); return; }
+      }
+      if(e.key==="g" || e.key==="G"){ UI.gChord = Date.now(); return; }
+      if(/^[1-9]$/.test(e.key)){
+        const tb = TABS[+e.key-1];
+        if(tb && tb.id !== activeTabId){
+          e.preventDefault();
+          activeTabId = tb.id; UI.open.clear(); scheduleSave();
+          renderView(); refreshTabBar(); updateSidebar();
+          return;
+        }
+      }
+    }
   }
   // Ctrl+Z global — sauf pendant la frappe (undo natif du champ) et dialogue ouvert
   if((e.ctrlKey || e.metaKey) && !e.altKey && ["z","Z","y","Y"].includes(e.key)){
