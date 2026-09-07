@@ -499,6 +499,17 @@
   .rule-desc{color:var(--ink);font-size:var(--fs-2);font-style:italic;margin:10px 0 0;line-height:1.55;max-width:72ch}
   .q-syntax{display:flex;gap:5px;margin-top:5px}
   .q-syntax .fchip{font-family:var(--mono);padding:1px 8px}
+  /* ── Édition à l'échelle ── */
+  .rule.bulksel{border-color:var(--deff-bd);box-shadow:var(--top-light),0 0 0 1px var(--deff-bd)}
+  .bulk-bar{position:fixed;left:50%;transform:translateX(-50%);bottom:14px;z-index:55;display:flex;align-items:center;
+    gap:8px;flex-wrap:wrap;justify-content:center;background:var(--panel);border:1px solid var(--border);
+    border-radius:var(--r-l);padding:8px 12px;box-shadow:0 8px 30px rgba(0,0,0,.4);max-width:calc(100% - 24px)}
+  body.light .bulk-bar{box-shadow:0 8px 30px rgba(60,50,30,.2)}
+  .bulk-bar .bb-n{font-family:var(--mono);font-size:var(--fs-1);color:var(--acc);white-space:nowrap}
+  .bulk-bar select{max-width:130px}
+  @media(max-width:920px){
+    .bulk-bar{bottom:calc(66px + env(safe-area-inset-bottom))}
+  }
   .desc-input{flex:1;min-width:0}
   .save-line[role="button"]{cursor:pointer}
   .save-line[role="button"]:hover{color:var(--muted)}
@@ -791,6 +802,18 @@
 </div>
 
 <div id="scrim" class="scrim" aria-hidden="true"></div>
+
+<div class="bulk-bar" id="bulk-bar" hidden>
+  <span class="bb-n" id="bb-n"></span>
+  <span class="stepper"><button type="button" id="bb-req-minus" aria-label="requis −">−</button><span class="val" data-i18n="k_req">Requis</span><button type="button" id="bb-req-plus" aria-label="requis +">+</button></span>
+  <select id="bb-addset"></select>
+  <select id="bb-rmset"></select>
+  <select id="bb-addrole"></select>
+  <select id="bb-rmrole"></select>
+  <button type="button" class="btn sm" id="bb-dup" data-i18n="b_dup">dupliquer</button>
+  <button type="button" class="btn sm danger" id="bb-del" data-i18n="b_del">supprimer</button>
+  <button type="button" class="btn sm" id="bb-clear" title="désélectionner">✕</button>
+</div>
 
 <nav class="tabbar" id="tabbar" aria-label="navigation">
   <button class="tb-btn" data-nav="regles">
@@ -1185,10 +1208,15 @@ fr:{
   pal_nav:v=>"Aller : "+v, pal_tab:n=>"Activer : "+n, pal_new:"Nouvelle règle…", pal_tp:"Recopie guidée",
   pal_farm:"Session de farm", pal_sample:"Rejouer un échantillon (Simulation)", pal_backup:"Exporter une sauvegarde complète",
   pal_theme:"Basculer le thème", pal_undo:"Annuler la dernière action", pal_redo:"Rétablir", pal_help:"Aide & raccourcis",
+  pal_replace:"Remplacer un set (jeu actif)…", rs_title:"Remplacer un set — toutes les règles du jeu actif", rs_apply:"Remplacer",
+  c_replace:(a,b)=>"remplacement "+a+" → "+b, t_replaced:(a,b)=>`Set <b>${a}</b> remplacé par <b>${b}</b> dans le jeu actif.`,
+  bb_n:n=>n+" sélectionnée"+(n>1?"s":""), bb_addset:"+ set…", bb_rmset:"− set…", bb_addrole:"+ rôle…", bb_rmrole:"− rôle…",
+  c_bulk_req:"requis (lot)", c_bulk_set:"sets (lot)", c_bulk_role:"rôles (lot)", c_bulk_dup:"duplication (lot)", c_bulk_del:"suppression (lot)",
+  t_bulk_del:n=>n+" règle"+(n>1?"s":"")+" supprimée"+(n>1?"s":"")+" — Ctrl+Z pour tout annuler.",
   hp_title:"Aide — raccourcis, légende, recherche", hp_close:"Fermer", hp_shortcuts_h:"Raccourcis",
   hp_shortcuts_html:`<ul>
     <li><kbd>Ctrl+K</kbd> palette · <kbd>Ctrl+Z</kbd> annuler · <kbd>Ctrl+Shift+Z</kbd> rétablir · <kbd>?</kbd> cette aide</li>
-    <li>Liste des règles, carte focalisée : <kbd>j</kbd>/<kbd>k</kbd> ou <kbd>↑</kbd><kbd>↓</kbd> naviguer · <kbd>o</kbd>/<kbd>Espace</kbd> déplier · <kbd>x</kbd> coche « saisie » · <kbd>+</kbd>/<kbd>−</kbd> requis · <kbd>d</kbd> dupliquer · <kbd>Alt+↑↓</kbd> déplacer</li>
+    <li>Liste des règles, carte focalisée : <kbd>j</kbd>/<kbd>k</kbd> ou <kbd>↑</kbd><kbd>↓</kbd> naviguer · <kbd>o</kbd>/<kbd>Espace</kbd> déplier · <kbd>x</kbd> coche « saisie » · <kbd>+</kbd>/<kbd>−</kbd> requis · <kbd>d</kbd> dupliquer · <kbd>Alt+↑↓</kbd> déplacer · <kbd>Shift-clic</kbd>/<kbd>v</kbd> sélectionner (barre d'action en lot)</li>
     <li>Recopie guidée : <kbd>Entrée</kbd> coché → suivante · <kbd>Retour</kbd> décocher-revenir · <kbd>←</kbd><kbd>→</kbd> naviguer · <kbd>c</kbd> copier la clé</li>
   </ul>`,
   hp_legend_h:"Légende", hp_legend_html:`<ul>
@@ -1399,10 +1427,15 @@ en:{
   pal_nav:v=>"Go to: "+v, pal_tab:n=>"Activate: "+n, pal_new:"New rule…", pal_tp:"Guided copy",
   pal_farm:"Farm session", pal_sample:"Replay a sample (Simulation)", pal_backup:"Export a full backup",
   pal_theme:"Toggle theme", pal_undo:"Undo last action", pal_redo:"Redo", pal_help:"Help & shortcuts",
+  pal_replace:"Replace a set (active ruleset)…", rs_title:"Replace a set — every rule of the active ruleset", rs_apply:"Replace",
+  c_replace:(a,b)=>"replace "+a+" → "+b, t_replaced:(a,b)=>`Set <b>${a}</b> replaced by <b>${b}</b> in the active ruleset.`,
+  bb_n:n=>n+" selected", bb_addset:"+ set…", bb_rmset:"− set…", bb_addrole:"+ role…", bb_rmrole:"− role…",
+  c_bulk_req:"required (batch)", c_bulk_set:"sets (batch)", c_bulk_role:"roles (batch)", c_bulk_dup:"duplication (batch)", c_bulk_del:"deletion (batch)",
+  t_bulk_del:n=>n+" rule"+(n>1?"s":"")+" deleted — Ctrl+Z undoes it all.",
   hp_title:"Help — shortcuts, legend, search", hp_close:"Close", hp_shortcuts_h:"Shortcuts",
   hp_shortcuts_html:`<ul>
     <li><kbd>Ctrl+K</kbd> palette · <kbd>Ctrl+Z</kbd> undo · <kbd>Ctrl+Shift+Z</kbd> redo · <kbd>?</kbd> this help</li>
-    <li>Rule list, focused card: <kbd>j</kbd>/<kbd>k</kbd> or <kbd>↑</kbd><kbd>↓</kbd> navigate · <kbd>o</kbd>/<kbd>Space</kbd> expand · <kbd>x</kbd> “entered” tick · <kbd>+</kbd>/<kbd>−</kbd> required · <kbd>d</kbd> duplicate · <kbd>Alt+↑↓</kbd> move</li>
+    <li>Rule list, focused card: <kbd>j</kbd>/<kbd>k</kbd> or <kbd>↑</kbd><kbd>↓</kbd> navigate · <kbd>o</kbd>/<kbd>Space</kbd> expand · <kbd>x</kbd> “entered” tick · <kbd>+</kbd>/<kbd>−</kbd> required · <kbd>d</kbd> duplicate · <kbd>Alt+↑↓</kbd> move · <kbd>Shift-click</kbd>/<kbd>v</kbd> select (batch action bar)</li>
     <li>Guided copy: <kbd>Enter</kbd> ticked → next · <kbd>Backspace</kbd> untick & back · <kbd>←</kbd><kbd>→</kbd> navigate · <kbd>c</kbd> copy key</li>
   </ul>`,
   hp_legend_h:"Legend", hp_legend_html:`<ul>
@@ -1966,7 +1999,7 @@ function ruleRow(r){
   const isUnplayable = r.req > r.pool.length;
   const warnTxt = isUnplayable ? t("warn_unplayable") : (r.ess.length > r.req ? t("warn_eff", r.ess.length) : "");
   const warn = `<span class="rc-warn${!isUnplayable && warnTxt ? " soft" : ""}" data-warn="${r.id}">${warnTxt}</span>`;
-  return `<article class="rule${open?' open':''}" id="card-${r.id}">
+  return `<article class="rule${open?' open':''}${BULK.has(r.id)?' bulksel':''}" id="card-${r.id}">
     <div class="row-head" role="button" tabindex="0" aria-expanded="${open}" data-toggle="${r.id}">
       <span class="drag" draggable="true" data-drag="${r.id}" title="${t("tip_drag")}">⠿</span>
       <input type="checkbox" class="chk" data-entered="${r.id}" ${isEntered(r.id)?"checked":""} title="${t("tip_entered")}" aria-label="${t("aria_entered")}">
@@ -2155,6 +2188,80 @@ function filtersSummary(){
 
   return t("flt_sum") + (n ? ` <span class="n">${n}</span>` : "");
 }
+/* ── Édition à l'échelle : sélection (Shift-clic / v) + barre d'action en lot.
+      Chaque action du lot = UNE SEULE commande d'undo : les mutations tournent sous
+      SUPPRESS_CMD puis un unique scheduleSave étiqueté compare l'avant/après. ── */
+let BULK = new Set();
+function bulkToggle(id){
+  BULK.has(id) ? BULK.delete(id) : BULK.add(id);
+  const card = document.getElementById("card-"+id);
+  if(card) card.classList.toggle("bulksel", BULK.has(id));
+  updateBulkBar();
+}
+function bulkClear(){
+  BULK.clear();
+  document.querySelectorAll(".rule.bulksel").forEach(c=>c.classList.remove("bulksel"));
+  updateBulkBar();
+}
+function bulkRules(){
+  const tab = activeTab();
+
+  return tab ? tab.rules.filter(r=>BULK.has(r.id)) : [];
+}
+function bulkApply(label, fn){
+  const rules = bulkRules();
+  if(!rules.length) return;
+  SUPPRESS_CMD = true;
+  try{ fn(rules, activeTab()); } finally { SUPPRESS_CMD = false; }
+  scheduleSave(label);
+  COV_CACHE = null;
+  updateRuleList(); refreshTabBar(); updateSidebar(); updateBulkBar();
+}
+function updateBulkBar(){
+  const bar = document.getElementById("bulk-bar");
+  if(!bar) return;
+  const sel = bulkRules();
+  if(UI.view !== "regles" || !sel.length){ bar.hidden = true; return; }
+  bar.hidden = false;
+  document.getElementById("bb-n").textContent = t("bb_n", sel.length);
+  const sides = new Set(sel.map(r=>r.section));
+  document.getElementById("bb-addset").innerHTML = `<option value="">${t("bb_addset")}</option>` +
+    SETS.filter(s=>sides.has(s.side)).map(s=>`<option value="${esc(s.n)}">${esc(setName(s.n))}</option>`).join("");
+  const present = [...new Set(sel.flatMap(r=>r.sets))];
+  document.getElementById("bb-rmset").innerHTML = `<option value="">${t("bb_rmset")}</option>` +
+    present.map(nm=>`<option value="${esc(nm)}">${esc(setName(nm))}</option>`).join("");
+  document.getElementById("bb-addrole").innerHTML = `<option value="">${t("bb_addrole")}</option>` +
+    allArchs().map(a=>`<option value="${esc(a)}">${esc(archLabel(a))}</option>`).join("");
+  const roles = [...new Set(sel.flatMap(r=>r.arch||[]))];
+  document.getElementById("bb-rmrole").innerHTML = `<option value="">${t("bb_rmrole")}</option>` +
+    roles.map(a=>`<option value="${esc(a)}">${esc(archLabel(a))}</option>`).join("");
+}
+// Remplacer un set A → B dans toutes les règles du jeu actif (entrée de palette)
+function openReplaceSet(){
+  if(document.querySelector("dialog[open]")) return;
+  const tab = activeTab();
+  const used = [...new Set((tab?tab.rules:[]).flatMap(r=>r.sets))];
+  if(!used.length){ toast(t("empty_tab")); return; }
+  const d = document.getElementById("pal-dlg");
+  d.innerHTML = `<div style="padding:16px 18px;display:flex;flex-direction:column;gap:12px">
+    <b style="color:var(--head)">${t("rs_title")}</b>
+    <div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap">
+      <select id="rs-from">${used.map(n=>`<option value="${esc(n)}">${esc(setName(n))}</option>`).join("")}</select>
+      <span style="color:var(--faint)">→</span>
+      <select id="rs-to"></select>
+    </div>
+    <div class="ap-actions"><button type="button" class="btn primary" id="rs-apply">${t("rs_apply")}</button>
+    <button type="button" class="btn" id="rs-cancel">${t("btn_cancel")}</button></div>
+  </div>`;
+  const fill = ()=>{
+    const from = document.getElementById("rs-from").value;
+    document.getElementById("rs-to").innerHTML = SETS.filter(s=>s.side===SETSIDE[from] && s.n!==from)
+      .map(s=>`<option value="${esc(s.n)}">${esc(setName(s.n))}</option>`).join("");
+  };
+  fill();
+  document.getElementById("rs-from").addEventListener("change", fill);
+  d.showModal();
+}
 // Bandeau d'ouverture — UN SEUL à la fois, priorité patch > reprise de saisie.
 // (L'import par lien reste un toast ; sa page d'atterrissage dédiée viendra avec l'acquisition.)
 function openingBanner(){
@@ -2268,6 +2375,7 @@ function updateRuleList(){
   const fsum = document.querySelector("#filters-acc>summary");
   if(fsum) fsum.innerHTML = filtersSummary();
   applyRoving();
+  updateBulkBar();
 }
 // Roving tabindex : une seule carte est un arrêt Tab, j/k et les flèches naviguent ensuite
 function applyRoving(){
@@ -2757,7 +2865,7 @@ function palItems(){
   add("nav", t("pal_nav", t("nav_ref")), "", ()=>goto("/reference"));
   add("nav", t("pal_nav", t("nav_sets")), "", ()=>{ UI.refMode = "sets"; goto("/reference"); renderView(); });
   for(const tb of TABS)
-    add("jeux", t("pal_tab", tb.name), "", ()=>{ activeTabId = tb.id; UI.open.clear(); scheduleSave(); renderView(); refreshTabBar(); updateSidebar(); });
+    add("jeux", t("pal_tab", tb.name), "", ()=>{ activeTabId = tb.id; BULK.clear(); UI.open.clear(); scheduleSave(); renderView(); refreshTabBar(); updateSidebar(); });
   add("cmd", t("pal_new"), "", ()=>openDlg(null));
   add("cmd", t("pal_tp"), "", openTp);
   add("cmd", t("pal_farm"), "", openFarm);
@@ -2767,9 +2875,10 @@ function palItems(){
   add("cmd", t("pal_undo"), "Ctrl+Z", undoCmd);
   add("cmd", t("pal_redo"), "Ctrl+Shift+Z", redoCmd);
   add("cmd", t("pal_help"), "?", openHelp);
+  add("cmd", t("pal_replace"), "", openReplaceSet);
   for(const tb of TABS) for(const r of tb.rules)
     add("regles", r.id+" · "+r.name+(tb.id!==activeTabId ? " — "+tb.name : ""), "",
-        ()=>{ activeTabId = tb.id; UI.open.clear(); scheduleSave(); goto("/regles/"+r.id); },
+        ()=>{ activeTabId = tb.id; BULK.clear(); UI.open.clear(); scheduleSave(); goto("/regles/"+r.id); },
         r.sets.map(setName).join(" ")+" "+r.sets.join(" ")+" "+r.mains.join(" ")+" "+(r.arch||[]).map(archLabel).join(" "));
 
   return items;
@@ -3824,6 +3933,7 @@ document.addEventListener("click", e=>{
   if(tsel){
     if(UI.renaming) commitRename(true);
     activeTabId = tsel.dataset.tabsel;
+    BULK.clear();
     UI.open.clear();
     scheduleSave();
     if(UI.view === "regles"){ refreshTabBar(); updateRuleList(); }
@@ -4045,6 +4155,49 @@ document.addEventListener("click", e=>{
     else if(subs.length<4) subs.push(a);
   }); return; }
   if(el.closest("#fm-verd")){ if(FARM.timer){ clearTimeout(FARM.timer); FARM.timer = null; farmRender(); } return; }
+  if(el.closest("#bb-req-minus") || el.closest("#bb-req-plus")){
+    const d = el.closest("#bb-req-plus") ? 1 : -1;
+    bulkApply(t("c_bulk_req"), rules=>rules.forEach(r=>{ r.req = Math.max(1, Math.min(4, r.req + d)); r.ess = r.ess.slice(0, 4); }));
+    return;
+  }
+  if(el.closest("#bb-dup")){
+    bulkApply(t("c_bulk_dup"), (rules, tab)=>{
+      for(const r of rules){
+        const copy = {...JSON.parse(JSON.stringify(r)), id:nextRuleId(tab, r.section), name:r.name+t("copy_sfx")};
+        ENTERED.delete(entKey(tab.id, copy.id));
+        tab.rules.splice(tab.rules.indexOf(r)+1, 0, copy);
+      }
+    });
+    return;
+  }
+  if(el.closest("#bb-del")){
+    const n = bulkRules().length;
+    bulkApply(t("c_bulk_del"), (rules, tab)=>{
+      const ids = new Set(rules.map(r=>r.id));
+      tab.rules = tab.rules.filter(r=>!ids.has(r.id));
+      ids.forEach(id=>{ UI.open.delete(id); ENTERED.delete(entKey(tab.id, id)); BULK.delete(id); });
+    });
+    toast(t("t_bulk_del", n));
+    return;
+  }
+  if(el.closest("#bb-clear")){ bulkClear(); return; }
+  if(el.closest("#rs-apply")){
+    const from = document.getElementById("rs-from").value, to = document.getElementById("rs-to").value;
+    document.getElementById("pal-dlg").close();
+    if(from && to && from !== to){
+      const tab = activeTab();
+      SUPPRESS_CMD = true;
+      try{
+        for(const r of tab.rules) if(r.sets.includes(from)) r.sets = sortSets([...new Set(r.sets.map(x=>x===from?to:x))]);
+      } finally { SUPPRESS_CMD = false; }
+      scheduleSave(t("c_replace", setName(from), setName(to)));
+      COV_CACHE = null;
+      renderView(); refreshTabBar(); updateSidebar();
+      toast(t("t_replaced", esc(setName(from)), esc(setName(to))));
+    }
+    return;
+  }
+  if(el.closest("#rs-cancel")){ document.getElementById("pal-dlg").close(); return; }
   if(el.closest("#save-line")){ exportBackup(); return; }
   if(el.closest("#pal-btn")){ openPal(); return; }
   if(el.closest("#help-btn")){ openHelp(); return; }
@@ -4202,6 +4355,7 @@ document.addEventListener("click", e=>{
   const head = el.closest(".row-head");
   if(head && !el.closest("input") && !el.closest(".drag")){
     const id = head.dataset.toggle;
+    if(e.shiftKey){ bulkToggle(id); return; }
     UI.open.has(id) ? UI.open.delete(id) : UI.open.add(id);
     rerenderRule(id);
     const tg = document.getElementById("toggle-all");
@@ -4210,6 +4364,20 @@ document.addEventListener("click", e=>{
   }
 });
 document.addEventListener("change", e=>{
+  if(e.target.id && e.target.id.startsWith("bb-")){
+    const v = e.target.value;
+    e.target.value = "";
+    if(!v) return;
+    if(e.target.id==="bb-addset")
+      bulkApply(t("c_bulk_set"), rules=>rules.forEach(r=>{ if(SETSIDE[v]===r.section && !r.sets.includes(v)) r.sets = sortSets([...r.sets, v]); }));
+    else if(e.target.id==="bb-rmset")
+      bulkApply(t("c_bulk_set"), rules=>rules.forEach(r=>{ r.sets = r.sets.filter(x=>x!==v); }));
+    else if(e.target.id==="bb-addrole")
+      bulkApply(t("c_bulk_role"), rules=>rules.forEach(r=>{ r.arch = allArchs().filter(x=>(r.arch||[]).includes(x)||x===v); }));
+    else if(e.target.id==="bb-rmrole")
+      bulkApply(t("c_bulk_role"), rules=>rules.forEach(r=>{ r.arch = (r.arch||[]).filter(x=>x!==v); }));
+    return;
+  }
   const chk = e.target.closest("[data-entered]");
   if(chk){
     const id = chk.dataset.entered;
@@ -4249,7 +4417,7 @@ document.addEventListener("keydown", e=>{
   }
   {
     const pal = document.getElementById("pal-dlg");
-    if(pal && pal.open){
+    if(pal && pal.open && document.getElementById("pal-in")){
       if(e.key==="ArrowDown"){ e.preventDefault(); PAL.sel++; palRender(); return; }
       if(e.key==="ArrowUp"){ e.preventDefault(); PAL.sel = Math.max(0, PAL.sel-1); palRender(); return; }
       if(e.key==="Enter"){ e.preventDefault(); palExec(PAL.sel); return; }
@@ -4288,7 +4456,7 @@ document.addEventListener("keydown", e=>{
         const tb = TABS[+e.key-1];
         if(tb && tb.id !== activeTabId){
           e.preventDefault();
-          activeTabId = tb.id; UI.open.clear(); scheduleSave();
+          activeTabId = tb.id; BULK.clear(); UI.open.clear(); scheduleSave();
           renderView(); refreshTabBar(); updateSidebar();
           return;
         }
@@ -4361,6 +4529,9 @@ document.addEventListener("keydown", e=>{
       e.preventDefault();
       const chk = head.querySelector(".chk");
       if(chk) chk.click();
+    } else if(e.key==="v"){
+      e.preventDefault();
+      bulkToggle(id);
     } else if(e.key==="d"){
       e.preventDefault();
       duplicateRule(id);
