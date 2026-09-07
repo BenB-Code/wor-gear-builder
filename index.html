@@ -143,6 +143,7 @@
   .prog-bar{height:5px;border-radius:3px;background:var(--panel2);overflow:hidden}
   .prog-bar i{display:block;height:100%;background:var(--acc);border-radius:3px;transition:width .3s}
   .side-foot .btn{width:100%}
+  .side-kbd{display:flex;align-items:center;justify-content:space-between;gap:8px}
   .side-acc{margin:0}
   .side-acc>summary{cursor:pointer;list-style:none;display:flex;align-items:center;gap:7px;padding:2px 8px;
     color:var(--label);font-family:var(--body);font-size:11.5px;font-weight:600;letter-spacing:.08em;border-radius:var(--r-s)}
@@ -507,6 +508,7 @@
   body.light .bulk-bar{box-shadow:0 8px 30px rgba(60,50,30,.2)}
   .bulk-bar .bb-n{font-family:var(--mono);font-size:var(--fs-1);color:var(--acc);white-space:nowrap}
   .bulk-bar select{max-width:130px}
+  .bulk-bar[hidden]{display:none}
   /* ── Densité compacte : la ligne repliée porte ses chips cyclables et ses sets ── */
   .row-compact{display:flex;align-items:flex-start;gap:8px 14px;flex-wrap:wrap;padding:0 12px 8px 41px}
   .row-compact .chip{padding:1px 6px;font-size:10px}
@@ -514,7 +516,9 @@
   .row-compact .rc-mini{max-width:92px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:default;pointer-events:none}
   /* ── Comparaison par delta ── */
   .cov-cmp{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
-  .cov-card .delta{font-family:var(--mono);font-size:var(--fs-0);color:var(--deff-hi);margin-top:3px}
+  .cov-card .delta{font-family:var(--mono);font-size:var(--fs-0);color:var(--faint);margin-top:3px}
+  .cov-card .delta.up{color:var(--util)}
+  .cov-card .delta.down{color:var(--off)}
   @media(max-width:920px){
     .bulk-bar{bottom:calc(66px + env(safe-area-inset-bottom))}
   }
@@ -553,13 +557,13 @@
   .rm-cov.bad{color:var(--off)}
   .spec{position:relative;width:26px;height:4px;border-radius:2px;background:var(--panel2);flex:0 0 auto}
   .spec i{position:absolute;top:-2px;width:4px;height:8px;border-radius:2px;background:var(--head);transform:translateX(-50%)}
-  .ovrow{display:flex;align-items:center;gap:9px;margin:5px 0;font-size:var(--fs-1)}
+  .ovrow{display:flex;align-items:center;gap:9px;margin:5px 0;font-size:var(--fs-1);max-width:520px}
   .ovmir{display:flex;width:130px;height:6px;border-radius:3px;overflow:hidden;flex:0 0 auto}
   .ovmir .s{flex:1;position:relative;background:var(--panel2)}
   .ovmir .s i{position:absolute;top:0;height:100%;background:var(--t1-bd)}
   .ovmir .s.l i{right:0}
   .ovmir .s.r i{left:0}
-  .ovn{font-family:var(--mono);font-size:var(--fs-0);color:var(--faint);margin-left:auto}
+  .ovn{font-family:var(--mono);font-size:var(--fs-0);color:var(--faint)}
   /* ── Saisie en jeu ── */
   .sr-row{display:flex;align-items:center;gap:11px;background:var(--panel);border:1px solid var(--border-soft);
     border-radius:var(--r-m);padding:9px 13px;margin:7px 0;cursor:pointer;box-shadow:var(--top-light)}
@@ -588,11 +592,11 @@
   .tp-name{font-family:var(--display);font-variant:small-caps;letter-spacing:.03em;font-size:var(--fs-5);font-weight:600;color:var(--ink-hi)}
   .tp-entered{font-family:var(--mono);font-size:var(--fs-0);color:var(--util)}
   .tp-k{font-family:var(--body);font-size:11.5px;font-weight:600;letter-spacing:.08em;color:var(--label);margin-bottom:4px}
-  .tp-v{font-family:var(--mono);font-size:18px;line-height:1.5;color:var(--ink-hi)}
+  .tp-v{font-family:var(--mono);font-size:var(--fs-3);line-height:1.5;color:var(--ink)}
   .tp-v .sig,.tp-sub .sig{font-family:var(--body);font-size:var(--fs-1);color:var(--faint)}
   .tp-subs{display:flex;flex-direction:column;gap:6px}
-  .tp-sub{font-family:var(--mono);font-size:18px;color:var(--ink);display:flex;align-items:baseline;gap:8px}
-  .tp-sub.ess{color:var(--ink-hi)}
+  .tp-sub{font-family:var(--mono);font-size:19px;color:var(--ink-hi);display:flex;align-items:baseline;gap:8px}
+  .tp-sub.ess{color:var(--acc)}
   .tp-keyrow{display:flex;align-items:center;gap:9px;margin-top:4px;flex-wrap:wrap}
   .tp-keyval{font-family:var(--mono);font-size:var(--fs-3);color:var(--ink-hi);background:var(--panel2);
     border:1px solid var(--border-soft);border-radius:var(--r-s);padding:4px 10px;word-break:break-all}
@@ -799,9 +803,9 @@
       </div>
         </div>
       </details>
-      <div class="acc-row" style="gap:8px">
-        <button type="button" class="btn sm" id="pal-btn" style="flex:1">Ctrl+K · <span data-i18n="pal_name">Palette</span></button>
-        <button type="button" class="btn sm" id="help-btn" style="flex:1">? <span data-i18n="hp_name">Aide</span></button>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <button type="button" class="btn sm side-kbd" id="pal-btn"><span data-i18n="pal_name">Palette</span><kbd>Ctrl+K</kbd></button>
+        <button type="button" class="btn sm side-kbd" id="help-btn"><span data-i18n="hp_name">Aide</span><kbd>?</kbd></button>
       </div>
       <div class="save-line" id="save-line" role="button" tabindex="0" data-i18n-title="tip_backup" title="cliquer = exporter une sauvegarde complète (JSON)"><span class="dot"></span><span id="save-status">local</span></div>
     </div>
@@ -1081,7 +1085,7 @@ fr:{
   fm_sets_recent:"Set — récents d'abord", fm_allsets:"tous les sets",
   fm_slotmain:"Slot · Main — mémorisés du drop précédent", fm_subs:n=>`Subs ${n}/4`,
   v_sim_h:"Simulation", v_sim_lede:"Vérifie ce que ton jeu de règles garde et recycle avant de le saisir dans le jeu — sur un échantillon réaliste de pièces tirées.",
-  v_session_h:"Session — vérifier une pièce", v_session_lede:"Construis la pièce que tu viens de dropper : le verdict tombe sur la carte, en direct.",
+  v_session_h:"Session — vérifier une pièce", v_session_lede:"Le jeu vient de te dropper une pièce ? Reproduis-la ici — slot, main, subs, set — et le verdict tombe sur la carte, en direct. Pour enchaîner les drops, lance la Session de farm.",
   v_entry_h:"Saisie en jeu", v_entry_lede:"L'état de recopie du jeu de règles actif : coche chaque règle une fois saisie dans le builder du jeu.",
   prog:"Saisie en jeu", import_btn:"Importer des règles (JSON)", accent:"Accent", lang:"Langue", appearance:"Apparence",
   theme_light:"☀ Mode clair", theme_dark:"☾ Mode sombre", dens_comfort:"Densité : confort", dens_compact:"Densité : compacte",
@@ -1219,6 +1223,9 @@ fr:{
   pal_replace:"Remplacer un set (jeu actif)…", rs_title:"Remplacer un set — toutes les règles du jeu actif", rs_apply:"Remplacer",
   c_replace:(a,b)=>"remplacement "+a+" → "+b, t_replaced:(a,b)=>`Set <b>${a}</b> remplacé par <b>${b}</b> dans le jeu actif.`,
   cmp_ph:"comparer à…", cmp_note:n=>"Δ vs "+n,
+  scene_ex:(k,r)=>`Exemples tirés de l'échantillon — ${k} gardée${k>1?"s":""}, ${r} recyclée${r>1?"s":""} · clique une carte pour le détail`,
+  h_session:`Reproduis la pièce droppée avec les sélecteurs du bas : <b>slot</b> → <b>main</b> → <b>subs</b> → <b>set</b>. La carte du haut montre en direct les règles encore possibles, puis le verdict (gardée / recyclée) dès qu'il est certain — pas besoin des 4 subs si le sort de la pièce est déjà scellé.<br><b>Session de farm</b> : le même geste en plein écran, pensé pouce — la pièce suivante démarre d'un tap (set, slot et main conservés) et la session compte vues, gardées, recyclées.`,
+  fm_helper:"décris chaque drop : set → main → subs. Le verdict tombe dès qu'il est sûr ; la saisie suivante démarre la pièce d'après.",
   bb_n:n=>n+" sélectionnée"+(n>1?"s":""), bb_addset:"+ set…", bb_rmset:"− set…", bb_addrole:"+ rôle…", bb_rmrole:"− rôle…",
   c_bulk_req:"requis (lot)", c_bulk_set:"sets (lot)", c_bulk_role:"rôles (lot)", c_bulk_dup:"duplication (lot)", c_bulk_del:"suppression (lot)",
   t_bulk_del:n=>n+" règle"+(n>1?"s":"")+" supprimée"+(n>1?"s":"")+" — Ctrl+Z pour tout annuler.",
@@ -1301,7 +1308,7 @@ en:{
   fm_sets_recent:"Set — recent first", fm_allsets:"all sets",
   fm_slotmain:"Slot · Main — remembered from the previous drop", fm_subs:n=>`Subs ${n}/4`,
   v_sim_h:"Simulation", v_sim_lede:"Check what your ruleset keeps and recycles before entering it in the game — on a realistic sample of drawn pieces.",
-  v_session_h:"Session — check a piece", v_session_lede:"Build the piece you just dropped: the verdict lands on the card, live.",
+  v_session_h:"Session — check a piece", v_session_lede:"The game just dropped you a piece? Rebuild it here — slot, main, subs, set — and the verdict lands on the card, live. To chain drops, start a Farm session.",
   v_entry_h:"In-game entry", v_entry_lede:"The copy state of the active ruleset: tick each rule once entered in the in-game builder.",
   prog:"Entered in game", import_btn:"Import rules (JSON)", accent:"Accent", lang:"Language", appearance:"Appearance",
   theme_light:"☀ Light mode", theme_dark:"☾ Dark mode", dens_comfort:"Density: comfy", dens_compact:"Density: compact",
@@ -1439,6 +1446,9 @@ en:{
   pal_replace:"Replace a set (active ruleset)…", rs_title:"Replace a set — every rule of the active ruleset", rs_apply:"Replace",
   c_replace:(a,b)=>"replace "+a+" → "+b, t_replaced:(a,b)=>`Set <b>${a}</b> replaced by <b>${b}</b> in the active ruleset.`,
   cmp_ph:"compare to…", cmp_note:n=>"Δ vs "+n,
+  scene_ex:(k,r)=>`Examples drawn from the sample — ${k} kept, ${r} recycled · click a card for details`,
+  h_session:`Rebuild the dropped piece with the selectors below: <b>slot</b> → <b>main</b> → <b>subs</b> → <b>set</b>. The card on top shows live which rules are still possible, then the final verdict (kept / recycled) as soon as it is certain — no need for all 4 subs if the piece's fate is already sealed.<br><b>Farm session</b>: the same gesture full-screen, thumb-first — the next piece starts with one tap (set, slot and main kept) and the session counts seen, kept, recycled.`,
+  fm_helper:"describe each drop: set → main → subs. The verdict lands as soon as it is certain; the next input starts the next piece.",
   bb_n:n=>n+" selected", bb_addset:"+ set…", bb_rmset:"− set…", bb_addrole:"+ role…", bb_rmrole:"− role…",
   c_bulk_req:"required (batch)", c_bulk_set:"sets (batch)", c_bulk_role:"roles (batch)", c_bulk_dup:"duplication (batch)", c_bulk_del:"deletion (batch)",
   t_bulk_del:n=>n+" rule"+(n>1?"s":"")+" deleted — Ctrl+Z undoes it all.",
@@ -2091,7 +2101,14 @@ function covHead(){
   // comparaison par delta : un second jeu de règles, jamais de split-screen
   const oc = covOther();
   const dLoc = n => (n>0?"+":"") + n.toLocaleString(t("date_locale"));
-  const dl = (a, b, pts) => oc ? `<div class="delta">Δ ${dLoc(a-b)}${pts!==undefined?` · ${(pts>0?"+":"")+pts.toFixed(2).replace(".", LANG==="fr"?",":".")} pt`:""}</div>` : "";
+  const dl = (a, b, pts) => {
+    if(!oc) return "";
+    const d = a - b;
+    const ico = d>0 ? "▲" : (d<0 ? "▼" : "=");
+    const cls = d>0 ? " up" : (d<0 ? " down" : " eq");
+
+    return `<div class="delta${cls}">${ico} ${dLoc(d)}${pts!==undefined && d!==0?` · ${(pts>0?"+":"")+pts.toFixed(2).replace(".", LANG==="fr"?",":".")} pt`:""}</div>`;
+  };
   const rref = id => { const r = getRule(id); return `<button type="button" class="ruleref" data-goto="${id}" title="${esc(r?r.name:"")}">${id}</button>`; };
   const mute = c.rules.filter(r=>c.perRule[r.id]===0);
   const dup = c.rules.filter(r=>c.perRule[r.id]>0 && c.uniq[r.id]===0);
@@ -2655,7 +2672,8 @@ function samplePanel(){
         <button type="button" class="cov-card act" data-scn="kept"${kept?` title="${t("ord_one", Math.round(n/kept))}"`:""}><div class="num">${kept} <b>· ${pctTxt}</b></div><div class="lbl">${t("scene_kept")}</div></button>
         ${top?`<div class="cov-card"><div class="num"><button type="button" class="ruleref" data-goto="${top[0]}">${top[0]}</button> · ${top[1]}</div><div class="lbl">${t("scene_top")}</div></div>`:""}
       </div>
-      ${showcase.length?`<div class="piece-grid scene-cards">${showcase.map(({p,i})=>pieceCard(p,i)).join("")}</div>`:""}
+      ${showcase.length?`<div class="lab" style="margin:0 0 -6px">${t("scene_ex", keptIdx.length, recIdx?1:0)}</div>
+      <div class="piece-grid scene-cards">${showcase.map(({p,i})=>pieceCard(p,i)).join("")}</div>`:""}
       <div class="oracle ${tone}"><b class="d">◆</b> ${oracle}</div>
       <div><button type="button" class="btn primary" id="ts-scene-regen">↻ ${t("scene_replay")}</button></div>
     </section>`;
@@ -2846,9 +2864,10 @@ function viewSimulation(){
 function viewSession(){
   return `<div class="wrap">
     <div class="view-head">
-      <h2>${t("v_session_h")}</h2>
+      <h2>${t("v_session_h")}${helpBtn("session")}</h2>
       <div class="lede">${t("v_session_lede")}</div>
     </div>
+    ${helpBody("session", t("h_session"))}
     <div class="controls">
       ${tabPicker()}
       <button type="button" class="btn primary" id="fm-open">▸ ${t("fm_start")}</button>
@@ -3144,7 +3163,7 @@ function farmRender(){
   const sideSets = SETS.filter(s=>s.side===slot.side);
   const recents = FARM.recent.filter(n=>SETSIDE[n]===slot.side);
   let verd;
-  if(v.state==="idle") verd = `<div class="fm-why">${t("fm_idle")}</div>`;
+  if(v.state==="idle") verd = `<div class="fm-why">${t("fm_idle")}</div><div class="fm-hint" style="max-width:46ch">${t("fm_helper")}</div>`;
   else if(v.state==="prov") verd = `<div class="big">◌ ${t("fm_prov", m.subs.length)}</div>`;
   else if(v.state==="kept") verd = `<div class="big">✓ ${t("fm_keep")}</div><div class="fm-why">${t("fm_why_kept", v.rule.id+" · "+esc(v.rule.name))}</div>`;
   else verd = `<div class="big">⚒ ${t("fm_recycle")}</div><div class="fm-why">${m.subs.length ? t("fm_why_rec", m.subs.length) : t("fm_why_base")}</div>`;
