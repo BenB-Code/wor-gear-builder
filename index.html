@@ -509,6 +509,12 @@
   .oracle .d{color:var(--util)}
   .oracle.bad{border-left-color:var(--off-strong);background:var(--off-dim)}
   .oracle.bad .d{color:var(--off)}
+  /* Bandeau d'ouverture (patch / reprise) — un seul à la fois */
+  .op-banner{display:flex;align-items:flex-start;gap:9px;border:1px solid var(--acc-bd);background:var(--acc-dim);
+    border-radius:var(--r-m);padding:9px 12px;margin:0 0 14px;font-size:var(--fs-2);color:var(--ink);line-height:1.5}
+  .op-banner .d{color:var(--acc)}
+  .op-banner .x{margin-left:auto;flex:0 0 auto}
+  .ic-note{font-size:var(--fs-0);color:var(--faint);font-style:italic}
   .ap-hint{color:var(--faint);font-size:var(--fs-1);margin-top:10px}
 
   /* ── Toasts ── */
@@ -990,6 +996,9 @@ fr:{
   scene_phrase:(n,k)=>k?`Sur les ${n} pièces tirées, ce jeu de règles en garde ${k} — le reste part au recyclage.`:`Sur les ${n} pièces tirées, ce jeu de règles n'en garde aucune.`,
   scene_sub:"Chaque pièce gardée l'est par une règle nommée — clique une carte pour voir laquelle, et pourquoi.",
   scene_drawn:"pièces tirées", scene_kept:"gardées", scene_top:"règle la plus active", scene_replay:"Rejouer un échantillon",
+  ban_patch:(n,u,names)=>`Données du jeu mises à jour : ${n} nouveau${n>1?"x":""} set${n>1?"s":""} — ${names}${u?` · ${u} non couvert${u>1?"s":""} par tes règles`:" · tous couverts par tes règles"}.`,
+  ban_resume:n=>`Reprise — il te reste ${n} règle${n>1?"s":""} à saisir en jeu (coche-les au fil de la recopie).`,
+  ic_onlyone:"il suffisait d'une seule",
   oracle_ok:(k,n,p)=>`Ton tri est sain — il garde ${k} pièce${k>1?"s":""} sur ${n} (${p})`,
   oracle_multi0:"rien n'est gardé deux fois par accident",
   oracle_multiN:m=>`${m} pièce${m>1?"s":""} gardée${m>1?"s":""} par ≥ 2 règles — surveille les doublons en Couverture`,
@@ -1149,6 +1158,9 @@ en:{
   scene_phrase:(n,k)=>k?`Out of ${n} drawn pieces, this ruleset keeps ${k} — the rest goes to recycling.`:`Out of ${n} drawn pieces, this ruleset keeps none.`,
   scene_sub:"Every kept piece is kept by a named rule — click a card to see which one, and why.",
   scene_drawn:"pieces drawn", scene_kept:"kept", scene_top:"most active rule", scene_replay:"Replay a sample",
+  ban_patch:(n,u,names)=>`Game data updated: ${n} new set${n>1?"s":""} — ${names}${u?` · ${u} not covered by your rules`:" · all covered by your rules"}.`,
+  ban_resume:n=>`Resume — ${n} rule${n>1?"s":""} left to enter in game (tick them as you copy).`,
+  ic_onlyone:"any one of them suffices",
   oracle_ok:(k,n,p)=>`Your sorting is healthy — it keeps ${k} piece${k>1?"s":""} out of ${n} (${p})`,
   oracle_multi0:"nothing is kept twice by accident",
   oracle_multiN:m=>`${m} piece${m>1?"s":""} kept by ≥ 2 rules — watch the overlaps in Coverage`,
@@ -1218,6 +1230,8 @@ const UI = { view:"regles", rovingId:null, q:"", fSection:"all", fArch:"all", fM
                     manual:{ slot:"bracelet", set:"Infernal Roar", main:"ATK%", subs:[] } } };
 
 let HELP_CLOSED = new Set();
+let SEEN_SETS = null;        // noms de sets connus à la dernière visite (bandeau patch) — null avant la première sauvegarde
+let BANNER_DISMISSED = false; // le bandeau d'ouverture ne revient pas dans la session une fois écarté
 
 function activeTab(){ return TABS.find(t=>t.id===activeTabId) || TABS[0] || null; }
 function allRules(){ return TABS.flatMap(t=>t.rules); }
@@ -1277,7 +1291,7 @@ function setSave(txt, cls){
   if(st) st.textContent = txt;
   if(line){ line.className = "save-line" + (cls?" "+cls:""); }
 }
-function payload(){ return JSON.stringify({v:4, consV:CONS_V, tabs:TABS, active:activeTabId, entered:[...ENTERED], constraints:CONSTRAINTS, theme, acc:ACC, dens:DENSITY, lang:LANG_CHOSEN?LANG:null, xarch:EXTRA_ARCHS, tabSeq, helpClosed:[...HELP_CLOSED]}); }
+function payload(){ return JSON.stringify({v:4, consV:CONS_V, tabs:TABS, active:activeTabId, entered:[...ENTERED], constraints:CONSTRAINTS, theme, acc:ACC, dens:DENSITY, lang:LANG_CHOSEN?LANG:null, xarch:EXTRA_ARCHS, tabSeq, helpClosed:[...HELP_CLOSED], seenSets:SEEN_SETS}); }
 function getStore(){
   try{
     if(window.storage && window.storage.get && window.storage.set){
@@ -1423,6 +1437,7 @@ async function restoreState(){
       if(data.lang==="fr" || data.lang==="en"){ LANG = data.lang; LANG_CHOSEN = true; }
       if(Array.isArray(data.xarch)) EXTRA_ARCHS = [...new Set(data.xarch.filter(x=>typeof x==="string").map(x=>x.trim().slice(0,20)).filter(x=>x && !ARCHS.includes(x)))];
       if(Array.isArray(data.helpClosed)) HELP_CLOSED = new Set(data.helpClosed.filter(x=>typeof x==="string" && x.length<=24).slice(0,50));
+      if(Array.isArray(data.seenSets)) SEEN_SETS = data.seenSets.filter(x=>typeof x==="string").slice(0,200);
     } else if(data){
       const rules = (data.v>=2) ? (data.rules||{}) : (data||{});
       const customs = (data.v>=2 && Array.isArray(data.custom)) ? data.custom : [];
@@ -1439,6 +1454,8 @@ async function restoreState(){
     ensureTab(); bumpSeqs(); registerArchs();
     setSave(t("save_restored"),"ok");
   }catch(e){ setSave(t("save_session"),"warn"); ensureTab(); }
+  // Premier passage ou sauvegarde antérieure au bandeau patch : on part du référentiel courant (pas de patch rétroactif)
+  if(!SEEN_SETS) SEEN_SETS = SETS.map(s=>s.n);
   PREV_STATE = snapState(); // point zéro de la pile : l'état restauré n'est pas annulable
   applyTheme();
   applyLang();
@@ -1762,12 +1779,33 @@ function filtersSummary(){
 
   return t("flt_sum") + (n ? ` <span class="n">${n}</span>` : "");
 }
+// Bandeau d'ouverture — UN SEUL à la fois, priorité patch > reprise de saisie.
+// (L'import par lien reste un toast ; sa page d'atterrissage dédiée viendra avec l'acquisition.)
+function openingBanner(){
+  if(BANNER_DISMISSED) return "";
+  if(SEEN_SETS && SEEN_SETS.length){
+    const news = SETS.map(s=>s.n).filter(n=>!SEEN_SETS.includes(n));
+    if(news.length){
+      const uncov = news.filter(n=>!allRules().some(r=>r.sets.includes(n)));
+
+      return `<div class="op-banner"><b class="d">◆</b><span>${t("ban_patch", news.length, uncov.length, esc(news.map(setName).join(", ")))}</span><button type="button" class="btn sm x" data-banx="patch">✕</button></div>`;
+    }
+  }
+  const tab = activeTab();
+  if(tab && tab.rules.length){
+    const done = tab.rules.filter(r=>isEntered(r.id)).length;
+    if(done > 0 && done < tab.rules.length)
+      return `<div class="op-banner"><b class="d">◆</b><span>${t("ban_resume", tab.rules.length - done)}</span><button type="button" class="btn sm x" data-banx="resume">✕</button></div>`;
+  }
+  return "";
+}
 function viewRegles(){
   return `<div class="wrap">
     <div class="view-head">
       <h2>${t("v_rules_h")}</h2>
       <div class="lede">${t("v_rules_lede")}</div>
     </div>
+    ${openingBanner()}
     ${tabBar()}
     <details class="controls-acc" id="filters-acc"${UI.filtersOpen?" open":""}>
       <summary class="p-sum">${filtersSummary()}</summary>
@@ -2019,7 +2057,7 @@ function itemCard(p, o={}){
   if(state==="kept"){
     band = `<div class="v-line"><span>✓</span> ${t("ic_kept")}</div>
       <ul class="rrefs">${p.matched.map(id=>{ const r=getRule(id);
-        return `<li><button type="button" class="ruleref" data-goto="${id}">${id}</button> <span class="rname">${esc(r?r.name:"")}</span></li>`; }).join("")}</ul>`;
+        return `<li><button type="button" class="ruleref" data-goto="${id}">${id}</button> <span class="rname">${esc(r?r.name:"")}</span></li>`; }).join("")}</ul>${p.matched.length>1?`<span class="ic-note">${t("ic_onlyone")}</span>`:""}`;
   } else if(state==="rec"){
     band = `<div class="v-line"><span>⚒</span> ${t("ic_rec")}</div>`;
   } else {
@@ -3048,6 +3086,14 @@ document.addEventListener("click", e=>{
   // navigation
   const nav = el.closest(".nav-btn");
   if(nav){ document.body.classList.remove("nav-open"); goto("/"+nav.dataset.nav); return; }
+  const bx = el.closest("[data-banx]");
+  if(bx){
+    BANNER_DISMISSED = true;
+    if(bx.dataset.banx === "patch"){ SEEN_SETS = SETS.map(s=>s.n); scheduleSave(); }
+    const b = bx.closest(".op-banner");
+    if(b) b.remove();
+    return;
+  }
   const ref = el.closest("[data-goto]");
   if(ref){ document.body.classList.remove("nav-open"); goto("/regles/"+ref.dataset.goto); return; }
 
