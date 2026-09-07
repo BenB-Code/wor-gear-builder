@@ -46,7 +46,6 @@
   body.light .chip.set.t0,body.light .tier-badge.b0{color:var(--t0)}
   body.light .chk:checked::after{color:#f4efe6}
   body.light .toast{box-shadow:0 8px 24px rgba(60,50,30,.18)}
-  body.light .overlay{background:rgba(50,42,60,.35)}
   /* ── Accents au choix (or par défaut) ── */
   body[data-acc="vert"]{--acc:#5cc492;--acc-bd:rgba(92,196,146,.5);--acc-dim:rgba(92,196,146,.13);--acc-glow:rgba(92,196,146,.05)}
   body[data-acc="bleu"]{--acc:#6db2ef;--acc-bd:rgba(109,178,239,.5);--acc-dim:rgba(109,178,239,.13);--acc-glow:rgba(109,178,239,.06)}
@@ -428,11 +427,11 @@
   .footer-note{margin-top:34px;padding-top:14px;border-top:1px solid var(--border-soft);color:var(--faint);font-size:var(--fs-1)}
 
   /* ── Dialogue de création ── */
-  .overlay{position:fixed;inset:0;background:rgba(10,8,14,.7);backdrop-filter:blur(3px);z-index:80;
-    display:flex;align-items:flex-start;justify-content:center;padding:6vh 16px;overflow-y:auto}
-  .overlay[hidden]{display:none}
-  .dlg{background:var(--panel);border:1px solid var(--border);border-radius:var(--r-l);padding:22px 24px;
-    width:min(860px,100%);animation:pop .18s ease}
+  dialog.dlg{background:var(--panel);color:inherit;border:1px solid var(--border);border-radius:var(--r-l);padding:22px 24px;
+    width:min(860px,calc(100% - 32px));max-height:88vh;overflow-y:auto;margin:6vh auto auto}
+  dialog.dlg[open]{animation:pop .18s ease}
+  dialog.dlg::backdrop{background:rgba(10,8,14,.7);backdrop-filter:blur(3px)}
+  body.light dialog.dlg::backdrop{background:rgba(50,42,60,.35)}
   @keyframes pop{from{transform:translateY(8px);opacity:0}to{transform:none;opacity:1}}
   .dlg h3{color:var(--ink-hi);font-family:var(--display);font-variant:small-caps;letter-spacing:.05em;font-size:var(--fs-4);font-weight:600;margin-bottom:12px}
   .ap-row{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:12px}
@@ -486,7 +485,7 @@
   /* ── Impression ── */
   #print-view{display:none}
   @media print{
-    .app,#toasts,.overlay{display:none!important}
+    .app,#toasts,dialog.dlg{display:none!important}
     body{background:#fff!important}
     #print-view{display:block;color:#111;font-family:Georgia,"Times New Roman",serif;font-size:11pt;line-height:1.45}
     #print-view h1{font-size:16pt;font-variant:small-caps;letter-spacing:.04em;margin:0 0 2pt;font-weight:600}
@@ -596,8 +595,7 @@
 
 <div id="toasts" aria-live="polite"></div>
 
-<div class="overlay" id="dlg-overlay" hidden>
-  <div class="dlg" role="dialog" aria-modal="true" aria-labelledby="dlg-title">
+<dialog class="dlg" id="dlg-overlay" aria-labelledby="dlg-title">
     <h3 id="dlg-title">Nouvelle règle</h3>
     <div class="ap-row">
       <label><span data-i18n="lab_name">Nom</span> <input type="text" id="ap-name" data-i18n-ph="ph_name" placeholder="ex. DPS scaler, Tank quad…" maxlength="60"></label>
@@ -632,8 +630,7 @@
       <button class="btn" id="ap-cancel" data-i18n="btn_cancel">Annuler</button>
       <span class="ap-warn" id="ap-warn"></span>
     </div>
-  </div>
-</div>
+</dialog>
 
 <div id="print-view" aria-hidden="true"></div>
 
@@ -2677,10 +2674,15 @@ function openDlg(editId){
   document.getElementById("dlg-title").textContent = r ? t("dlg_edit", r.id, r.name) : t("dlg_new");
   document.getElementById("ap-create").textContent = r ? t("btn_save") : t("btn_create");
   renderAddPanel();
-  document.getElementById("dlg-overlay").hidden = false;
+  const d = document.getElementById("dlg-overlay");
+  if(!d.open) d.showModal();
   document.getElementById("ap-name").focus();
 }
-function closeDlg(){ document.getElementById("dlg-overlay").hidden = true; AP.editing = null; }
+function closeDlg(){
+  const d = document.getElementById("dlg-overlay");
+  if(d && d.open) d.close();
+  AP.editing = null;
+}
 function saveRule(){
   const name = document.getElementById("ap-name").value.trim();
   const sets = sortSets([...AP.sets].filter(n=>SETSIDE[n]===AP.side));
@@ -2880,7 +2882,13 @@ document.addEventListener("click", e=>{
   // dialogue (éditeur de règle)
   if(el.closest("#ap-cancel")){ closeDlg(); return; }
   if(el.closest("#ap-create")){ saveRule(); return; }
-  if(el.id === "dlg-overlay"){ closeDlg(); return; }
+  if(el.id === "dlg-overlay"){
+    // seul un clic HORS du rectangle du dialog (donc sur le ::backdrop) ferme —
+    // un clic dans le padding interne cible aussi le <dialog> et ne doit pas fermer
+    const r = el.getBoundingClientRect();
+    if(e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) closeDlg();
+    return;
+  }
   const apm = el.closest('[data-role="ap-main"]');
   if(apm){
     const a = apm.dataset.stat;
@@ -2938,7 +2946,7 @@ document.addEventListener("click", e=>{
       LANG = lg.dataset.lang==="fr" ? "fr" : "en";
       applyTheme(); applyLang(); scheduleSave(); renderView();
       const ov = document.getElementById("dlg-overlay");
-      if(ov && !ov.hidden){
+      if(ov && ov.open){
         document.getElementById("dlg-title").textContent = AP.editing ? t("dlg_edit", AP.editing, (getRule(AP.editing)||{name:""}).name) : t("dlg_new");
         document.getElementById("ap-create").textContent = AP.editing ? t("btn_save") : t("btn_create");
         renderAddPanel();
@@ -3257,6 +3265,8 @@ document.addEventListener("drop", e=>{
   updateRuleList(); refreshTabBar();
 });
 document.addEventListener("dragend", ()=>{ if(DRAG){ DRAG = null; updateRuleList(); } });
+// l'Échap natif du <dialog> contourne closeDlg() : le nettoyage vit sur l'événement close
+{ const d = document.getElementById("dlg-overlay"); if(d) d.addEventListener("close", ()=>{ AP.editing = null; }); }
 window.addEventListener("hashchange", route);
 window.addEventListener("beforeprint", ()=>{ const pv = document.getElementById("print-view"); if(pv) pv.innerHTML = printDoc(); });
 
