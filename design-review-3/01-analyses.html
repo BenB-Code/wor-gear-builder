@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Les 3 analyses à froid · Design Review 3 — WoR Gear Builder</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="shell">
+<nav class="toc">
+  <div class="brand"><span class="d">◆</span> Design Review 3</div>
+  <div class="sub">Cycle brainstorm &amp; challenge · sept. 2026</div>
+  <a href="index.html">Synthèse du cycle</a>
+  <div class="grp">Le cycle</div>
+  <a href="01-analyses.html" class="on">Les 3 analyses à froid</a>
+  <a href="02-debat.html">Le débat</a>
+  <a href="03-challenge.html">Challenge du rapport 2</a>
+  <a href="04-conclusions.html">Conclusions &amp; recommandations</a>
+  <div class="grp">Référence</div>
+  <a href="../design-review-2/index.html">← Rapport 2</a>
+  <a href="../design-review/index.html">← Rapport 1</a>
+</nav>
+<main>
+
+<span class="kicker">Phase 1 · analyses étanches · 43 constats</span>
+<h1>Les 3 analyses à froid</h1>
+<p class="lede">Restitution fidèle des trois analyses, produites <b>sans lecture des reviews antérieures ni des
+deux autres copies</b>, sur les mêmes pièces : 9 captures (lots D/E, audits, light, mobile), CSS lignes 15-560,
+i18n FR. Chaque section : la thèse du persona, puis ses constats en tableau P0/P1/P2 avec le fix proposé.</p>
+
+<h2>A · Accessibilité cognitive &amp; apprenabilité — 15 constats</h2>
+<div class="quote">L'app documente admirablement son système (hints, Référence, doctrine) mais l'enseigne par la
+doc, pas par l'usage — elle explique AVANT ou À CÔTÉ, jamais PENDANT. Déplacer l'explication au point d'action
+vide la mémoire de travail sans rien retirer à l'expert : tout est additif et en lecture seule.
+<span class="who">— analyse cognitive, thèse</span></div>
+<p>Grille de lecture : charge mentale, mémoire de travail, <b>reconnaissance vs rappel</b>, chemin novice vs
+expert. Le fil conducteur : chaque fois que comprendre l'écran exige d'avoir lu la doc, le novice paie en rappel
+ce que l'interface aurait pu donner en reconnaissance.</p>
+
+<div class="tbl-wrap"><table>
+<tr><th style="width:52px">Prio</th><th style="width:34%">Constat</th><th>Fix proposé</th></tr>
+<tr><td><span class="prio p0">P0</span></td>
+<td><b>C1 · La sémantique à 3 états du chip sub n'est apprenable que par la doc.</b> Le clic cycle hors-pool →
+liste → ★ obligatoire, codé par des micro-différences (opacité .28 + tirets / plein / bordure 1.5px + ★) ; la
+légende vit dans un hint dépliable qu'il faut avoir ouvert <i>avant</i> de cliquer. Du rappel pur.</td>
+<td>Au premier cycle d'un chip, un <b>micro-label éphémère sous le doigt</b> (« dans la liste » / « ★ obligatoire » /
+« hors liste ») — 3 affichages suffisent. Les libellés existent déjà dans i18n (<code>st_ess</code>,
+<code>st_pool</code>, <code>st_off</code>) : ils ne sont montrés nulle part au moment de l'action.</td></tr>
+<tr><td><span class="prio p0">P0</span></td>
+<td><b>C2 · « Requis » force à simuler l'algorithme de tête.</b> Taille de liste + nombre de ★ + règle « le requis
+se compte sur la liste, ★ incluses » + seuil : 4 items interdépendants, plafond de mémoire de travail — d'où des
+warnings qui corrigent après coup au lieu de prévenir.</td>
+<td>Une <b>phrase générée en langage naturel</b> sous la carte, mise à jour en direct : « Garde une pièce si :
+set ∈ {4 sets} ET main ATK/HP ET ≥ 4 subs parmi 7, dont obligatoirement DEF% et HP% ». Externalise la simulation
+mentale, enseigne la sémantique à chaque lecture, socle naturel de la future jauge stricte/permissive.</td></tr>
+<tr><td><span class="prio p0">P0</span></td>
+<td><b>C3 · Le dialogue « Nouvelle règle » affiche une erreur avant tout geste.</b> À l'ouverture : requis=1,
+liste vide → « requis &gt; liste — injouable » en rouge. On punit avant la première interaction, et on présente
+~7 dimensions d'un coup — l'écran qui exige de comprendre TOUT avant de faire UNE action.</td>
+<td>(a) Le warning n'apparaît qu'après première modification ; (b) révélation progressive à la création — partir
+d'un template par phase de jeu ou d'une pièce, l'éditeur complet restant l'entrée directe de l'expert.
+<b>Jamais de wizard obligatoire : des défauts intelligents, pas des gates.</b></td></tr>
+<tr><td><span class="prio p0">P0</span></td>
+<td><b>C4 · Le Testeur inverse la hiérarchie signal/bruit.</b> La Couverture ouvre sur 172 410 · 1 767 · 1,02 % ·
+86 — quatre nombres dont l'app avoue dans son propre hint qu'ils ne sont pas le signal (« les deux vrais signaux :
+ne garde rien et doublon »). Les verdicts vivent dans la plus petite colonne, tout à droite. Le novice lit
+« 1,02 % » et conclut « mes règles sont cassées ».</td>
+<td><b>Verdict d'abord</b> : bandeau « ✓ Aucune règle morte · ✓ Aucun doublon » (ou les alertes, en premier),
+grands nombres relégués ; « 1,02 % » remplacé par une lecture ordinale (« très strict », % au survol). Les
+2 décimales sont de la fausse précision sur des hypothèses assumées comme telles.</td></tr>
+<tr><td><span class="prio p0">P0</span></td>
+<td><b>C5 · La recopie in-game — le job final — est réduite à une progress-bar de pied de sidebar.</b> La seule
+tâche qui se fait écran contre écran (app + jeu = double tâche, pire condition de mémoire de travail : ~10 items
+à retenir par règle) n'a aucun mode dédié.</td>
+<td>Le <b>mode recopie guidée</b> du backlog est LE P0 produit : une règle à la fois, plein écran, typo énorme,
+ordre de saisie imposé, cocher-suivant. « L'app doit devenir un téléprompteur, pas une liste à cocher. »</td></tr>
+<tr><td><span class="prio p1">P1</span></td>
+<td><b>C6 · La logique OU/ET n'est énoncée qu'une fois, puis plus jamais.</b> « Conservée si elle satisfait AU
+MOINS UNE règle » : le modèle mental fondateur n'est rappelé nulle part au moment où il compte.</td>
+<td>La phrase générée (C2) règle le ET ; pour le OU, le verdict devrait dire « il suffisait d'une : G5 » quand
+plusieurs matchent, au lieu du neutre « gardée par ≥ 2 règles » qui laisse croire à un problème.</td></tr>
+<tr><td><span class="prio p1">P1</span></td>
+<td><b>C7 · Les ids G1/D3 imposent du rappel inter-vues.</b> Retenir « G5 · Heal ATK », naviguer, scanner la
+liste. Le CSS a déjà <code>.ruleref</code> cliquable + <code>.rule.flash</code> — mais les verdicts des cartes
+échantillon semblent en texte mort.</td>
+<td>Règle simple : <b>toute mention d'une règle, partout, est un <code>.ruleref</code> cliquable</b>.
+Reconnaissance remplace rappel, coût quasi nul.</td></tr>
+<tr><td><span class="prio p1">P1</span></td>
+<td><b>C8 · On explique l'échec, jamais le succès.</b> Les recyclées ont un « pourquoi » riche ; les gardées
+disent juste « Gardée par G6 » sans montrer quels subs ont compté.</td>
+<td>Surligner sur la carte <b>les subs qui matchent</b> (et la ★ satisfaite) : chaque pièce gardée devient une
+micro-leçon de la sémantique — l'apprentissage par l'exemple, gratuit en mode échantillon.</td></tr>
+<tr><td><span class="prio p1">P1</span></td>
+<td><b>C9 · Mode Échantillon : 6 décisions avant le premier verdict.</b> Onglet + mode + scope + source + niveau
++ nb pièces avant « Générer » — et l'empty state impose une séquence à mémoriser.</td>
+<td>Presets 1-tap (« 1 semaine de farm Raid 1 niv. 21 ») qui compriment 4 choix ; contrôles fins dessous pour
+l'expert. Et Couverture (zéro config) doit rester le mode d'atterrissage.</td></tr>
+<tr><td><span class="prio p1">P1</span></td>
+<td><b>C10 · Doubles négations en série.</b> « 0 · règles qui ne gardent rien » : lire un zéro d'une négation =
+deux inversions mentales pour comprendre que tout va bien.</td>
+<td>Reformuler l'état sain <b>en positif</b> (« Toutes les règles attrapent quelque chose ✓ », « Chaque set est
+couvert ✓ ») ; la forme négative réservée aux vraies alertes. La valence est portée par le libellé, pas déduite.</td></tr>
+<tr><td><span class="prio p1">P1</span></td>
+<td><b>C11 · Le jargon se résout par déplacement, pas sur place.</b> T∞/T2/T1/T0, « main exclu », ATK vs ATK% :
+tout est défini… dans Référence, une navigation plus loin. Du rappel institutionnalisé.</td>
+<td>Prioriser les tooltips sur les <b>~6 termes qui bloquent la première règle</b> (main, sub, ★, requis, tier,
+set), pas sur toute la Référence.</td></tr>
+<tr><td><span class="prio p1">P1</span></td>
+<td><b>C12 · Le chemin du novice n'est pas tracé — mais tout existe déjà.</b> Démo et End Game pré-remplis :
+excellents exemples, jamais désignés comme point de départ. Le parcours réel a 3 verbes — construire → tester →
+recopier — qui mappent les vues.</td>
+<td>Un onboarding 5 min : « pars de Démo, ouvre G1, regarde le Testeur, coche quand c'est saisi ». Un overlay de
+première visite, pas un tour guidé de 12 étapes ; rien ne change pour l'expert.</td></tr>
+<tr><td><span class="prio p2">P2</span></td>
+<td><b>C13 · Les clés chuchotent, les valeurs crient.</b> Les labels (Rôles, Sets, Main(s), Subs, Requis) —
+l'ossature d'apprentissage du novice — sont l'élément le plus faible de la carte (<code>--faint</code>,
+small-caps fs-2).</td>
+<td>Remonter d'un cran le contraste des clés dans l'éditeur/carte dépliée ; les small-caps à fs-2 + letterspacing
+ralentissent aussi la lecture (dys, fatigue).</td></tr>
+<tr><td><span class="prio p2">P2</span></td>
+<td><b>C14 · Des décisions portées par des toasts éphémères.</b> « très long pour ce volume : préfère le fichier
+JSON » — un conseil d'action dans un message qui disparaît.</td>
+<td>Ce qui demande une décision <b>persiste</b> (inline près du bouton Partager) ; le toast ne confirme que ce qui
+est déjà fait.</td></tr>
+<tr><td><span class="prio p2">P2</span></td>
+<td><b>C15 · Nombres non formatés pour la comparaison.</b> Dans « Ce que chaque règle attrape », 36 / 14 / 300 se
+comparent mal en colonnes de texte.</td>
+<td>Une micro-barre proportionnelle par ligne : la lecture ordinale en un scan (qui attrape large, qui attrape
+fin), sans chiffre à interpréter.</td></tr>
+</table></div>
+
+<h2>B · Visual / brand design — 15 constats</h2>
+<div class="quote">L'app a un vocabulaire (Palatino small-caps, or, ◆, mono pour la donnée) mais pas de
+grammaire : chaque élément est correct isolément, aucun ne se subordonne aux autres. Un screenshot du Testeur
+parmi dix outils dark ne serait pas reconnu — sauf, paradoxalement, le mode clair parchemin, aujourd'hui la chose
+la plus identitaire de l'app.
+<span class="who">— analyse visual/brand, diagnostic</span></div>
+<p>Thèse : assumer une DA « <b>grimoire d'armurerie</b> » — une seule lumière (venue du haut), l'or traité comme
+une dorure (rare, chaud, réservé aux moments qui comptent), le ◆ codifié en 3 usages canoniques, le mono
+rétrogradé au rang de « chiffre de jeu ». Zéro ajout de contenu : on redistribue la lumière, on ne charge pas.</p>
+
+<div class="tbl-wrap"><table>
+<tr><th style="width:52px">Prio</th><th style="width:34%">Constat</th><th>Spec proposée</th></tr>
+<tr><td><span class="prio p0">P0</span></td>
+<td><b>V1 · Il n'y a pas de grille verticale.</b> Marges au pifomètre (9, 11/14, 14, 26/10 px…) : l'œil sent ces
+différences d'1-3 px comme du flou, pas comme du rythme. Les tokens <code>--s-2/3/4/5</code> (8/12/16/24) sont
+déclarés ligne 24 puis ignorés partout.</td>
+<td>Instaurer un <b>pas de 8</b> : 24 entre sections, 12 entre cartes sœurs, 8 en intra-carte. « La correction la
+moins spectaculaire et la plus rentable du lot. »</td></tr>
+<tr><td><span class="prio p0">P0</span></td>
+<td><b>V2 · Encarts indiscernables : un seul traitement pour cinq natures.</b> panel, cov-card, stat-card, rule,
+tm-step partagent le même fond +1 cran et une hairline invisible ; le fond de page (#14121a) est trop proche des
+panels — d'où la « hiérarchie inversée » ressentie.</td>
+<td><b>Trois matières</b> : socle (fond assombri #0f0d15) ; carte (dégradé 180° + liseré interne haut =
+<b>lumière zénithale</b>, signature immédiate) ; encart éditorial (filet gauche 3px + fond
+<code>--acc-glow</code>). Trois matières, lisibles sans légende.</td></tr>
+<tr><td><span class="prio p0">P0</span></td>
+<td><b>V3 · Les pastilles rondes ●●●● — des ronds génériques pour noter la force d'une règle</b>, alors que la
+marque EST un losange.</td>
+<td>Remplacer par des ◆ en pseudo-élément (plein/creux), 10px, même grille — « LE détail qu'un utilisateur
+retiendra d'un screenshot ». Étendre au checkbox coché : <code>content:"◆"</code> au lieu de "✓".</td></tr>
+<tr><td><span class="prio p0">P0</span></td>
+<td><b>V4 · Le ◆ est sous-exploité ET incohérent</b> : brand 18px or + puces de listes en deux tailles (7 et
+9px).</td>
+<td>Canon à 3 usages : <b>(a)</b> identité (brand + fin des filets de section) ; <b>(b)</b> métrique (les jauges
+V3) ; <b>(c)</b> ponctuation (puces à une seule taille, 8px or). Supprimer le ◆ des <code>.hint li</code>
+(bruit). Trois rôles nets &gt; dissémination.</td></tr>
+<tr><td><span class="prio p0">P0</span></td>
+<td><b>V5 · Le mono a pris le pouvoir.</b> Compteurs, th de tables, labels, verdicts, boutons, badges : devenu
+une 2ᵉ police de labeur qui frotte contre les small-caps — la « cacophonie » vient de là.</td>
+<td>Règle stricte : <b>display small-caps = titres, nav, clés de formulaire ; mono = valeurs issues du jeu
+uniquement</b> (stats, IDs G1-D5, clé in-game, gros chiffres) ; <b>sans = tout le reste, y compris les
+<code>th</code></b> (sans 11px, letterspacing .04em). Trois familles, trois rôles étanches.</td></tr>
+<tr><td><span class="prio p0">P0</span></td>
+<td><b>V6 · Les 5 accents percutent la sémantique des tiers.</b> Vert/bleu/violet/rouge ≈ exactement t4/t0/t1/t3 :
+en accent violet, un onglet actif devient illisible face à un badge T1 ; l'or se confond avec T2. « La
+personnalisation d'accent dilue l'identité ET casse le code couleur métier. »</td>
+<td>L'or reste non-négociable sur les zones de marque (brand, CTA primaire, 18/18) ; l'accent choisi ne pilote
+que les <b>états de sélection</b>. Si on tranche plus fort : décaler les 4 accents hors des teintes de tier
+(sarcelle, acier, mauve gris, cuivre) — un choix de teinte, pas un déguisement.</td></tr>
+<tr><td><span class="prio p1">P1</span></td>
+<td><b>V7 · Le verdict « Gardée par » mérite une cérémonie.</b> LE moment de l'app est aujourd'hui un panel à
+filet vert.</td>
+<td>Bandeau pleine largeur (dégradé vert 90°), ◆ vert 14px au lieu du ✓ système, titre display
+<code>--fs-4</code>, règles gagnantes en cartes cliquables ; symétrique rouge pour « Recyclée ». « Le testeur
+devient un oracle qui rend un jugement, pas un log. »</td></tr>
+<tr><td><span class="prio p1">P1</span></td>
+<td><b>V8 · Le 18/18 : la seule récompense de l'app, aujourd'hui une barre de 5px</b> en pied de sidebar.</td>
+<td>À 100 % : dégradé or + <code>box-shadow: 0 0 12px var(--acc-dim)</code>, libellé « ◆ Jeu complet ». <b>Un
+seul état lumineux dans toute l'app = il devient précieux.</b> Coût : 4 lignes CSS.</td></tr>
+<tr><td><span class="prio p1">P1</span></td>
+<td><b>V9 · Les 4 stat-cards du Testeur : le chiffre-santé traité comme les 3 autres.</b> Quatre cartes égales =
+aucune ne parle.</td>
+<td>La carte « règles qui ne gardent rien » porte l'état (bordure et chiffre en <code>--util</code> si 0,
+<code>--off</code> sinon) ; gros chiffres en display <code>--fs-5</code>, libellés en sans.</td></tr>
+<tr><td><span class="prio p1">P1</span></td>
+<td><b>V10 · L'écran vide et le dialogue : deux scènes sans décor.</b> Empty state = boîte pointillée muette ;
+« Nouvelle règle » = panel plat au titre timide.</td>
+<td>Empty : ◆ 64px filaire centré — un blason en attente. Dialogue : titre display <code>--fs-5</code> + ◆ or,
+sections séparées par de vraies hairlines, CTA min-height 40px. « La création d'une règle est un acte fondateur,
+le dialogue doit le dire. »</td></tr>
+<tr><td><span class="prio p1">P1</span></td>
+<td><b>V11 · Une seule source de lumière.</b> Le radial-gradient de <code>main#view</code> à 5 % d'alpha est
+indétectable.</td>
+<td>Monter <code>--acc-glow</code> à .09 + vignettage bas (dégradé noir 25 % sous 70 %). Combiné au liseré des
+cartes : toute l'app éclairée par le haut. Zéro asset, deux dégradés.</td></tr>
+<tr><td><span class="prio p2">P2</span></td>
+<td><b>V12 · Le mode clair a une direction (parchemin) — l'assumer.</b> #f4f1e8 crème est un vrai choix manuscrit,
+plus identitaire que le dark actuel, mais il garde les ombres et la structure du dark.</td>
+<td>Liseré interne clair, chips de sets foncées d'un cran (les pastels s'évaporent sur crème). Et voler son idée
+au dark : le dark doit devenir « bibliothèque de nuit » du même monde.</td></tr>
+<tr><td><span class="prio p2">P2</span></td>
+<td><b>V13 · Deux grammaires de chips qui se marchent dessus</b> : <code>.chip</code> (rect) et
+<code>.fchip</code> (pill) cohabitent sans logique perceptible.</td>
+<td>Règle : <b>pill = interactif/filtre, rect = valeur de donnée</b>. Auditer les usages croisés (le
+<code>.ruleref</code> est un bouton en forme de donnée : le passer pill).</td></tr>
+<tr><td><span class="prio p2">P2</span></td>
+<td><b>V14 · Sidebar : le poids visuel est inversé.</b> Trois boutons utilitaires pleine largeur pèsent plus
+lourd que la navigation.</td>
+<td>Les passer en liens texte <code>--fs-1</code> sous le disclosure « Apparence » ; la brand gagne de l'air et
+un filet or — « l'or de la brand redevient le premier or vu à l'écran ».</td></tr>
+<tr><td><span class="prio p2">P2</span></td>
+<td><b>V15 · Grain optionnel — la seule « texture » admissible</b> : bruit feTurbulence en data-URI à
+opacité .02.</td>
+<td>À tester : « au moindre doute de moiré ou de coût de peinture, on s'en passe — les points V2 et V11 suffisent
+à tuer le tout-plat ».</td></tr>
+</table></div>
+
+<h2>C · Growth &amp; rétention — 13 constats</h2>
+<div class="quote">L'app a déjà son moteur viral (le lien qui importe, la clé in-game) et son moteur de rétention
+(les cycles du jeu : patch, farm, recopie) — mais elle les cache derrière la configuration. Tout le travail growth
+consiste à mettre le verdict avant la règle. Aucun de ces leviers n'ajoute une feature lourde : ils réordonnent ce
+qui existe.
+<span class="who">— analyse growth, thèse</span></div>
+<p>Lecture du funnel : le lien Discord fait atterrir sur la <b>configuration</b> (vue Règles, onglet démo
+« End Game | Strict (18) », jargon d'expert dense), pas sur le <b>résultat</b>. Le moment aha — la carte pièce
+« ✓ Gardée par G7 · Dps ATK » ou « 48 gardées / 2000 » — est à ~60-90 s et 5+ clics : <b>la fuite principale</b>.
+Deuxième fuite : « Mes règles 0 » débouche sur une page blanche d'expert (rôles + 30 sets + 11 mains + 11 subs +
+requis + warning rouge d'entrée). « La démo prouve, mais elle ne se recopie pas — elle s'admire. »</p>
+
+<div class="tbl-wrap"><table>
+<tr><th style="width:52px">Prio</th><th style="width:34%">Constat</th><th>Levier proposé</th></tr>
+<tr><td><span class="prio p0">P0</span></td>
+<td><b>G1 · L'atterrissage montre la config avant le verdict</b> — l'aha à ~90 s et 5+ clics pour qui ne connaît
+pas le modèle « onglet = jeu de règles ».</td>
+<td><b>Inverser l'atterrissage</b> : première visite = simulation échantillon auto-lancée sur le ruleset démo,
+strip de résultat (« 2 000 drops simulés aux taux mesurés → 48 gardées ») + 2-3 cartes pièces vertes/rouges.
+L'aha passe à ~5 s, zéro clic. La vue Règles devient l'étape 2 (« comment c'est décidé »).</td></tr>
+<tr><td><span class="prio p0">P0</span></td>
+<td><b>G2 · La page blanche de création.</b> « Mes règles 0 » → le dialogue expert complet, avec un warning
+« injouable » d'entrée.</td>
+<td>Quand « Mes règles » est vide : « <b>Partir d'un template</b> » (Early / Mid / End game) + « Dupliquer la
+démo » comme chemin de création initial. « Le template mid-game à 6-8 règles est le vrai premier ruleset à
+moi. »</td></tr>
+<tr><td><span class="prio p0">P0</span></td>
+<td><b>G3 · Le lien partagé importe en silence.</b> Chaque post Discord est une porte d'entrée, mais le receveur
+ne vit jamais le aha du partageur — l'import écrase ou déroute.</td>
+<td>En faire une <b>landing page</b> : aperçu « Ruleset de &lt;pseudo&gt; — 12 règles, garde 1,8 % des drops
+GR1 » avec mini-couverture, puis « Adopter » / « Juste regarder ».</td></tr>
+<tr><td><span class="prio p0">P0</span></td>
+<td><b>G4 · L'éditeur inversé existe déjà à 90 %.</b> Le mode « Pièce manuelle » (slot → main → subs → set →
+verdict + « règles proches — ce qui leur manque ») est le meilleur onboarding déguisé de l'app.</td>
+<td>Ajouter « <b>↳ Créer une règle qui garde cette pièce</b> » : je décris le drop que je viens d'avoir en jeu →
+j'ai ma première règle. L'activation par le réel, pas par l'abstraction.</td></tr>
+<tr><td><span class="prio p0">P0</span></td>
+<td><b>G5 · Le partage ne donne rien à montrer.</b> Sur Discord, une image embed bat un lien nu ; le bouton
+« Partager » actuel est discret, à côté d'Exporter, dans la liste.</td>
+<td>La <b>share card PNG porte la preuve</b> : nom du ruleset, pseudo, nb règles, % gardé, clé in-game, lien
+d'import en pied. Générée <b>depuis l'écran de résultats du Testeur</b> (« Partager ce résultat ») — on partage
+quand on est fier d'un chiffre.</td></tr>
+<tr><td><span class="prio p1">P1</span></td>
+<td><b>G6 · Aucun crédit d'auteur</b> — or la reconnaissance communautaire est la seule monnaie d'une app
+gratuite locale.</td>
+<td>Encoder un pseudo optionnel dans le lien/JSON : « Ruleset de Khalgar » à l'import et dans la future
+bibliothèque. Statut honnête, zéro infra, zéro dark pattern.</td></tr>
+<tr><td><span class="prio p1">P1</span></td>
+<td><b>G7 · L'app ne sait pas quand le jeu bouge.</b> Pas d'email ni de notif (très bien) — mais aucun substitut.</td>
+<td>À l'ouverture, si les données embarquées ont changé : bandeau « Patch X : 2 nouveaux sets, taux GR1
+réévalués » + diff — et surtout « ces 2 nouveaux sets ne sont couverts par aucune de tes règles → recyclés
+silencieusement ». Une vraie douleur de joueur = une vraie raison de revenir.</td></tr>
+<tr><td><span class="prio p1">P1</span></td>
+<td><b>G8 · « Saisie en jeu 0/18 » est le seul mécanisme de retour existant</b> — et il est passif.</td>
+<td>La recopie guidée doit <b>reprendre où on s'est arrêté</b> : au retour, « Il te reste 7 règles à saisir —
+reprendre ». La boucle app→jeu→app la plus courte, déjà à moitié construite.</td></tr>
+<tr><td><span class="prio p1">P1</span></td>
+<td><b>G9 · La session de farm = trois boucles en une feature.</b> Je note mes drops → l'app vérifie que mes
+règles ont gardé ce qu'il fallait (rétention) → l'écart taux observés/mesurés alimente la contribution (boucle
+communautaire) → un bon résultat se partage (boucle virale).</td>
+<td>La prioriser au-dessus des cosmétiques : « la seule feature qui capitalise sur le cycle hebdomadaire réel du
+joueur ».</td></tr>
+<tr><td><span class="prio p1">P1</span></td>
+<td><b>G10 · « 86 gardés par ≥ 2 règles » est mort au clic</b> — alors que le doublon est LE signal actionnable
+d'après la doc elle-même.</td>
+<td>Rendre les stat-cards cliquables : clic → liste des recouvrements → j'affine → je relance. La boucle
+d'itération de l'utilisateur avancé, au coût d'un drill-down.</td></tr>
+<tr><td><span class="prio p1">P1</span></td>
+<td><b>G11 · Le pont app→issue GitHub coupe ~90 % des contributeurs</b> (il faut un compte GitHub, public
+Discord).</td>
+<td>« Contribuer mes taux » : issue pré-remplie via URL template pour ceux qui ont un compte, <b>et</b> « copier
+le rapport » formaté à coller dans le canal Discord pour les autres. « Le pipeline de données passe avant la
+pureté du process. »</td></tr>
+<tr><td><span class="prio p2">P2</span></td>
+<td><b>G12 · PWA proposée à froid = du bruit.</b></td>
+<td>Proposer l'installation <b>au 2ᵉ retour</b>, après une session de farm ou une recopie terminée : « Installer
+pour retrouver tes règles d'un tap » — un service rendu, pas un prompt.</td></tr>
+<tr><td><span class="prio p2">P2</span></td>
+<td><b>G13 · 100 % local = zéro analytics, zéro pilotage.</b></td>
+<td>Substitut honnête : des liens Discord différenciés (<code>#demo</code>, <code>#template-mid</code>, lien de
+ruleset partagé) et l'observation de ce qui se cite, s'importe et se re-partage. « Le canal Discord EST l'outil
+de mesure du dev solo. »</td></tr>
+</table></div>
+
+<div class="panel"><h4>Lecture de modération — avant le débat</h4>
+<p>Trois copies étanches, et déjà deux recouvrements frappants : le <b>verdict comme centre de gravité</b> (C4
+« verdict d'abord » / G1 « inverser l'atterrissage » / V7 « le verdict mérite une cérémonie » — trois angles,
+le même écran) et la <b>recopie in-game promue tâche de premier ordre</b> (C5 téléprompteur / G8 fil rouge de
+rétention / V8 la seule récompense). Et une collision annoncée : le growth vise des métriques d'usage, le visual
+des qualités d'atmosphère — le débat dira si ces deux agendas se financent ou s'excluent.
+La <a href="02-debat.html">page 02</a> le raconte.</p></div>
+
+<div class="foot">
+  <a href="index.html">← Synthèse du cycle</a>
+  <a href="02-debat.html">Le débat →</a>
+</div>
+</main>
+</div>
+</body>
+</html>

@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Contenu &amp; microcopy · Design Review — WoR Gear Builder</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="shell">
+<nav class="toc">
+  <div class="brand"><span class="d">◆</span> Design Review</div>
+  <div class="sub">WoR Gear Builder · sept. 2026</div>
+  <a href="index.html">Synthèse exécutive</a>
+  <div class="grp">Fondations</div>
+  <a href="04-typographie.html">Typographie</a>
+  <a href="03-couleur-accessibilite.html">Couleur &amp; accessibilité</a>
+  <a href="05-design-system.html">Design system &amp; tokens</a>
+  <div class="grp">Interface</div>
+  <a href="01-ui-composants.html">Composants UI</a>
+  <a href="07-dataviz.html">Data-visualisation</a>
+  <a href="06-mobile.html">Mobile</a>
+  <div class="grp">Produit</div>
+  <a href="02-ux-parcours.html">UX &amp; parcours</a>
+  <a href="08-contenu.html" class="on">Contenu &amp; microcopy</a>
+  <a href="09-integration-features.html">Intégration des features</a>
+  <div class="grp">Direction</div>
+  <a href="10-synthese.html">Synthèse &amp; roadmap</a>
+</nav>
+<main>
+
+<span class="kicker">Audit spécialiste · UX writing FR/EN</span>
+<h1>Contenu — le lexique flottant</h1>
+<p class="lede">La voix FR est bonne (tutoiement direct, ton complice — « c'est voulu, pas cassé » est la meilleure
+phrase de l'app), l'EN est honnête mais sent la traduction par endroits. Le vrai problème :
+un <b>lexique flottant</b> — <i>liste</i> vs <i>pool</i>, <i>gardée</i> vs <i>conservée</i>, <i>gauche/droite</i> vs
+<i>ensemble 2/3 pièces</i>. Il faut figer le canon <b>avant</b> d'écrire tooltips et onboarding, sinon on
+documentera des synonymes.</p>
+
+<h2>La règle de voix (à documenter, déjà presque tenue)</h2>
+<p><b>Tutoiement pour guider, impersonnel pour constater une erreur.</b> Pas de vouvoiement nulle part — propre.</p>
+
+<h2><span class="prio p0">P0</span> Le lexique canonique</h2>
+<div class="tbl-wrap"><table>
+<tr><th>Concept</th><th>Canon FR</th><th>Canon EN</th><th>À bannir</th></tr>
+<tr><td>Famille d'équipement</td><td><b>set</b></td><td>set</td><td>« ensemble » (réservé à la taille)</td></tr>
+<tr><td>Taille</td><td><b>ensemble 2 / 3 pièces</b></td><td>2-piece / 3-piece set</td><td>gauche, droite, côté</td></tr>
+<tr><td>Sélection de subs d'une règle</td><td><b>liste</b></td><td>list</td><td><b>pool</b></td></tr>
+<tr><td>Sub étoilée</td><td><b>★ obligatoire</b></td><td>★ mandatory</td><td>essentiel(le)</td></tr>
+<tr><td>Seuil de matching</td><td><b>nombre requis</b></td><td>required count</td><td>seuil, threshold</td></tr>
+<tr><td>Verdicts</td><td><b>gardée / recyclée</b></td><td>kept / recycled</td><td>conservée, rejetée</td></tr>
+<tr><td>Set attrapé par ≥ 1 règle</td><td><b>couvert</b></td><td>covered</td><td>« gardé » pour un set</td></tr>
+<tr><td>Drops rares</td><td><b>pièce ancienne</b></td><td>ancient piece</td><td>« pièce ancient » (franglais)</td></tr>
+</table></div>
+<p>Écarts P0 relevés : <b>« pool » vs « liste »</b> pour le même objet (4 clés : st_pool, st_off, miss_sub,
+pr_k_pool) ; <b>résidus « gauche/droite »</b> (7 labels TRANSFO + cons_p FR/EN + 2 passages de la Référence) —
+les seuls endroits où le joueur croise un axe jamais défini. P1 : « conservée » dans le lede alors que toute l'UI
+dit « gardée » ; « seuil » apparaît une seule fois (diag_none) pour un champ nommé « Nombre requis ».</p>
+
+<h2><span class="prio p0">P0</span> Les deux messages les plus cryptiques</h2>
+<div class="tbl-wrap"><table>
+<tr><th>Clé</th><th>Avant</th><th>Après</th></tr>
+<tr><td>warn_unplayable</td><td>« requis &gt; liste — injouable » (le joueur peut croire que le <i>jeu</i> refusera la règle)</td><td><b>« requis &gt; taille de la liste — cette règle ne gardera jamais rien »</b></td></tr>
+<tr><td>why_count</td><td>« 3/4 subs de la liste — la pièce a : X · <b>compteraient aussi</b> : Y » (conditionnel sans sujet)</td><td><b>« 3/4 subs de la liste — sur la pièce : X · il en manque 1, à prendre parmi : Y »</b></td></tr>
+</table></div>
+
+<h2><span class="prio p0">P0</span> Le pire texte d'aide : cons_p (contraintes de main)</h2>
+<p>Trois négations imbriquées (« ni AS ni RR sur bracelet (CC y est exclusif)… »), « côté droit » jamais défini,
+franglais. Réécriture en positif, une exclusivité par ligne :</p>
+<div class="panel reco"><p>Arme = toujours ATK, torse = toujours HP. Sur l'ensemble 3 pièces, chaque main rare a son
+slot attitré :<br>• <b>CC</b> → bracelet uniquement ; • <b>AS</b> → collier uniquement ; • <b>RR</b> → bague uniquement.<br>
+Tout le reste (ATK, HP, DEF, %, CD, HE) est possible sur les trois. Si le jeu te contredit, corrige ici :
+la couverture et le générateur s'adaptent aussitôt.</p></div>
+<p>Autres réécritures P1 : <code>h_req</code> (phrase sans sujet — « <i>Le nombre requis</i> se compte sur toute la
+liste… ») ; <code>h_mains</code> (« ignoré de » agrammatical → « Le main de la pièce ne compte jamais parmi ses
+subs ») ; l'item 1 de <code>hint_scope</code> (quatre « puis » sans verbe). <b>À ne pas toucher</b> : hint_rules,
+hint_sem, cov_catch_hint (« c'est voulu, pas cassé » désamorce la panique — la meilleure phrase de l'app).</p>
+
+<h2><span class="prio p1">P1</span> La version EN — les calques</h2>
+<div class="tbl-wrap"><table>
+<tr><th>Clé</th><th>Calque</th><th>Correction</th></tr>
+<tr><td>hint_rules / hint_sem</td><td>« the required count <b>runs over</b> the list » (= écraser en voiture)</td><td>« is measured against the whole list »</td></tr>
+<tr><td>th_read</td><td>« Reading » (faux-ami de Lecture)</td><td>« Diagnosis » (et FR : « Lecture » → « Diagnostic »)</td></tr>
+<tr><td>t_share_long</td><td>« prefer the JSON file » (gallicisme)</td><td>« the JSON file is more reliable »</td></tr>
+<tr><td>pr_foot</td><td>« Whatever no rule of the tab covers » (syntaxe française)</td><td>« Anything no rule in this tab covers »</td></tr>
+<tr><td>dens_comfort</td><td>« comfy » (registre pantoufle)</td><td>« comfortable »</td></tr>
+</table></div>
+<p>Terminologie de jeu EN correcte partout (Bangle/Amulet/Ring, kept/recycled sans faille).</p>
+
+<h2>Les 15 tooltips de jargon — prêts à intégrer</h2>
+<p>Définitions d'une phrase, sur le lexique canonique (donc <b>après</b> l'unification liste/pool). Extrait :</p>
+<div class="tbl-wrap"><table>
+<tr><th>Terme</th><th>FR</th></tr>
+<tr><td><b>main</b></td><td>La stat principale d'une pièce, fixée par son slot ou tirée parmi celles qui y sont légales — elle ne compte jamais comme sub.</td></tr>
+<tr><td><b>liste</b></td><td>Les subs cochées dans une règle : le nombre requis se compte uniquement sur elles.</td></tr>
+<tr><td><b>★ obligatoire</b></td><td>Sub de la liste que la pièce doit impérativement porter pour que la règle la garde.</td></tr>
+<tr><td><b>requis</b></td><td>Nombre minimum de subs de la liste que la pièce doit porter, ★ incluses.</td></tr>
+<tr><td><b>quad</b></td><td>Pièce (ou règle) dont les 4 subs appartiennent à la liste visée — le graal, donc très rare.</td></tr>
+<tr><td><b>profil</b></td><td>Une combinaison possible set + slot + main + 4 subs — l'unité que compte le testeur.</td></tr>
+<tr><td><b>couverture</b></td><td>Part de ce qui peut dropper qu'au moins une règle de l'onglet garde ; un set non couvert est recyclé à 100 %.</td></tr>
+<tr><td><b>pièce ancienne</b></td><td>Drop rare de raid (≈ 0,87 %), seul à pouvoir porter la sub RR sur une arme ou un torse.</td></tr>
+</table></div>
+<p>La liste complète (15 termes, FR + EN) couvre aussi : set, sub, ensemble 2/3 pièces, tier, garder/recycler, scope,
+transformation. Écartés car autoportants à l'écran : doublon (défini dans son message), onglet, les codes de stats
+(lexique de la Référence).</p>
+
+<h2><span class="prio p1">P1</span> Vides et erreurs — orienter, pas constater</h2>
+<div class="tbl-wrap"><table>
+<tr><th>Clé</th><th>Avant</th><th>Après</th></tr>
+<tr><td>empty_test</td><td>« L'onglet testé n'a aucune règle — rien à mesurer. »</td><td>« … — crée-en une dans l'écran Règles, puis reviens mesurer. »</td></tr>
+<tr><td>t_file_fail</td><td>« Impossible de lire ce fichier. »</td><td>« … — attendu : un export JSON de l'app. »</td></tr>
+<tr><td>empty_filters</td><td>« Aucune règle ne correspond aux filtres. »</td><td>« … — élargis la recherche ou vide les filtres. »</td></tr>
+<tr><td>t_dl_fail</td><td>« Téléchargement impossible dans cet environnement. »</td><td>« … — utilise “Partager” pour copier un lien à la place. »</td></tr>
+</table></div>
+<p><b>Exemplaires, à conserver</b> : les états vides actionnables (empty_tab + CTA), le toast de suppression avec
+« annuler », les messages d'import qui listent précisément ce qui manque.</p>
+
+<div class="foot">
+  <a href="09-integration-features.html">Intégration des features →</a>
+  <a href="index.html">↑ Synthèse exécutive</a>
+</div>
+</main>
+</div>
+</body>
+</html>

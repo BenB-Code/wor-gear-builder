@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Challenge du rapport 3 · Design Review 4 — WoR Gear Builder</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="shell">
+<nav class="toc">
+  <div class="brand"><span class="d">◆</span> Design Review 4</div>
+  <div class="sub">Cycle brainstorm &amp; challenge · sept. 2026</div>
+  <a href="index.html">Synthèse du cycle</a>
+  <div class="grp">Le cycle</div>
+  <a href="01-analyses.html">Les 3 analyses à froid</a>
+  <a href="02-debat.html">Le débat</a>
+  <a href="03-challenge.html" class="on">Challenge du rapport 3</a>
+  <a href="04-conclusions.html">Conclusions &amp; recommandations</a>
+  <div class="grp">Référence</div>
+  <a href="../design-review-3/index.html">← Rapport 3</a>
+  <a href="../design-review-2/index.html">← Rapport 2</a>
+  <a href="../design-review/index.html">← Rapport 1</a>
+</nav>
+<main>
+
+<span class="kicker">La page critique · cycle 4 vs rapport 3 · modération</span>
+<h1>Challenge du rapport 3</h1>
+<p class="lede">Les trois profils du cycle 4 n'ont <b>pas lu</b> le rapport 3 — seule cette page le confronte à
+leurs travaux. Même protocole que les challenges précédents : une conclusion du rapport 3 retrouvée à froid est une
+<b>validation indépendante</b> ; une contradiction argumentée mérite d'être rejouée ; et ce que le cœur du cycle 3
+avait vu et que le cycle 4 a raté compte autant que l'inverse. Particularité de ce dernier challenge : le cycle 4
+ne conteste presque jamais le <i>quoi</i> du rapport 3 — il conteste son <b>quand</b>.</p>
+
+<h2>① Ce que le cycle 4 confirme — les croisements indépendants</h2>
+
+<div class="panel good"><h4>Le tri-état des chips illisible — trouvé par le cognitif au cycle 3 ET par
+l'heuristicien au cycle 4 : le point converge pour la troisième fois</h4>
+<p>Le P0-1 du rapport 3 (« fondations de lisibilité » : micro-labels d'état au clic-cycle du chip sub) reposait sur
+le constat du cognitif ; l'heuristicien du cycle 4, sans rien avoir lu, retrouve exactement le même objet et le
+note <b>H6 sev 3</b> : « trois états distingués par des nuances d'opacité (0.28 / plein / ★), à mémoriser — l'app
+se lit comme un code à déchiffrer » — en y ajoutant une pièce neuve : les chips grisées à 28&nbsp;% se confondent
+avec du <i>désactivé</i> (contre-affordance, sev 2), ce qui disqualifie l'opacité comme encodage même légendé.
+Après le hint transitoire du rapport 2 (GUI-8/IX-5) et les micro-labels du rapport 3, c'est la <b>troisième
+redécouverte indépendante</b> du même défaut — et le cycle 4 ajoute que ce tri-état illisible bloque aussi les
+features expertes (l'alt-clic rétrogradé « parce que l'utilisateur ne saura pas ce qu'il vient de faire »).
+Le dossier est complet : encodage à refaire, plus jamais à débattre.</p></div>
+
+<div class="panel good"><h4>« Le verdict d'abord » vs « les corrections de fond » — le principe du séquencement par
+dépendance, revalidé contre lui-même</h4>
+<p>La révision la plus structurante du cycle 3 était méthodologique : « le verdict d'abord n'a de valeur que si le
+verdict est compréhensible » — les fondations avant la scène, l'ordre par dépendance fonctionnelle. Le cycle 4
+applique <b>exactement la même logique un étage plus bas</b> : la palette avant le focus management, c'est « une
+cathédrale sur du sable » ; les View Transitions avant le focus, c'est « animer joliment une perte de focus ».
+La méthode du rapport 3 est confirmée — mais elle se retourne contre son propre P0 : si l'on ordonne par
+dépendance, alors la scène du verdict elle-même attend que le moteur qui la joue (focus, dialog, color-scheme)
+soit réparé. Voir ②.</p></div>
+
+<div class="tbl-wrap"><table>
+<tr><th>Conclusion du rapport 3</th><th>Redécouverte du cycle 4</th><th style="width:100px">Statut</th></tr>
+<tr><td>P0-5 « La recopie téléprompteur + reprise » — convergence ×3 au cycle 2, ×3 au cycle 3, « le point le plus
+validé du corpus »</td>
+<td>P0-4 du power-user (« LE moment de douleur récurrent », flux Entrée = coché → suivante), fusionné au débat avec
+le <code>&lt;dialog&gt;</code> du DE (le mode focus coûte ~60 lignes une fois l'utilitaire construit) et enrichi
+par l'heuristicien (Backspace = décocher-revenir, clé + mode d'emploi + état de sauvegarde répliqués). <b>Troisième
+cycle consécutif, septième regard</b> — et pour la première fois : un chiffrage et un socle technique.</td>
+<td><span class="v-ok">renforcé + chiffré</span></td></tr>
+<tr><td>P0-1 « Fondations de lisibilité » — verdicts en positif, encodages nommés au point d'action</td>
+<td>H6 sev 3 (dots de requis sans légende, tri-état) + H2 (clé in-game sans mode d'emploi : « où la coller ») —
+même diagnostic, sévérité désormais chiffrée. Amendement du débat : tooltip + panneau <code>?</code> plutôt que
+légende permanente (« la densité se consomme à chaque session »).</td>
+<td><span class="v-ok">renforcé + amendé</span></td></tr>
+<tr><td>Plancher AA du corpus (rapport 1, reconduit au rapport 3 : « zéro texte &lt; 4,5:1 »)</td>
+<td>H8 : <code>--faint</code> #6f6880 ≈ 3,5:1 sur des textes de 11&nbsp;px — la save-line, les labels, les meta.
+Et le DE le complète côté <i>non-texte</i> : la hairline à 5&nbsp;% de blanc sur un delta de fond de 3&nbsp;% est
+« sous le seuil de discrimination » — la plainte « encarts indiscernables » mesurée pour la première fois.</td>
+<td><span class="v-ok">renforcé + étendu</span></td></tr>
+<tr><td>Onboarding minimal + templates dans l'empty state (P2 du rapport 3, 3ᵉ cycle consécutif)</td>
+<td>H10 sev 2 : « premier lancement sur "Mes règles 0" avec l'écran vide — l'onglet Démo existe mais rien n'y
+pointe ». Quatrième cycle à converger sur l'état vide actif. Le cycle 4 n'ajoute rien à la spec — il ajoute une
+sévérité.</td>
+<td><span class="v-ok">confirmé ×4</span></td></tr>
+<tr><td>« L'explication vit au point d'action » (principe transversal du cognitif, cycle 3)</td>
+<td>La colline de l'heuristicien en est la déclinaison outillée : « aucune capacité dont la seule porte d'entrée
+est invisible » — et la fusion « la palette EST le tutoriel » (raccourcis affichés dans la palette même) est
+l'application la plus littérale du principe que le corpus ait produite.</td>
+<td><span class="v-ok">renforcé</span></td></tr>
+<tr><td>« Décisions persistantes sorties des toasts » (P2 du rapport 3, C14)</td>
+<td>H9 : « les erreurs vivent en toasts éphémères, non ré-affichables » + H3 sev 3 (l'undo qui ne vit que dans un
+toast). Le cycle 4 généralise : le toast n'est pas un lieu de décision NI de récupération — la pile de commandes
+le requalifie en simple affichage d'état.</td>
+<td><span class="v-ok">renforcé + généralisé</span></td></tr>
+</table></div>
+
+<div class="panel good"><h4>Lecture de modération</h4>
+<p>Les confirmations du cycle 4 se concentrent sur <b>la recopie</b>, <b>la lisibilité des encodages</b> et
+<b>le contraste</b> — les mêmes fronts que les cycles précédents, désormais vus par des instruments différents
+(sévérités Nielsen, mesures de luminance, coûts en gestes). Sur ces trois fronts, le corpus a atteint le stade où
+chaque nouveau regard ne découvre plus, il <b>chiffre</b>. C'est le signal qu'un cycle de plus n'apporterait rien :
+il est temps de construire.</p></div>
+
+<h2>② Ce que le cycle 4 contredit ou nuance</h2>
+
+<div class="panel bad"><h4>Contradiction frontale n°1 — le cycle 3 investissait la scène, le cycle 4 répond :
+« d'abord réparer le rendu »</h4>
+<p>Le rapport 3 ordonnait son cœur ainsi : fondations de lisibilité → matières → <b>scène du verdict</b> → share
+card → téléprompteur. Le cycle 4 découvre un étage que personne n'avait audité — <b>l'exécution</b> — et le déclare
+prioritaire : <code>color-scheme</code> absent (la scrollbar blanche sur toutes les captures dark), le focus
+détruit à chaque interaction, un dialogue sans focus trap, une navigation qui « glisse ». L'argument n'est pas
+esthétique, il est logique : la scène du verdict du cycle 3 est un écran composé (bandeau, cartes cliquables,
+CTA) — <b>la construire sur un moteur qui perd le focus et un dark mode que le navigateur trahit, c'est répéter au
+niveau du code l'erreur que le growth avait identifiée au niveau du contenu</b> (« afficher plus vite un résultat
+toujours illisible »). La priorité 1 du rapport 3 (la scène) et la priorité 1 du cycle 4 (la pile de commandes +
+les fondations du rendu) sont <b>deux « premiers chantiers » concurrents</b> — le seul vrai conflit inter-cycles,
+légué en arbitrage à l'équipe finale (page 04).</p></div>
+
+<div class="panel bad"><h4>Contradiction frontale n°2 — la typographie des labels : quatrième renversement en
+quatre cycles</h4>
+<p>Le rapport 3 avait tranché contre le rapport 2 : « mono = valeurs issues du jeu uniquement, labels et th en
+<b>sans</b> ». Le design engineer du cycle 4, à froid, propose l'inverse exact : « une seule grammaire de label
+technique — <b>mono uppercase</b>, déjà la plus lisible à 11&nbsp;px ; serif réservé aux titres ≥ 15&nbsp;px » — et
+l'heuristicien contresigne (« une grammaire, pas une retouche »). L'historique complet : rapport 1 → sans uppercase ;
+rapport 2 → mono uppercase ; rapport 3 → sans (mono réservé au jeu) ; cycle 4 → mono. <b>Deux écoles parfaitement
+équilibrées, deux fois chacune.</b> Le cycle 4 apporte cependant deux données que les débats précédents n'avaient
+pas : les small-caps synthétiques sont <i>objectivement</i> défaillantes sous 15&nbsp;px (la synthèse navigateur,
+mesurée), et le choix est réversible à coût quasi nul une fois les labels tokenisés. La modération constate : ce
+n'est plus un débat de goût, c'est un A/B à maquetter — dernier arbitrage typo, à trancher une fois pour toutes
+(page 04).</p></div>
+
+<div class="panel bad"><h4>Contradiction doctrinale — la temporalité des cérémonies (Q4) reçoit une réponse
+inverse à celle attendue</h4>
+<p>Le rapport 3 léguait Q4 : « écrire les durées et easings des cérémonies » (bandeau-oracle, dorure, micro-labels).
+Le cycle 4 répond, mais à rebours : deux profils sur trois <b>contestent l'animation de navigation en soi</b> —
+« pour qui bascule 40 fois par session, le cut sec est une feature » (power-user), « une SPA artisanale qui
+transitionne crée une attente d'app native qu'on ne tiendra pas » (heuristicien) — et le troisième retire sa propre
+proposition. La doctrine qui en sort inverse la charge de la preuve : <b>la navigation n'est jamais animée ; seuls
+les événements rares (import, suppression, 18/18) ont droit à une cérémonie</b>. Les cérémonies du rapport 3
+survivent — mais leur périmètre est borné par une règle que le cycle 3 n'avait pas écrite.</p></div>
+
+<div class="tbl-wrap"><table>
+<tr><th>Point du rapport 3</th><th>Nuance apportée par le cycle 4</th><th style="width:100px">Verdict</th></tr>
+<tr><td>P0-1 « micro-labels d'état » + légendes de lisibilité</td>
+<td>Le power-user borne la forme : tooltip et panneau <code>?</code>, oui ; <b>chrome pédagogique permanent,
+non</b> (« l'expert le scrollera 10 000 fois »). La spec du cycle 3 (« éphémère pour nommer, persistant pour
+décider ») en sort renforcée — le cycle 4 précise juste que « persistant » ne veut pas dire « permanent à
+l'écran ».</td><td><span class="v-mid">borné</span></td></tr>
+<tr><td>P0-5 téléprompteur : « ordre de saisie imposé, cocher-suivant »</td>
+<td>Enrichi de trois specs : le socle <code>&lt;dialog&gt;</code> (focus trap gratuit), Backspace =
+décocher-revenir (l'undo de la coche), et l'état système répliqué dans le mode focus (clé + « où la coller » +
+sauvegarde). Et une exigence nouvelle : piloté à l'Entrée, « les yeux sur le jeu ».</td>
+<td><span class="v-mid">enrichi</span></td></tr>
+<tr><td>« Toute mention de règle est cliquable » (P1) — la boucle d'itération de l'expert</td>
+<td>Le power-user pousse plus loin : cliquable ne suffit pas, il faut <b>adressable</b> — « G7 » tapé dans la
+palette saute et flash. Le mécanisme <code>data-goto</code>+<code>.flash</code> du rapport 3 devient le routeur
+de la palette.</td><td><span class="v-mid">étendu</span></td></tr>
+<tr><td>Q6 « le chiffrage — troisième cycle sans un chiffre »</td>
+<td><b>Enfin entamé</b> — mais par le petit bout : le DE chiffre ses propres chantiers (1 ligne, ~15, ~30, ~80,
+~120 lignes ; 1 à 3 jours par lot) et la faisabilité de l'undo. Les chantiers du cœur du rapport 3 (scène, share
+card, matières) restent non chiffrés — l'équipe finale hérite d'une méthode, pas d'une roadmap complète.</td>
+<td><span class="v-mid">partiellement réglé</span></td></tr>
+<tr><td>« Un seul bandeau d'ouverture à la fois » (P1, règle du slot unique)</td>
+<td>Compatible et renforcé par le corollaire H4 de l'heuristicien : « un seul composant par fonction » — un seul
+sélecteur d'onglets, une seule grammaire de label, un seul système d'aide. La règle du slot unique du cycle 3 et
+la règle du composant unique du cycle 4 sont les deux moitiés d'une même charte de cohérence.</td>
+<td><span class="v-mid">généralisé</span></td></tr>
+</table></div>
+
+<h2>③ Ce que le cycle 4 apporte que le rapport 3 n'avait pas vu</h2>
+<p>Le rapport 3 alignait un cognitif, un brand designer et un growth — personne n'avait ouvert le code, personne ne
+comptait les gestes, personne ne notait sur une grille comparable. Les trois apports du cycle 4 sont exactement
+là.</p>
+
+<div class="panel good"><h4>L'exécution technique du design — l'étage que trois cycles n'avaient jamais audité</h4>
+<p>Trois cycles ont spécifié des tokens, des pactes, des matières — <b>personne n'avait vérifié ce que le
+navigateur en faisait</b>. Le cycle 4 l'apporte avec preuves : le <code>color-scheme</code> manquant qui livre une
+scrollbar blanche et des popups clairs dans un dark mode par ailleurs soigné (1 ligne) ; les small-caps
+<i>synthétiques</i> — la vraie racine mesurable du grief « polices cheap » que trois cycles attribuaient au choix
+des fontes ; les ~40 <code>rgba()</code> dupliqués dont la moitié seulement a un override light —
+« l'incohérence structurelle » qui garantit que tout re-theming futur régressera ; le <code>outerHTML</code> qui
+détruit le focus — le bug qui rend inconstructibles la palette, le j/k et la scène du verdict. La leçon de méthode
+vaut pour l'équipe finale : <b>un design system s'audite aussi dans son rendu</b>, et une partie du « design » du
+corpus se répare en CSS/JS à trois chiffres de lignes.</p></div>
+
+<div class="panel good"><h4>Le clavier et l'échelle — l'utilisateur à 18 règles, enfin représenté</h4>
+<p>Le corpus avait le novice (growth, cognitif), le joueur mobile (rapport 2), le lecteur (tous) — <b>personne ne
+portait l'utilisateur intensif qui écrit</b>. Le cycle 4 le chiffre : 18 clics + scroll pour cocher une recopie,
+30 gestes pour un post-patch à 6 règles, 90 à 18 ; la comparaison de deux onglets impossible autrement que de
+mémoire. Et il apporte la réponse architecturale que le backlog (features à l'unité) ne contenait pas : un
+<b>modèle de commande</b> — pile d'undo universelle, palette, sélection multiple, flux Entrée — dont la propriété
+remarquable est de ne rien ajouter au repos : le novice du cycle 3 ne le verra jamais, l'expert ne vivra que
+dedans. La pile de commandes est aussi un apport <i>doctrinal</i> : la réversibilité comme alternative à la
+confirmation — « on ne sécurise pas un outil en le ralentissant ».</p></div>
+
+<div class="panel good"><h4>La grille heuristique chiffrée — la première mesure comparable du corpus</h4>
+<p>Dix-neuf regards en trois cycles, aucun n'avait produit de <b>note</b>. La grille Nielsen du cycle 4 (10
+heuristiques, sévérités 0-4, TOP 5, verdict 2,6/4) donne trois choses que le corpus n'avait pas : une
+<b>hiérarchie inter-défauts</b> objectivable (H4 et H6 dominent — et H4, le sélecteur d'onglet à deux visages,
+n'avait été vu par personne en trois cycles) ; une <b>base de re-mesure</b> — l'équipe finale pourra repasser la
+grille après chantiers et constater le delta ; et un <b>étalonnage du positif</b> : les diagnostics du Testeur,
+les messages d'erreur causaux et les finitions transverses sont nommés « au-dessus du standard », ce qui protège
+ces acquis d'une refonte trop zélée. S'y ajoute le premier chiffrage d'effort du corpus (lignes et jours, par le
+DE) — la dette Q6, ouverte depuis le rapport 1, commence enfin à s'amortir.</p></div>
+
+<h2>④ Ce que le rapport 3 avait vu — et que le cycle 4 a raté</h2>
+<p>Le miroir exact du ③ : un design engineer, un power-user et un heuristicien ne remplacent ni un growth, ni un
+brand designer, ni un cognitif. Sur cinq fronts, le cycle 4 est en retrait net — dont deux répètent le grief que
+le challenge précédent adressait déjà au cycle 3.</p>
+
+<div class="tbl-wrap"><table>
+<tr><th>Ce que le rapport 3 tient</th><th>Ce que le cycle 4 en dit</th></tr>
+<tr><td><b>Le funnel et les boucles.</b> La scène du verdict comme atterrissage, la share card PNG, la landing
+d'import, le badge patch, le crédit d'auteur — l'acquisition et la rétention comme mécaniques nommées.</td>
+<td><span class="v-bad">Zéro constat.</span> Les trois profils raisonnent en <b>utilisateur installé</b> : le
+power-user optimise la semaine 40, l'heuristicien note l'absence d'onboarding (H10) sans proposer mieux qu'un état
+vide actif, le DE ne regarde que le rendu. Le nouvel arrivant du lien Discord — la fuite d'activation chiffrée du
+cycle 3 — a disparu du radar. Aucun des trois ne mentionne la share card ni la landing d'import.</td></tr>
+<tr><td><b>La pédagogie du verdict.</b> Les subs gagnants surlignés, la phrase de règle en langage naturel,
+« expliquer le succès », les verdicts en positif — le verdict comme leçon.</td>
+<td><span class="v-bad">Non repris.</span> L'heuristicien touche la surface (H2 : « profils » ≠ « pièces » ; H9 :
+messages exemplaires) mais personne ne porte les deux mécanismes signature du cycle 3 — la phrase générée et le
+surlignage des subs gagnants. Le cycle 4 rend les encodages <i>lisibles</i> ; le cycle 3 rendait le système
+<i>compréhensible</i>. Les deux couches restent nécessaires.</td></tr>
+<tr><td><b>La direction artistique d'ensemble.</b> Les trois matières, la dorure à trois allumages, le mode clair
+parchemin comme actif de marque, la DA concentrée sur la share card.</td>
+<td><span class="v-bad">Effleuré par le bas.</span> Le DE touche l'élévation (2 niveaux) et la mécanique des
+teintes (<code>color-mix</code>) — des <i>outils</i> pour la DA, pas une DA. Risque réel identifié par la
+modération : appliquer sa grammaire d'élévation et sa consolidation typographique <b>sans lire la partition des
+trois matières du cycle 3</b> produirait une app plus propre et plus anonyme — exactement le diagnostic « un
+vocabulaire sans grammaire » à l'envers.</td></tr>
+<tr><td><b>Le mobile et le touch.</b> Le téléprompteur pour une main et un pouce, l'atterrissage différencié,
+la reprise de saisie — et l'héritage du rapport 2 (cibles 44&nbsp;px, tab bar).</td>
+<td><span class="v-bad">Quasi absent.</span> Le modèle de commande du cycle 4 est <b>desktop-only par
+construction</b> : j/k, Ctrl+K, alt-clic, Entrée n'existent pas au pouce. L'heuristicien note la save-line absente
+du mobile et le drag pénible au tactile — deux constats — mais la recopie guidée, re-spécifiée par le cycle en
+mode <code>&lt;dialog&gt;</code> piloté à l'Entrée, n'a <i>toujours</i> pas sa déclinaison touch : troisième cycle
+consécutif où la feature reine oublie l'écran où elle servira le plus.</td></tr>
+<tr><td><b>Les trois dettes léguées (Q1, Q5, et le chiffrage complet Q6).</b> Vérifier les couleurs contre le jeu
+réel ; observer 5 vrais joueurs ; chiffrer les chantiers du cœur.</td>
+<td><span class="v-bad">Q1 et Q5 : toujours rien — quatrième cycle.</span> Personne n'a ouvert l'écran
+d'équipement de WoR, personne n'a regardé un joueur jouer. Q6 progresse (les lots du DE sont chiffrés) mais les
+chantiers du cœur du rapport 3 restent sans estimation. <b>Vingt-deux regards experts, zéro donnée utilisateur</b> :
+c'est désormais à l'équipe finale que ces dettes échoient, et elles sont les seules que quatre cycles de brainstorm
+n'auront jamais pu payer de l'intérieur.</td></tr>
+</table></div>
+
+<div class="panel"><h4>Pourquoi ces trous sont logiques — et la carte finale du corpus</h4>
+<p>Chaque cycle éclaire sa lanterne : le rapport 1 tient la <b>peau</b> (contraste, typo, tokens), le rapport 2 le
+<b>squelette</b> (vues, gestes, langue du jeu), le rapport 3 le <b>cœur</b> (le moment de preuve, l'apprentissage,
+les boucles), le cycle 4 les <b>mains</b> — le moteur d'exécution et le modèle de commande. Les contradictions
+réelles entre rapport 3 et cycle 4 tiennent en deux points (l'ordre du premier chantier, la typo des labels) plus
+une doctrine bornée (les cérémonies hors navigation) — et les <a href="04-conclusions.html">conclusions</a>
+proposent un règlement pour chacun.</p></div>
+
+<h2>Le bilan du challenge</h2>
+<div class="stats">
+  <div class="stat"><div class="n">6</div><div class="l">conclusions du rapport 3 confirmées à froid</div></div>
+  <div class="stat"><div class="n">2</div><div class="l">contradictions frontales (ordre · typo des labels)</div></div>
+  <div class="stat"><div class="n">1</div><div class="l">doctrine inversée (cérémonies hors navigation)</div></div>
+  <div class="stat"><div class="n">5</div><div class="l">points bornés, enrichis ou étendus</div></div>
+  <div class="stat"><div class="n">3</div><div class="l">apports majeurs hors du champ du rapport 3</div></div>
+  <div class="stat"><div class="n">5</div><div class="l">fronts où le cycle 4 est en retrait net</div></div>
+</div>
+
+<div class="quote">Le rapport 3 savait <b>pourquoi on reste</b> — le cycle 4 sait <b>pourquoi ça casse sous les
+doigts</b>. L'un a trouvé le moment où l'app fait sa preuve ; l'autre découvre que la machine qui doit jouer ce
+moment perd le focus, trahit son dark mode et ne sait pas annuler. Leur vraie dispute tient en une question de
+chantier — la scène ou le moteur en premier — et leur complémentarité en une évidence : la scène du verdict du
+cycle 3 se jouera sur la pile de commandes du cycle 4, ou elle se jouera mal.
+<span class="who">— modération du cycle 4</span></div>
+
+<div class="foot">
+  <a href="02-debat.html">← Le débat</a>
+  <a href="04-conclusions.html">Conclusions &amp; recommandations →</a>
+</div>
+</main>
+</div>
+</body>
+</html>

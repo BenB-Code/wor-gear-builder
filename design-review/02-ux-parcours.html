@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UX &amp; parcours · Design Review — WoR Gear Builder</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="shell">
+<nav class="toc">
+  <div class="brand"><span class="d">◆</span> Design Review</div>
+  <div class="sub">WoR Gear Builder · sept. 2026</div>
+  <a href="index.html">Synthèse exécutive</a>
+  <div class="grp">Fondations</div>
+  <a href="04-typographie.html">Typographie</a>
+  <a href="03-couleur-accessibilite.html">Couleur &amp; accessibilité</a>
+  <a href="05-design-system.html">Design system &amp; tokens</a>
+  <div class="grp">Interface</div>
+  <a href="01-ui-composants.html">Composants UI</a>
+  <a href="07-dataviz.html">Data-visualisation</a>
+  <a href="06-mobile.html">Mobile</a>
+  <div class="grp">Produit</div>
+  <a href="02-ux-parcours.html" class="on">UX &amp; parcours</a>
+  <a href="08-contenu.html">Contenu &amp; microcopy</a>
+  <a href="09-integration-features.html">Intégration des features</a>
+  <div class="grp">Direction</div>
+  <a href="10-synthese.html">Synthèse &amp; roadmap</a>
+</nav>
+<main>
+
+<span class="kicker">Audit spécialiste · UX &amp; architecture d'information</span>
+<h1>UX — un seul vocabulaire, trois moments d'usage</h1>
+<p class="lede">Le produit est solide sur le fond (moteur, pédagogie, explicabilité des verdicts) mais il superpose
+<b>trois vocabulaires pour les mêmes concepts</b> et <b>trois contextes d'usage dans les mêmes écrans</b> —
+construire à tête reposée / vérifier pendant le farm / ressaisir devant le jeu. C'est cela que le client verbalise
+en « manque de cohérence », pas la densité.</p>
+
+<h2><span class="prio p0">P0</span> Trois widgets pour un seul état : l'onglet actif</h2>
+<p>Le « jeu de règles actif » est piloté par une rangée d'onglets (vue Règles), un <code>&lt;select&gt;</code>
+« Onglet » (Testeur) et un autre (Sets). L'utilisateur ne construit jamais le modèle « il y a UN jeu de règles
+actif, global, que toutes les vues regardent » — il croit régler un paramètre local du Testeur. C'est l'incohérence
+la plus structurante de l'app.</p>
+<pre class="wire">┌─ RAIL ──────────────────┐
+│ ◆ Tri d'équipement      │
+│ JEU DE RÈGLES ACTIF     │
+│ ┌─────────────────────┐ │
+│ │ End Game | Strict ▾ │ │  ← pilote Règles, Testeur, Sets
+│ └─────────────────────┘ │
+│ ▸ Règles            18  │
+│ ▸ Testeur               │
+│ ▸ Sets &amp; transfo    48  │
+│ ▸ Référence             │
+│ ─────────────────────── │
+│ Saisie in-game     0/18 │  ← enfin lisible : même contexte
+│ ▓░░░░░░░  [► Recopier]  │
+└─────────────────────────┘</pre>
+<p>Corollaire de nommage : « Onglet » (collision avec les onglets du navigateur ET la nav latérale) →
+<b>« Jeu de règles »</b> partout — le lede de la vue Règles utilise déjà ce terme pour <i>définir</i> le mot onglet,
+preuve qu'il ne se suffit pas.</p>
+
+<h2><span class="prio p0">P0</span> Le Testeur : deux intentions collées ensemble</h2>
+<div class="tbl-wrap"><table>
+<tr><th>Mode</th><th>Question posée</th><th>Contexte</th></tr>
+<tr><td>Couverture</td><td>« Mon ruleset est-il sain ? »</td><td>bureau, avant saisie</td></tr>
+<tr><td>Échantillon</td><td>« Que gardera-t-il en pratique ? »</td><td>bureau, avant saisie</td></tr>
+<tr><td><b>Pièce manuelle</b></td><td>« CE drop, je le garde ? »</td><td><b>pendant le jeu, téléphone en main</b></td></tr>
+</table></div>
+<p>Couverture et Échantillon sont deux facettes d'un même audit — leur cohabitation est légitime. <b>Pièce manuelle
+est un outil de terrain</b>, à cadence répétée, enfoui au 3ᵉ rang d'un sous-mode : 4-6 interactions de trop
+<i>à chaque pièce</i>. → le cas « pendant le farm » reçoit un mode plein écran dédié (voir Intégration) ; et les
+modes se renomment par la question, pas la méthode : <b>« Audit complet » · « Simulation de drops » ·
+« Vérifier une pièce »</b>.</p>
+
+<h2>Parcours clés — les frictions</h2>
+<h3><span class="prio p0">P0</span> Créer sa première règle</h3>
+<ul>
+<li><b>Mis en échec dès l'ouverture</b> : « requis &gt; liste — injouable » s'affiche alors qu'on n'a encore rien
+fait. Un état initial ne doit jamais être une erreur → validation « lazy » après première interaction ;</li>
+<li><b>L'ordre du formulaire inverse le modèle mental</b> : on demande le Nom en premier alors que le nom est la
+<i>conclusion</i> (le placeholder l'avoue : « ex. DPS scaler, Tank quad… »). → Ensemble → Sets → Main → Subs →
+Requis → Nom, avec suggestion auto éditable ;</li>
+<li><span class="prio p1">P1</span> <b>Aucun feedback de portée</b> : le dialogue est le seul endroit où l'on écrit
+une règle sans voir ce qu'elle attrape, alors que le moteur existe. Une ligne vivante « ≈ 36 profils gardés
+(2,1 % de ses sets) » recalculée à la volée fermerait la boucle création→test dans le geste même de création —
+<b>le meilleur ratio valeur/encombrement de tout l'audit</b> ;</li>
+<li><span class="prio p1">P1</span> grille de 30+ sets sans pré-filtre (mémoriser le dernier filtre de tier) ;
+« Ensemble 2 pièces » sans traduction slots dans le select.</li>
+</ul>
+
+<h3><span class="prio p1">P1</span> Auditer sa couverture</h3>
+<p>Points forts réels : cartes, colonne diagnostic, « c'est voulu, pas cassé ». Frictions : <b>les alertes ne
+dominent pas</b> (18 lignes « ok », l'œil balaie tout pour vérifier qu'aucune n'est en alerte → alertes triées en
+tête ou bandeau « ⚠ 2 règles à revoir ») ; la carte « 0 règles qui ne gardent rien » devrait être <b>verte</b>
+quand tout va bien — aujourd'hui un état parfait ressemble à un état neutre.</p>
+
+<h3><span class="prio p0">P0</span> Vérifier un drop pendant le farm</h3>
+<p><b>Le verdict est sous le pli</b> — 4 panneaux d'étape occupent le premier écran, LA réponse arrive à mi-page.
+→ verdict <b>sticky</b>, stepper réellement séquentiel (replier l'étape validée, ouvrir la suivante — le code
+prévoit le repli, tout est pré-ouvert). Et <b>l'ordre des étapes ne suit pas la lecture d'un drop in-game</b> :
+en jeu on lit slot → <b>set</b> → main → subs ; l'app demande le set en dernier. → Slot → Set → Main → Subs.</p>
+
+<h3><span class="prio p0">P0</span> Ressaisir en jeu</h3>
+<p>Un rituel complet (18 règles champ par champ, l'écran de jeu à côté) sans mode dédié : l'écran est optimisé pour
+<i>éditer</i>, pas pour <i>dicter</i>. → mode recopie guidée (voir Intégration). Garde-fou modèle : signaler
+« modifiée depuis la saisie » sur une règle cochée puis éditée, sinon la progression ment.</p>
+
+<h3><span class="prio p1">P1</span> Partager</h3>
+<p>Trois concepts voisins sans hiérarchie sur la même barre (Exporter = sauvegarde, Partager = transmission,
+clé in-game = paramètre du jeu). → un bouton « Partager ▾ » (lien / JSON / imprimer), la clé devient une propriété
+d'onglet repliée — elle sert une fois par ruleset et vit en permanence dans le bandeau.</p>
+
+<h2><span class="prio p0">P0</span> Le point le plus subtil : « recyclée mais subs couvertes »</h2>
+<p>Trois panneaux se suivent : verdict ferme, puis « règles qui couvrent ces subs » <b>au conditionnel avec les
+mêmes ids</b>, puis « règles proches ». Deux lectures fausses possibles : « D2 la garde… mais seulement à
+condition ? » (contradiction perçue) ; et pour une recyclée dont les subs matchent : « des règles la couvrent,
+donc je la garde ? » — non, et c'est précisément l'info la plus précieuse (<i>bonnes subs, mauvais set</i> —
+le candidat idéal pour « créer la règle depuis cette pièce »).</p>
+<pre class="wire">┌──────────────────────────────────────────────────┐
+│ ✗ RECYCLÉE                                       │ ← verdict, ferme, seul
+├──────────────────────────────────────────────────┤
+│ Pourquoi — et à quoi elle a failli servir        │ ← UN panneau diagnostic
+│ Subs excellentes pour :  D2 Support · D5 Heal HP │
+│   … mais leur set requis est : Ailes de la grâce │
+│   [＋ Créer une règle depuis cette pièce]        │
+│ Presque gardée par :  D1 Inspiration             │
+│   AS en main — attendu : ATK%                    │
+└──────────────────────────────────────────────────┘</pre>
+<p>Quand la pièce est gardée, le panneau « couvrantes » disparaît à 4/4 subs — il n'a de valeur que <i>pendant</i>
+la saisie, comme prédiction (usage que le code assume déjà à 2-3 subs).</p>
+
+<h2><span class="prio p0">P0</span> Hiérarchie de la vue Règles</h2>
+<p>Ce qui devrait dominer : la liste. Ce qui domine : l'appareillage — ~40 % de la hauteur avant la première règle
+(un écran entier de chrome en mobile). Rework sans rien supprimer :</p>
+<pre class="wire">AVANT                                APRÈS
+┌ Titre + lede               ┐      ┌ Titre · lede 1 ligne            ┐
+├ Onglets [ ][ ][ ] +        ┤      ├ Onglets [ ][ ][ ] + ⋯           ┤
+├ [Renommer][Dupliquer][Sup] ┤      │  ⋯ = menu : Renommer, Dupliquer,│
+├ [Exporter][Partager]       ┤      │  Supprimer, Partager ▾, Clé…    │
+├ Clé in-game [......][copy] ┤      ├ [+ Nouvelle règle] [Filtres (0)]┤
+├ ▸ Recherche &amp; filtres      ┤      ├ ENSEMBLE 2 PIÈCES — ARME &amp; TORSE┤
+├ [+ Nouvelle règle][replier]┤      │ ▸ G1 Tank        ████░ · 4 sets │
+├ ENSEMBLE 2 PIÈCES          ┤      │ ▸ G2 Tank HE …                  │
+│ ▸ G1 Tank …                │      └─────────────────────────────────┘</pre>
+<p>Les actions d'onglet sont des opérations <b>rares</b> → menu « ⋯ » contextuel. La liste remonte d'un écran.</p>
+
+<h2>Modèle mental — le lexique</h2>
+<ul>
+<li><span class="prio p1">P1</span> <b>« 2 pièces vs 3 pièces », trois vocabulaires</b> : left/right (code),
+« Ensemble 2/3 pièces » (Règles), « côté » (Échantillon), « arme &amp; torse » (Sets). Le joueur pense <b>slots</b>.
+Norme : libellé principal = slots (« Arme &amp; torse », « Bracelet · Collier · Bague »), qualificatif = « (set 2/3
+pièces) ». Jamais « côté » seul ;</li>
+<li><span class="prio p2">P2</span> généraliser le garde-fou « c'est voulu, pas cassé » : chaque métrique anxiogène
+(1,02 % gardés) mérite son « c'est normal » contextuel ;</li>
+<li><span class="prio p1">P1</span> le panneau « Contraintes de main par slot » apparaît sous les <b>trois</b> modes
+du Testeur alors que c'est un réglage quasi immuable → « Paramètres du simulateur » repliés, une fois ;</li>
+<li><span class="prio p1">P1</span> l'Échantillon rend sa réponse (« 48/2000 — 2,4 % ») en 13 px mono au milieu des
+contrôles → la promouvoir au même traitement que les cartes de la Couverture (cohérence inter-modes) ;</li>
+<li><span class="prio p2">P2</span> Sets &amp; transfo : dire explicitement que la colonne Couverture réagit au jeu
+de règles actif ; lien croisé Référence ↔ Échantillon (les taux qui pilotent la simu).</li>
+</ul>
+
+<div class="quote">L'app ne manque ni de fonctions ni de place : elle manque d'un seul vocabulaire (jeu de règles,
+slots, verdicts) et d'une séparation nette entre les trois moments d'usage — construire, farmer, ressaisir.
+Les 10 features du backlog s'intègrent toutes sans un pixel de chrome permanent.<span class="who">— spécialiste UX</span></div>
+
+<div class="foot">
+  <a href="08-contenu.html">Contenu &amp; microcopy →</a>
+  <a href="index.html">↑ Synthèse exécutive</a>
+</div>
+</main>
+</div>
+</body>
+</html>

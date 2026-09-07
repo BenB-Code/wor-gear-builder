@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Synthèse du cycle · Design Review 4 — WoR Gear Builder</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="shell">
+<nav class="toc">
+  <div class="brand"><span class="d">◆</span> Design Review 4</div>
+  <div class="sub">Cycle brainstorm &amp; challenge · sept. 2026</div>
+  <a href="index.html" class="on">Synthèse du cycle</a>
+  <div class="grp">Le cycle</div>
+  <a href="01-analyses.html">Les 3 analyses à froid</a>
+  <a href="02-debat.html">Le débat</a>
+  <a href="03-challenge.html">Challenge du rapport 3</a>
+  <a href="04-conclusions.html">Conclusions &amp; recommandations</a>
+  <div class="grp">Référence</div>
+  <a href="../design-review-3/index.html">← Rapport 3</a>
+  <a href="../design-review-2/index.html">← Rapport 2</a>
+  <a href="../design-review/index.html">← Rapport 1</a>
+</nav>
+<main>
+
+<span class="kicker">Cycle 4 · dernier cycle · 3 profils neufs · analyses à froid + débat contradictoire</span>
+<h1><span style="color:var(--acc)">◆</span> Design Review 4 — le regard qui ferme la boucle</h1>
+<p class="lede">Trois profils encore jamais convoqués — un <b>design engineer</b> qui a lu les 3&nbsp;100 lignes de
+code ligne à ligne, un <b>avocat du power-user</b> qui a chiffré en gestes les dix actions les plus fréquentes, et
+un <b>critique heuristique</b> qui a noté l'app sur la grille de Nielsen — ont analysé l'application <b>à froid</b>,
+sans lire les reviews antérieures. Puis ils ont débattu : appuis, contestations frontales, fusions, révisions.
+C'est le <b>dernier cycle</b> : ce rapport restitue leur travail, le confronte au <b>rapport 3</b> — celui du
+cœur — et lègue à l'équipe finale la liste des arbitrages encore ouverts.</p>
+
+<h2>Trois thèses, trois instruments de mesure</h2>
+<div class="panel"><h4>Design engineer — « le design system est bon sur le papier, c'est l'exécution du rendu qui
+le trahit »</h4>
+<p>Premier regard du corpus posé sur le <b>code</b> : le CSS, les templates, le routeur, les listeners. Verdict :
+la plupart des griefs client ont une racine mesurable et bon marché — <code>color-scheme</code> absent (la
+scrollbar blanche qui poignarde le dark mode : <b>1 ligne</b>), <code>rerenderRule()</code> qui détruit le focus
+clavier à chaque interaction, un scroll « smooth » qui fait ramer la navigation, un dialogue qui n'est pas un
+<code>&lt;dialog&gt;</code> (pas de focus trap), des small-caps synthétiques boueuses à 11&nbsp;px, ~40
+<code>rgba()</code> dupliqués que <code>color-mix()</code> remplacerait. Sa formule : <b>80&nbsp;% du gain perçu
+tient en ~60 lignes</b> — à condition de les livrer dans l'ordre des dépendances.</p></div>
+
+<div class="panel"><h4>Avocat du power-user — « l'app a la lecture d'un outil pro et l'écriture d'un
+formulaire »</h4>
+<p>Tout ce qui <i>lit</i> (coverage, gardée-par, goto-flash) est excellent ; tout ce qui <i>écrit</i> se fait à
+l'unité, à la souris, après dépliage. Son audit chiffre la douleur : cocher la saisie de 18 règles = 18 clics +
+scroll ; ajouter un set à 6 règles post-patch = ~30 gestes ; la recopie in-game — LE rituel hebdomadaire — n'a
+aucun mode dédié. Le déficit n'est pas cosmétique, c'est un <b>modèle de commande manquant</b> : undo global
+Ctrl+Z, palette Ctrl+K, sélection multiple, flux Entrée. « Le royaume de l'invisible n'est pas un bonus pour
+experts : c'est ce qui décide si l'utilisateur à 4 onglets reste. »</p></div>
+
+<div class="panel"><h4>Critique heuristique — « app au-dessus de la médiane, mais surface à apprentissage non
+guidé »</h4>
+<p>Première <b>notation comparable</b> du corpus : 10 heuristiques de Nielsen, notes 0-4, violations
+hiérarchisées. L'app est solide (messages d'erreur exemplaires, aide en couches, finitions transverses rares à ce
+niveau) mais trois violations sev&nbsp;3 la plombent : <b>H4</b> — le même objet « onglet » rendu par deux
+composants (pills vs <code>&lt;select&gt;</code> natif), racine probable du ressenti « incohérent » ; <b>H6</b> —
+des encodages jamais légendés (dots de requis, tri-état des chips par nuances d'opacité) : « l'app se lit comme un
+code à déchiffrer » ; <b>H3</b> — un undo qui ne vit que dans un toast éphémère, 18 règles perdables sans
+recours.</p></div>
+
+<h2>Les tensions du cycle</h2>
+<div class="panel bad"><h4>① Invisibilité pro vs découvrabilité — le front heuristicien / power-user</h4>
+<p>Le power-user revendique l'invisibilité comme une qualité (« Ctrl+K est LA fonctionnalité invisible par
+définition », alt-clic « geste pro invisible ») ; l'heuristicien y oppose Nielsen frontalement : les accélérateurs
+servent l'expert <b>à condition d'être appris</b>, et l'utilisateur intermédiaire — la population qui décide de la
+rétention — ne franchira jamais le mur d'un royaume caché. Il va plus loin sur l'alt-clic « édition verticale » :
+muter 18 règles d'un geste au modificateur invisible est « une <b>erreur catastrophique en puissance</b> » (alt-tab
+raté, classique Windows). En face, le power-user conteste la légende permanente et la confirmation du stepper :
+« on ne sécurise pas un outil en le ralentissant » — on le sécurise en rendant toute erreur réversible en un
+geste. Sortie de crise au débat : l'invisible au repos, oui ; l'inapprenable, non — et l'alt-clic <b>rétrogradé
+par son propre auteur</b>.</p></div>
+
+<div class="panel bad"><h4>② Le séquençage — la palette Ctrl+K rétrogradée : « construire une cathédrale sur du
+sable »</h4>
+<p>Le design engineer conteste le P0 le plus emblématique du power-user avec un argument de code : une palette de
+commandes exige un focus trap (que l'app ne sait pas faire), une restitution du focus (que le moteur de rendu
+détruit à chaque <code>outerHTML</code>) et un routage vers des mutations qui n'ont pas d'undo. « Livrer Ctrl+K
+aujourd'hui, c'est livrer une palette qui exécute "incrémenter requis" puis laisse l'utilisateur focus sur
+<code>&lt;body&gt;</code>, sans Ctrl+Z. » La palette passe de P0 à P1, <b>conditionnée</b> au chantier focus +
+<code>&lt;dialog&gt;</code> + undo. Contre-tension assumée par le power-user : onze des seize points du design
+engineer sont du poli à effort faible, et c'est leur danger — « un cycle entier de grammaire typographique pendant
+que la recopie coûte 18 clics, c'est repeindre le cockpit d'un avion sans commandes ».</p></div>
+
+<h2>La fusion signature — la pile de commandes unique</h2>
+<div class="panel reco"><h4>Un chantier, trois P0 : Ctrl+Z global + historique + patch-in-place — le toast devient
+la tête de pile</h4>
+<p>Trois constats indépendants se révèlent être <b>le même objet vu de trois fenêtres</b> : le Ctrl+Z global du
+power-user (P0-1), l'« historique d'annulation » de l'heuristicien (H3 sev&nbsp;3) et le patch-in-place du design
+engineer (P0-2, le focus détruit au re-render). L'architecture fusionnée : chaque mutation passe par une
+<b>commande</b> (le point de passage <code>scheduleSave</code> existe déjà) → la pile donne Ctrl+Z / Ctrl+Shift+Z ;
+le toast cesse d'être une course contre le timeout et devient <b>le simple affichage de la tête de pile</b> (H3
+réglé) ; et parce qu'une commande sait ce qu'elle a touché, elle patche le DOM en place au lieu de re-render — le
+focus survit gratuitement (DE-2 réglé), le stepper silencieux gagne son filet sans confirmation (H5 réglé).
+Faisabilité vérifiée dans le code : ~80 lignes, 2 jours. C'est LE multiplicateur du cycle : chaque feature
+d'édition future devient moins risquée à concevoir parce que le filet existe.</p></div>
+
+<div class="panel reco"><h4>Et son corollaire d'apprentissage : « la palette EST le tutoriel »</h4>
+<p>Deuxième fusion, née du front ① : le <code>?</code> global ouvre un panneau unique — raccourcis, légende des
+encodages (dots, tri-état des chips), syntaxe de recherche — et la palette Ctrl+K expose <b>les mêmes commandes
+avec leurs raccourcis affichés à droite</b> (pattern VS Code). Trois violations (H4-aide, H6-légende,
+H7-découvrabilité) traitées par un seul objet, et la colline de l'heuristicien satisfaite : aucune capacité dont
+la seule porte d'entrée est invisible.</p></div>
+
+<h2>Le cycle en chiffres</h2>
+<div class="stats">
+  <div class="stat"><div class="n">44</div><div class="l">constats à froid (16 + 13 + 15)</div></div>
+  <div class="stat"><div class="n">3</div><div class="l">violations Nielsen sev 3 (H4 · H6 · H3)</div></div>
+  <div class="stat"><div class="n">8</div><div class="l">contestations argumentées au débat</div></div>
+  <div class="stat"><div class="n">5</div><div class="l">fusions (pile, dialog→recopie, palette-tutoriel, focus, ?)</div></div>
+  <div class="stat"><div class="n">6</div><div class="l">révisions assumées par leurs auteurs</div></div>
+  <div class="stat"><div class="n">7</div><div class="l">arbitrages légués à l'équipe finale</div></div>
+</div>
+
+<h2>Le verdict du cycle face au rapport 3</h2>
+<div class="quote" style="font-size:16px">Le rapport 3 a trouvé le battement de cœur — la scène du verdict, la
+preuve avant la configuration ; le cycle 4 découvre que le théâtre n'a pas encore de plancher : un moteur de rendu
+qui détruit le focus, un dark mode que le navigateur trahit, un modèle de commande absent. Sa réponse tient en une
+inversion — <b>avant de mettre en scène le verdict, réparer la machine qui le joue</b> — et en une brique que trois
+cycles n'avaient jamais nommée : la pile de commandes, le filet qui rend tout le reste constructible.
+<span class="who">— modération du cycle 4</span></div>
+
+<h2>Les pages du rapport</h2>
+<div class="cards">
+  <a class="card" href="01-analyses.html"><span class="no">01</span><h4>Les 3 analyses à froid</h4>
+    <p>Les 44 constats restitués persona par persona : le code audité ligne à ligne, les 10 actions expertes
+    chiffrées en gestes, la grille Nielsen notée H1-H10. La matière brute, avant tout débat.</p></a>
+  <a class="card" href="02-debat.html"><span class="no">02</span><h4>Le débat</h4>
+    <p>Les fronts nommés (alt-clic, légende permanente, séquençage de la palette), les cinq fusions — dont la pile
+    de commandes — les révisions concédées, et la colline de chacun.</p></a>
+  <a class="card" href="03-challenge.html"><span class="no">03</span><h4>Challenge du rapport 3</h4>
+    <p>Ce que le cycle 4 confirme du rapport 3, ce qu'il contredit — l'exécution avant la scène —, ce qu'il
+    apporte (le code, le clavier, la grille chiffrée), et ce qu'il a raté.</p>
+    <div class="tags"><span class="prio p0">à lire en premier</span></div></a>
+  <a class="card" href="04-conclusions.html"><span class="no">04</span><h4>Conclusions &amp; recommandations</h4>
+    <p>Les recommandations consolidées P0/P1/P2, les points du rapport 3 à réviser, et — dernier cycle oblige —
+    les sept arbitrages ouverts pour l'équipe finale.</p></a>
+</div>
+
+<h2>Méthode du cycle</h2>
+<div class="panel"><h4>Deux phases, étanches puis contradictoires — et une clôture</h4>
+<p><b>Phase 1 — à froid</b> : chaque profil a travaillé sur les mêmes pièces que les cycles précédents (9 captures,
+CSS lignes 15-560, i18n FR), le design engineer y ajoutant l'audit du JS complet (templates l.1440-2060, routeur,
+listeners), <b>sans lire les reviews antérieures ni les analyses des deux autres</b>. <b>Phase 2 — débat</b> :
+chacun a lu les deux autres analyses et produit une réaction structurée : j'appuie / je conteste / je fusionne /
+je révise / ma colline. Le présent rapport est la seule pièce du cycle 4 qui a lu les rapports 1 à 3 — le
+challenge (page 03) est l'œuvre du modérateur, pas des designers. Ce cycle étant le dernier, la page 04 remplace
+les « questions pour le cycle suivant » par la <b>liste des arbitrages ouverts pour l'équipe finale</b>.</p></div>
+
+<div class="foot">
+  <span>Design Review 4 · WoR Gear Builder · septembre 2026</span>
+  <a href="03-challenge.html">Lire le challenge →</a>
+</div>
+</main>
+</div>
+</body>
+</html>

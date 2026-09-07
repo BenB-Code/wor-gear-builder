@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Synthèse du cycle · Design Review 2 — WoR Gear Builder</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="shell">
+<nav class="toc">
+  <div class="brand"><span class="d">◆</span> Design Review 2</div>
+  <div class="sub">Cycle brainstorm &amp; challenge · sept. 2026</div>
+  <a href="index.html" class="on">Synthèse du cycle</a>
+  <div class="grp">Le cycle</div>
+  <a href="01-analyses.html">Les 3 analyses à froid</a>
+  <a href="02-debat.html">Le débat</a>
+  <a href="03-challenge.html">Challenge du rapport 1</a>
+  <a href="04-conclusions.html">Conclusions &amp; recommandations</a>
+  <div class="grp">Référence</div>
+  <a href="../design-review/index.html">← Rapport 1</a>
+</nav>
+<main>
+
+<span class="kicker">Cycle 2 · 3 profils neufs · analyses à froid + débat contradictoire</span>
+<h1><span style="color:var(--acc)">◆</span> Design Review 2 — le challenge</h1>
+<p class="lede">Trois designers aux profils absents du premier cycle — un <b>architecte d'information</b>, un
+<b>interaction / motion designer</b> et un <b>game-UI designer</b> spécialiste des outils compagnons de gacha —
+ont analysé l'application <b>à froid</b>, sans lire le rapport 1, sur les mêmes pièces (9 captures + CSS complet).
+Puis ils ont débattu entre eux : appuis, contestations, fusions, révisions. Ce rapport restitue leur travail
+et le confronte au rapport 1 — ce qu'il confirme, ce qu'il contredit, ce qu'il apporte, ce qu'il a raté.</p>
+
+<h2>Trois thèses, trois altitudes</h2>
+<div class="panel"><h4>Architecture d'information — « l'app est découpée par outil, l'utilisateur vit un cycle »</h4>
+<p>L'app est organisée par <b>nature d'outil</b> (Règles / Testeur / Sets / Référence) alors que le joueur vit un
+<b>cycle</b> : construire → vérifier → recopier en jeu → farmer → réviser. Chaque frontière de vue coupe ce cycle
+en deux. Les corrections rentables ne sont pas cosmétiques : ce sont des <b>fusions et des renversements de
+hiérarchie</b> — la couverture appartient aux règles, la pièce manuelle appartient au farm, la saisie en jeu est
+un mode à part entière et non une jauge de pied de sidebar. Nav cible : Règles · Simulation · Session ·
+Saisie en jeu · Référence, plus un sélecteur de « jeu de règles » dans le shell.</p></div>
+
+<div class="panel"><h4>Interaction &amp; motion — « le mouvement est décoratif là où il devrait être fonctionnel »</h4>
+<p>L'app possède déjà un vocabulaire de mouvement (flash, pop, tin) mais les moments qui portent la boucle
+d'usage — <b>cocher, générer, voir le verdict, réordonner au doigt</b> — sont muets ou cassants, pendant que des
+transitions génériques (<code>all .15s</code>) tournent partout. Priorité : déplacer le feedback vers ces 4 gestes,
+supprimer les sauts de layout (accordéons <code>display:none</code>, chip ★ qui s'élargit), normaliser une
+signature (2 durées, 1 easing, flash = « contenu arrivé ») — et ne jamais laisser <code>prefers-reduced-motion</code>
+tuer le feedback en même temps que le mouvement.</p></div>
+
+<div class="panel"><h4>Game-UI — « l'app parle "dashboard élégant", pas encore "compagnon de WoR" »</h4>
+<p>La grammaire gacha (rareté, slots, cartes d'item, boucle de collection) est présente en germe mais jamais
+exploitée comme un joueur l'attend. Deux pactes : un <b>pacte de fidélité au jeu</b> — couleurs de tiers en
+miroir 1:1 de l'écran d'équipement in-game, glyphes de slots, pièce rendue en carte d'item façon Fribbels /
+Genshin Optimizer — et un <b>pacte de sobriété</b> — un seul ornement (◆), un seul accent (or), deux registres
+typographiques, et une liste de refus explicite des codes F2P (rien qui bouge ou brille pour décorer).</p></div>
+
+<h2>Les convergences du cycle — trois angles, mêmes cibles</h2>
+<p>Ces trois profils n'ont rien lu les uns des autres pendant l'analyse. Leurs croisements indépendants sont
+donc le signal le plus fiable du cycle.</p>
+
+<div class="panel good"><h4>① La « carte d'item vivante » — LE signal du cycle</h4>
+<p>Les trois y arrivent par trois chemins : le game-UI designer propose le composant (glyphe de slot, main stat
+en gros corps mono, subs en colonne, filet coloré au tier — « l'item affiché ressemble à l'item in-game ») ;
+l'architecte y voit « la représentation canonique qui manquait » à un objet de domaine éclaté en trois rendus ;
+l'interaction designer en fait le <b>feedback de construction</b> — la carte se bâtit tap après tap dans un bandeau
+sticky, et le verdict n'est plus un panneau qui surgit mais un changement d'état de l'objet qu'on regarde depuis
+le début. Trois analyses, un composant, trois usages (Session, Simulation, share card). Au débat, le game-UI
+designer l'a lui-même promue de P1 à P0 : « ce n'est pas une finition, c'est une fondation ».</p></div>
+
+<div class="panel good"><h4>② « Saisie en jeu » sort du pied de sidebar</h4>
+<p>Les trois condamnent indépendamment le même emplacement : la raison d'être de l'app (« recopier en jeu »,
+0/18) vit entre « Mode clair » et « Densité ». L'architecte la promeut destination de navigation ; le game-UI
+designer la traite en quest log (état « gravée », jalons ◆, fin sobre à 18/18) ; l'interaction designer constate
+que la seule trace de l'action n°1 (cocher) est cachée derrière un burger sur mobile. Au débat, le game-UI
+designer se rallie explicitement : « j'avais raison sur l'état, tort sur le lieu ».</p></div>
+
+<div class="panel good"><h4>③ « Session » : la vérification de pièce est un usage mobile-en-jeu, pas un mode du Testeur</h4>
+<p>L'architecte extrait « Pièce manuelle » vers une destination « Session » mobile-first ; l'interaction designer
+la déclare « la proposition la plus importante des trois analyses réunies » — ses constats (coche sans feedback,
+drag mort au touch, verdict sous la ligne de flottaison) sont « des symptômes du même mal : l'usage réel est
+mobile-en-jeu et l'app est architecturée bureau » ; le game-UI designer y transplante sa carte d'item : « le code
+visuel qui fait la différence entre "je remplis un form" et "je vérifie mon loot" ».</p></div>
+
+<div class="panel good"><h4>④ La couverture est un attribut de la règle, pas un « test »</h4>
+<p>L'architecte fusionne le mode Couverture dans la vue Règles (« 36 profils · 2,14 % · ok » sur chaque carte) ;
+le game-UI designer reconnaît le pattern de jeu : « c'est le <b>power rating</b> affiché sur l'item dans tous les
+gachas ». L'interaction designer signe la fusion mais amende le « live » : largeur réservée, mise à jour au commit
+du geste — la donnée vit sur la carte, le mouvement reste là où est le doigt.</p></div>
+
+<h2>Le cycle en chiffres</h2>
+<div class="stats">
+  <div class="stat"><div class="n">42</div><div class="l">constats à froid (14 + 14 + 14)</div></div>
+  <div class="stat"><div class="n">4</div><div class="l">convergences majeures, indépendantes</div></div>
+  <div class="stat"><div class="n">9</div><div class="l">contestations argumentées au débat</div></div>
+  <div class="stat"><div class="n">5</div><div class="l">fusions créatives (dont la carte d'item, ×3)</div></div>
+  <div class="stat"><div class="n">8</div><div class="l">révisions assumées par leurs auteurs</div></div>
+  <div class="stat"><div class="n">2</div><div class="l">arbitrages du rapport 1 frontalement contredits</div></div>
+</div>
+
+<h2>Le verdict du cycle face au rapport 1</h2>
+<div class="quote" style="font-size:16px">Le rapport 1 a réparé la <b>peau</b> — rôles, contraste, distinction des
+formes — sans toucher au <b>squelette</b> ; le cycle 2 démontre que le squelette est le prochain chantier : des vues
+découpées par outil au lieu du cycle vécu, un feedback muet sur les gestes qui comptent, une langue de dashboard
+là où le joueur attend celle de son jeu — et son signal le plus fort est la carte d'item vivante, vers laquelle
+les trois profils ont convergé sans se lire.
+<span class="who">— modération du cycle 2</span></div>
+
+<h2>Les pages du rapport</h2>
+<div class="cards">
+  <a class="card" href="01-analyses.html"><span class="no">01</span><h4>Les 3 analyses à froid</h4>
+    <p>Les 42 constats restitués persona par persona : thèse, tableaux P0/P1/P2, spécifications. La matière brute du cycle, avant tout débat.</p></a>
+  <a class="card" href="02-debat.html"><span class="no">02</span><h4>Le débat</h4>
+    <p>Appuis, contestations (qui conteste qui, et pourquoi), fusions créatives, révisions — et la « colline » que chacun refuse de céder.</p></a>
+  <a class="card" href="03-challenge.html"><span class="no">03</span><h4>Challenge du rapport 1</h4>
+    <p>La page critique : ce que le cycle 2 confirme, contredit, apporte — et ce que le rapport 1 avait vu que le cycle 2 a raté.</p>
+    <div class="tags"><span class="prio p0">à lire en premier</span></div></a>
+  <a class="card" href="04-conclusions.html"><span class="no">04</span><h4>Conclusions &amp; recommandations</h4>
+    <p>Les nouvelles entrées consolidées (P0/P1/P2, avec origine et appuis), les arbitrages du rapport 1 à rouvrir, les questions pour le cycle 3.</p></a>
+</div>
+
+<h2>Méthode du cycle</h2>
+<div class="panel"><h4>Deux phases, étanches puis contradictoires</h4>
+<p><b>Phase 1 — à froid</b> : chaque designer a travaillé sur les mêmes pièces que le cycle 1 (9 captures d'écran,
+CSS complet lignes 15-560, backlog des features), <b>sans lire les reviews antérieures ni les analyses des deux
+autres</b>. C'est ce qui rend les convergences probantes. <b>Phase 2 — débat</b> : chacun a lu les deux autres
+analyses et produit une réaction structurée : j'appuie / je conteste / je fusionne / je révise / ma colline.
+Le présent rapport est la seule pièce du cycle 2 qui a lu le rapport 1 — le challenge (page 03) est donc l'œuvre
+du modérateur, pas des designers.</p></div>
+
+<div class="foot">
+  <span>Design Review 2 · WoR Gear Builder · septembre 2026</span>
+  <a href="03-challenge.html">Lire le challenge →</a>
+</div>
+</main>
+</div>
+</body>
+</html>

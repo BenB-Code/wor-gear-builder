@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Typographie · Design Review — WoR Gear Builder</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="shell">
+<nav class="toc">
+  <div class="brand"><span class="d">◆</span> Design Review</div>
+  <div class="sub">WoR Gear Builder · sept. 2026</div>
+  <a href="index.html">Synthèse exécutive</a>
+  <div class="grp">Fondations</div>
+  <a href="04-typographie.html" class="on">Typographie</a>
+  <a href="03-couleur-accessibilite.html">Couleur &amp; accessibilité</a>
+  <a href="05-design-system.html">Design system &amp; tokens</a>
+  <div class="grp">Interface</div>
+  <a href="01-ui-composants.html">Composants UI</a>
+  <a href="07-dataviz.html">Data-visualisation</a>
+  <a href="06-mobile.html">Mobile</a>
+  <div class="grp">Produit</div>
+  <a href="02-ux-parcours.html">UX &amp; parcours</a>
+  <a href="08-contenu.html">Contenu &amp; microcopy</a>
+  <a href="09-integration-features.html">Intégration des features</a>
+  <div class="grp">Direction</div>
+  <a href="10-synthese.html">Synthèse &amp; roadmap</a>
+</nav>
+<main>
+
+<span class="kicker">Audit spécialiste · typographie</span>
+<h1>Typographie — trois voix, zéro territoire</h1>
+<p class="lede">Le verbatim client — « un truc style Roboto et un truc type Times New Roman » — pointe le bon symptôme
+mais pas la bonne cause. Le pairing serif + sans n'est pas condamné : c'est son <b>usage indiscipliné</b> qui produit
+la cacophonie. Diagnostic, trois directions, et une table d'affectation prête à implémenter.</p>
+
+<h2>Le diagnostic — pourquoi ça « frotte »</h2>
+
+<div class="panel bad"><h4>1 · Contraste stylistique maximal, sans contraste de rôle</h4>
+<p>Trois familles cohabitent : <b>Palatino Linotype</b> (serif old-style humaniste, axe calligraphique — le bon
+registre médiéval-fantasy), <b>Segoe UI/Roboto</b> (grotesque neutre, la voix la plus « OS d'entreprise » possible)
+et le <b>mono</b> (voix « terminal »). Un pairing à fort contraste fonctionne quand chaque voix a un territoire
+exclusif. Or à 13 px on trouve <b>les trois familles à la même taille dans les mêmes zones</b> : label
+<code>.lab</code> en display small-caps, bouton <code>.btn</code> en body, valeur <code>.stepper .val</code> en mono.
+Quand deux familles cohabitent à taille égale au même niveau hiérarchique, l'œil ne lit plus un contraste —
+il lit une incohérence.</p></div>
+
+<div class="panel bad"><h4>2 · Le small-caps partout banalise le display — et il est simulé</h4>
+<p><code>font-variant:small-caps</code> est appliqué à <b>19 sélecteurs</b>, de 22 px jusqu'à 12 px. Or aucune fonte
+du stack n'expose de vraies petites capitales en navigateur : le rendu est <b>synthétique</b> (capitales réduites
+à ~80 %, graisse qui chute mécaniquement). À 22 px ça passe ; à 12-13 px c'est gris, maigre et flou — les labels
+« Rôles / Sets / Main(s) » des cartes, « Slot / Main / Subs / Set » du stepper. Et quand <i>tout</i> est en
+small-caps — marque, titres, onglets, segmented, micro-labels — le display ne signale plus rien :
+<b>le précieux devient du bruit</b>.</p></div>
+
+<h3>Où ça choque le plus, capture par capture</h3>
+<div class="tbl-wrap"><table>
+<tr><th>Vue</th><th>Zone</th><th>Le frottement</th></tr>
+<tr><td>Règles</td><td>En-tête de règle</td><td><b>3 familles sur une ligne de 15 px</b> : id mono, nom Palatino small-caps, méta mono — l'endroit le plus dense de l'app est le plus cacophonique</td></tr>
+<tr><td>Règles</td><td>Onglets + outils</td><td>« Mes règles / Démo » en Palatino small-caps, juste au-dessus de « Renommer / Dupliquer » en Segoe : deux rangées de boutons de même gabarit, deux voix</td></tr>
+<tr><td>Couverture</td><td>Cartes de chiffres</td><td>« 172 410 » en Palatino (chiffres proportionnels, dessin livre ancien) au-dessus d'un label mono uppercase : le grand écart complet dans une seule carte</td></tr>
+<tr><td>Couverture</td><td>Table</td><td>Les en-têtes sont en mono mais <b>pas les chiffres</b> — l'inverse de la logique « mono = donnée »</td></tr>
+<tr><td>Pièce manuelle</td><td>Verdict</td><td>Titre Palatino + badges mono + noms Segoe bold : trois familles en trois lignes</td></tr>
+<tr><td>Dialogue</td><td>Erreur</td><td><code>requis &gt; liste — injouable</code> : une phrase française rendue comme un message de compilateur</td></tr>
+<tr><td>Mode clair</td><td>Tout</td><td>Le Palatino synthétique maigre sur fond crème est ce qui ressemble le plus à du « Times par défaut » — <b>très probablement la capture qui a déclenché le verbatim client</b></td></tr>
+<tr><td>Mobile</td><td>Cartes empilées</td><td><code>.rtable td::before</code> en display small-caps 12 px : le pire cas de lisibilité du small-caps simulé</td></tr>
+</table></div>
+
+<div class="quote">Le pairing n'est pas condamné. Palatino small-caps est une excellente idée d'identité —
+au sommet de la hiérarchie uniquement. C'est un problème de discipline d'affectation, pas de choix de familles.
+<span class="who">— spécialiste typographie</span></div>
+
+<h2>Trois directions</h2>
+
+<div class="panel reco"><h4>Direction A — garder le pairing, le discipliner <span class="v-ok">← recommandation ferme</span></h4>
+<p>Le display devient <b>rare et précieux</b>, le body devient la voix par défaut de toute l'UI interactive,
+le mono redevient strictement « donnée ». Zéro dépendance, ~30 lignes de CSS, identité conservée et même
+<b>renforcée</b> — la rareté crée le précieux. Les règles :</p>
+<ul>
+<li><b>Display réservé à 2 niveaux</b> : marque + titres de vue/panneau. <b>Rien sous 16 px, jamais sur un élément interactif.</b></li>
+<li>Tous les labels ≤ 13 px actuellement en display → <b>body UPPERCASE 11.5 px, 600, letter-spacing .08em</b> — même rôle visuel, rendu net au lieu de mou ;</li>
+<li>Tous les contrôles (nav, onglets, segmented) → body — un bouton est de l'UI, pas un titre ;</li>
+<li>Le nom de règle (<code>.rc-name</code>) → body 15 px semibold casse normale : c'est un nom saisi par l'utilisateur, pas un titre d'apparat — la ligne de règle tombe à 2 voix au lieu de 3 ;</li>
+<li>Les chiffres héros restent en display (emplacement d'apparat) avec <code>lining-nums tabular-nums</code>.</li>
+</ul>
+<p><b>Coût : nul. Risque : nul.</b> Le client verra la différence immédiatement parce que les zones qu'il regarde
+(onglets, boutons, labels) deviennent monolithiques, tandis que les titres gardent la signature.</p></div>
+
+<div class="panel"><h4>Direction B — remplacer le display</h4>
+<p>Si le Palatino même discipliné reste allergène. En 100 % système : <b>Constantia</b>
+(<code>Constantia,"Iowan Old Style",Cambria,Georgia,serif</code>) — serif moderne à faible contraste dessinée
+pour l'écran, la plus proche des grotesques modernes. Georgia est à éviter : c'est la fonte qui ressemble le plus
+à Times aux yeux d'un non-typographe.</p>
+<p><b>Variante 1 webfont</b> (si une seule dépendance est acceptée) : <b>Cinzel</b> 500/600 — capitale
+inscriptionnelle romaine, le registre exact des titres de jeux fantasy, capitales natives donc plus aucune
+simulation. 2 woff2 subsettés ≈ 50-70 Ko auto-hébergés, SIL OFL, <code>font-display:swap</code> avec fallback
+Palatino : l'app reste 100 % fonctionnelle hors ligne. Alternative plus calme : Marcellus (1 graisse, ~25 Ko).</p></div>
+
+<div class="panel"><h4>Direction C — tout-sans <span class="v-bad">déconseillée</span></h4>
+<p>La plus cohérente — plus aucun frottement possible — et la plus <b>banale</b> : l'app ressemblerait à n'importe
+quel dashboard SaaS sombre. L'identité actuelle repose sur trois piliers : palette parchemin/or, losange ◆,
+serif small-caps. En retirer le serif, c'est retirer le tiers le plus typographique de l'identité. À ne retenir
+que si le client préfère explicitement la neutralité.</p></div>
+
+<div class="panel good"><h4>Stratégie recommandée</h4>
+<p><b>A d'abord, B-webfont (Cinzel) en option d'upgrade</b> si le Palatino discipliné ne suffit pas — les deux
+partagent 95 % du travail (les règles d'affectation), seul le stack <code>--display</code> change. On ne remplace
+pas une fonte avant d'avoir corrigé son usage : sinon on reproduit le même bruit avec une fonte plus chère.</p></div>
+
+<h2>Le mono : « ce que le jeu comprendrait »</h2>
+<p>Critère unique — le mono est réservé aux chaînes qui sont des <b>données ou des tokens du jeu</b>, jamais à des
+mots français ni à des contrôles.</p>
+<div class="tbl-wrap"><table>
+<tr><th>Verdict</th><th>Élément</th><th>Décision</th></tr>
+<tr><td><span class="v-ok">légitime</span></td><td>Chips de stats ATK/DEF%/HP%…, ids G1/D2, badges de tier, clé in-game, compteurs, valeurs de steppers</td><td>mono conservé — tokens du jeu, la chasse fixe aide le scan</td></tr>
+<tr><td><span class="v-bad">parasite</span></td><td><code>.fchip</code> de rôles : « DPS », « Tank », « Support »</td><td>ce sont des <b>mots</b> — le mono les déguise en variables → body 12 px casse normale (les fchips de stats restent mono)</td></tr>
+<tr><td><span class="v-bad">parasite</span></td><td>Messages d'état : <code>.ap-warn</code>, <code>.warn-txt</code>, <code>.ok-txt</code> (« subs au complet »)</td><td>une phrase française n'est pas un log → body, la couleur porte la sémantique</td></tr>
+<tr><td><span class="v-bad">parasite</span></td><td><code>.toast button</code>, <code>.seg-lang button</code> (« Français »)</td><td>un contrôle n'est pas une donnée → body 600</td></tr>
+<tr><td><span class="v-mid">à unifier</span></td><td><code>th</code> de tables, <code>.cov-card .lbl</code></td><td>aligner sur le style unique de micro-label body uppercase — et recentrer le mono sur les <b>cellules de chiffres</b>, où il manque aujourd'hui</td></tr>
+</table></div>
+
+<h2>Micro-typographie</h2>
+<ul>
+<li><span class="prio p0">P0</span> <b>Plus de small-caps sous 16 px</b> — en dessous : UPPERCASE + tracking. La synthèse reste acceptable à 18-22 px seulement.</li>
+<li><span class="prio p1">P1</span> <b>Tracking croissant quand le corps décroît</b> : .04em à 22 px → .08em à 12-13 px → .10em à 11 px uppercase.</li>
+<li><span class="prio p1">P1</span> <b>Chiffres tabulaires</b> : <code>font-variant-numeric:lining-nums tabular-nums</code> sur les chiffres héros (les elzéviriens proportionnels de Palatino « dansent »), et tabular-nums ou mono sur les cellules numériques des tables, alignées à droite.</li>
+<li><span class="prio p1">P1</span> <b>Plancher 11.5 px</b> : SF Mono/Menlo (macOS) descendent mal sous 12 px — passer <code>--fs-0</code> à 11.5 px.</li>
+<li><span class="prio p1">P1</span> <b>Contraste des micro-textes</b> : <code>--faint</code> ≈ 3,1:1 sur panneau, sous le seuil des 4,5:1 exigés à cette taille → voir la page Couleur &amp; accessibilité.</li>
+<li><span class="prio p2">P2</span> <b>Line-heights explicites</b> sur les composants denses (chips, badges, th héritent du 1.6 global → 1.2-1.3) ; combler le trou d'échelle 15→18 par un cran 16 px pour les titres de groupe.</li>
+</ul>
+
+<h2>Table d'affectation — prête à implémenter</h2>
+<pre><code>--display:"Palatino Linotype","Iowan Old Style",Palatino,"Book Antiqua",Georgia,serif;
+/* option B-webfont : --display:"Cinzel","Palatino Linotype",Georgia,serif; */
+--body:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+--mono:ui-monospace,"SF Mono","Cascadia Code",Menlo,Consolas,monospace;</code></pre>
+<div class="tbl-wrap"><table>
+<tr><th>Rôle</th><th>Sélecteurs</th><th>Famille</th><th class="num">Taille</th><th>Graisse · casse</th></tr>
+<tr><td>Marque</td><td><code>.brand h1</code></td><td>display</td><td class="num">18</td><td>600 · small-caps .05em</td></tr>
+<tr><td>Titre de vue</td><td><code>.view-head h2</code></td><td>display</td><td class="num">22</td><td>600 · small-caps .04em · lh 1.2</td></tr>
+<tr><td>Titre de panneau / modale</td><td><code>.panel h4</code>, <code>.p-sum</code>, <code>.dlg h3</code></td><td>display</td><td class="num">18</td><td>600 · small-caps .05em</td></tr>
+<tr><td>Titre de groupe</td><td><code>h3.grp-head</code></td><td>display</td><td class="num">16 <i>(nouveau cran)</i></td><td>600 · small-caps .05em</td></tr>
+<tr><td>Chiffre héros</td><td><code>.cov-card .num</code>, <code>.stat-card .num</code></td><td>display</td><td class="num">22</td><td>400 · lining+tabular nums</td></tr>
+<tr><td>Navigation latérale</td><td><code>.nav-btn</code></td><td><b>body</b></td><td class="num">14-15</td><td>600 · casse normale</td></tr>
+<tr><td>Onglets de rulesets</td><td><code>.tab-btn</code></td><td><b>body</b></td><td class="num">14</td><td>600 · casse normale</td></tr>
+<tr><td>Segmented</td><td><code>.seg button</code></td><td><b>body</b></td><td class="num">12</td><td>600 · UPPERCASE .08em</td></tr>
+<tr><td>Nom de règle</td><td><code>.rc-name</code></td><td><b>body</b></td><td class="num">15</td><td>600 · casse normale</td></tr>
+<tr><td>Micro-label</td><td><code>.lab</code>, <code>.rb-grid .k</code>, <code>.p-slot</code>, <code>.tm-step .k</code>, <code>.rtable td::before</code>…</td><td><b>body</b></td><td class="num">11.5</td><td>600 · UPPERCASE .08em</td></tr>
+<tr><td>En-tête de table / label de carte</td><td><code>th</code>, <code>.cov-card .lbl</code></td><td><b>body</b></td><td class="num">11.5</td><td>600 · UPPERCASE .10em</td></tr>
+<tr><td>Boutons, messages d'état, filtres-mots</td><td><code>.btn</code>, <code>.ap-warn</code>, <code>.fchip</code> rôles…</td><td><b>body</b></td><td class="num">12-13</td><td>500-600 · casse normale</td></tr>
+<tr><td>Tokens du jeu</td><td><code>.chip</code>, <code>.rc-id</code>, <code>.ruleref</code>, <code>.tier-badge</code>, <code>.key-input</code>, compteurs</td><td>mono</td><td class="num">11.5-12</td><td>500-700</td></tr>
+<tr><td>Cellules numériques</td><td><code>td</code> de chiffres</td><td>body + tabular-nums</td><td class="num">13</td><td>400 · alignées à droite</td></tr>
+</table></div>
+
+<div class="panel reco"><h4>Message clé</h4>
+<p>Le duo « Roboto/Times » perçu ne vient pas des fontes choisies mais du fait que la serif d'apparat descend
+jusqu'aux plus petits labels et côtoie le sans et le mono à taille égale. Réservée aux titres — deux niveaux —
+l'app garde et renforce son cachet médiéval, et le reste de l'interface devient <b>d'une seule voix</b>.</p></div>
+
+<div class="foot">
+  <a href="03-couleur-accessibilite.html">Couleur &amp; accessibilité →</a>
+  <a href="index.html">↑ Synthèse exécutive</a>
+</div>
+</main>
+</div>
+</body>
+</html>

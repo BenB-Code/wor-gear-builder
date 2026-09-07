@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Design system — Rapport Final · WoR Gear Builder</title>
+<link rel="stylesheet" href="style.css">
+<style>
+/* ── Styles des démos rendues — scopés sous .demo, aucun impact sur le rapport ── */
+.demo{--d-bg:#131118;--d-panel:#1c1923;--d-panel2:#252130;
+  --d-hairline:rgba(255,255,255,.055);--d-edge:rgba(255,255,255,.14);
+  --d-ink-hi:#ece7db;--d-head:#c4bcd0;--d-label:#a59dae;--d-ink:#d9d2c4;
+  --d-muted:#9a92a6;--d-state:#8a8298;--d-deco:#6f6880;
+  --d-acc:#e2b04a;--d-acc-ink:#1c1608;
+  --d-acc-dim:color-mix(in oklab,var(--d-acc) 14%,transparent);
+  --d-acc-bd:color-mix(in oklab,var(--d-acc) 45%,transparent);
+  --d-util:#6fbf8f;--d-off:#dd8277;
+  --d-util-dim:color-mix(in oklab,var(--d-util) 14%,transparent);
+  --d-util-bd:color-mix(in oklab,var(--d-util) 50%,transparent);
+  --d-off-dim:color-mix(in oklab,var(--d-off) 14%,transparent);
+  --d-off-bd:color-mix(in oklab,var(--d-off) 50%,transparent);
+  --d-t2:#e2b04a;--d-t4:#3fd97a;
+  --d-well:inset 0 1px 3px rgba(0,0,0,.35);
+  --d-raised:0 1px 2px rgba(0,0,0,.45),0 4px 14px rgba(0,0,0,.25);
+  --d-zenith:linear-gradient(180deg,rgba(255,255,255,.05),transparent 26%);
+  background:var(--d-bg);border:1px dashed rgba(255,255,255,.12);border-radius:12px;
+  padding:18px;margin:12px 0;font-family:var(--body);font-size:13px;color:var(--d-ink)}
+.demo .cap{font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--d-deco);display:block;margin-bottom:12px}
+.demo.x-light{--d-bg:#efe9dd;--d-panel:#f7f2e8;--d-panel2:#e9e2d3;
+  --d-hairline:rgba(30,25,39,.09);--d-edge:rgba(30,25,39,.18);
+  --d-ink-hi:#1e1927;--d-head:#554d63;--d-label:#5d5569;--d-ink:#2c2735;
+  --d-muted:#6a6276;--d-state:#665e72;--d-deco:#948da1;
+  --d-acc:#8a6106;--d-acc-ink:#fdf9ef;--d-util:#276b43;--d-off:#a63d31;
+  --d-t2:#8a6106;--d-t4:#0a7031;
+  --d-well:inset 0 1px 3px rgba(30,25,39,.14);
+  --d-raised:0 1px 2px rgba(30,25,39,.18),0 4px 14px rgba(30,25,39,.10);
+  --d-zenith:linear-gradient(180deg,rgba(255,255,255,.5),transparent 26%)}
+
+/* échelle de luminance */
+.demo .lum{display:grid;gap:6px}
+.demo .lum span{font-family:var(--mono);font-size:10px;color:var(--d-deco);margin-right:10px}
+.demo .lum .n1{color:var(--d-ink-hi);font-family:var(--display);font-variant:small-caps;font-size:19px;letter-spacing:.04em}
+.demo .lum .n2{color:var(--d-head);font-family:var(--display);font-variant:small-caps;font-size:16px;letter-spacing:.04em}
+.demo .lum .n3{color:var(--d-label);font-size:11.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase}
+.demo .lum .n4{color:var(--d-ink)}
+.demo .lum .n5{color:var(--d-muted);font-size:12px}
+.demo .lum .nd{color:var(--d-deco)}
+
+/* typo — affectation */
+.demo .typ{display:grid;gap:10px}
+.demo .typ .t-disp{font-family:var(--display);font-variant:small-caps;font-size:21px;color:var(--d-ink-hi);letter-spacing:.04em}
+.demo .typ .t-lab{font-size:11.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--d-label)}
+.demo .typ .t-mono{font-family:var(--mono);font-variant-numeric:tabular-nums;color:var(--d-ink)}
+
+/* accents */
+.demo .accs{display:flex;gap:10px;flex-wrap:wrap}
+.demo .accs .a{border-radius:10px;border:1px solid var(--d-edge);background:var(--d-panel);padding:10px 12px;min-width:118px}
+.demo .accs .a .nm{font-family:var(--mono);font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--d-muted);margin-bottom:7px}
+.demo .accs .a .row{display:flex;gap:6px;align-items:center}
+.demo .accs .a .dot{width:18px;height:18px;border-radius:50%;background:var(--ac)}
+.demo .accs .a .pill{font-family:var(--mono);font-size:10px;padding:2px 8px;border-radius:999px;
+  background:color-mix(in oklab,var(--ac) 14%,transparent);
+  border:1px solid color-mix(in oklab,var(--ac) 45%,transparent);color:var(--ac)}
+
+/* élévation & matières */
+.demo .mat{border:1px solid var(--d-edge);border-radius:14px;background:var(--d-panel);
+  background-image:var(--d-zenith);padding:14px 16px;max-width:520px}
+.demo .mat h5{font-family:var(--display);font-variant:small-caps;font-size:16px;font-weight:600;color:var(--d-head);letter-spacing:.03em;margin:0 0 8px}
+.demo .mat .sub{border:1px solid var(--d-hairline);border-radius:9px;background:var(--d-panel2);padding:8px 12px;margin:6px 0;font-size:12.5px}
+.demo .mat .encart{border-left:3px solid var(--d-util);background:var(--d-util-dim);border-radius:0 8px 8px 0;padding:8px 12px;margin:10px 0 2px;font-size:12px;color:var(--d-muted)}
+.demo .mat .encart b{color:var(--d-util)}
+.demo .wellraised{display:flex;gap:14px;flex-wrap:wrap;margin-top:12px;align-items:center}
+.demo .wellraised .well{box-shadow:var(--d-well);background:var(--d-bg);border-radius:999px;padding:4px;display:inline-flex;gap:2px}
+.demo .wellraised .well i{font-style:normal;font-size:12px;padding:4px 12px;border-radius:999px;color:var(--d-muted)}
+.demo .wellraised .well i.on{background:var(--d-panel2);box-shadow:var(--d-raised);color:var(--d-ink-hi)}
+.demo .wellraised .raised{background:var(--d-panel2);box-shadow:var(--d-raised);border:1px solid var(--d-edge);border-radius:9px;padding:8px 14px;font-size:12px}
+
+/* carte d'item vivante */
+.demo .icards{display:flex;gap:14px;flex-wrap:wrap}
+.demo .icard{width:196px;border:1px solid var(--d-edge);border-left:3px solid var(--d-t2);
+  border-radius:12px;background:var(--d-panel);background-image:var(--d-zenith);padding:12px 14px;position:relative}
+.demo .icard .slot{font-size:15px;color:var(--d-deco)}
+.demo .icard .slot b{font-size:11.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--d-label);margin-left:6px}
+.demo .icard .main{font-family:var(--mono);font-size:20px;color:var(--d-ink-hi);margin:6px 0 2px;font-variant-numeric:tabular-nums}
+.demo .icard .main small{font-size:11px;color:var(--d-muted)}
+.demo .icard .subs{font-family:var(--mono);font-size:11px;color:var(--d-ink);line-height:1.7;font-variant-numeric:tabular-nums}
+.demo .icard .subs .win{background:var(--d-util-dim);border-radius:3px;padding:0 3px;color:var(--d-util)}
+.demo .icard .subs .ghost{color:var(--d-deco)}
+.demo .icard .verdict{margin-top:9px;padding-top:8px;border-top:1px solid var(--d-hairline);font-size:11.5px}
+.demo .icard.kept{border-color:var(--d-acc-bd);border-left-color:var(--d-acc);box-shadow:0 0 0 1px var(--d-acc-dim)}
+.demo .icard.kept .verdict{color:var(--d-acc)}
+.demo .icard.rec{filter:saturate(.35)}
+.demo .icard.rec .verdict{color:var(--d-off)}
+.demo .icard .build{margin-top:9px;padding-top:8px;border-top:1px solid var(--d-hairline);font-size:11px;color:var(--d-state)}
+
+/* micro-barre de requis */
+.demo .reqs{display:grid;gap:12px;max-width:360px}
+.demo .req{display:flex;align-items:center;gap:10px}
+.demo .req .bar{flex:0 0 88px;height:6px;border-radius:3px;box-shadow:var(--d-well);background:var(--d-bg);overflow:hidden}
+.demo .req .bar i{display:block;height:100%;background:var(--d-acc);border-radius:3px}
+.demo .req .lbl{font-size:11.5px;color:var(--d-label)}
+.demo .req .lbl b{font-family:var(--mono);font-weight:500;color:var(--d-ink);font-variant-numeric:tabular-nums}
+
+/* états interactifs */
+.demo .states{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.demo .chip{font-family:var(--mono);font-size:11px;height:26px;display:inline-flex;align-items:center;
+  padding:0 10px;border-radius:6px;background:var(--d-panel2);border:1px solid var(--d-util-bd);
+  color:var(--d-ink);cursor:pointer;transition:background 120ms,transform 120ms}
+.demo .chip:hover{background:color-mix(in oklab,var(--d-panel2) 90%,white)}
+.demo .chip:active{transform:scale(.97)}
+.demo .chip:focus-visible{outline:none;box-shadow:0 0 0 2px var(--d-bg),0 0 0 4px var(--d-acc)}
+.demo .chip.sel{background:var(--d-util-dim);border-color:var(--d-util);color:var(--d-util)}
+.demo .chip.avail{opacity:.5}
+.demo .chip.unav{border-style:dashed;border-color:var(--d-hairline);color:var(--d-muted);background:transparent}
+.demo .chip.dis{opacity:.45;cursor:not-allowed;border-color:var(--d-hairline)}
+.demo .chip.focused{box-shadow:0 0 0 2px var(--d-bg),0 0 0 4px var(--d-acc)}
+.demo .st-lbl{font-family:var(--mono);font-size:9px;letter-spacing:.06em;text-transform:uppercase;color:var(--d-deco);display:block;text-align:center;margin-top:5px}
+.demo .st{display:flex;flex-direction:column}
+.demo .btn{font-size:12.5px;height:32px;display:inline-flex;align-items:center;padding:0 14px;
+  border-radius:9px;border:1px solid var(--d-acc-bd);background:transparent;color:var(--d-ink);cursor:pointer;
+  transition:background 120ms,transform 120ms}
+.demo .btn.primary{background:var(--d-acc);border-color:var(--d-acc);color:var(--d-acc-ink);font-weight:600}
+.demo .btn:active{transform:scale(.97)}
+.demo .btn:focus-visible{outline:none;box-shadow:0 0 0 2px var(--d-bg),0 0 0 4px var(--d-acc)}
+
+/* pile de commandes / toast */
+.demo .stack{max-width:420px}
+.demo .stack .cmd{font-family:var(--mono);font-size:11px;color:var(--d-muted);padding:5px 12px;
+  border-left:2px solid var(--d-hairline);margin-left:8px;font-variant-numeric:tabular-nums}
+.demo .toast{display:flex;align-items:center;gap:12px;background:var(--d-panel2);
+  border:1px solid var(--d-edge);border-radius:9px;box-shadow:var(--d-raised);padding:9px 14px;margin-top:6px}
+.demo .toast .msg{font-size:12.5px;color:var(--d-ink)}
+.demo .toast .msg b{font-family:var(--mono);font-weight:500;color:var(--d-ink-hi)}
+.demo .toast .kbd{margin-left:auto;font-family:var(--mono);font-size:10px;color:var(--d-muted);
+  border:1px solid var(--d-hairline);border-radius:5px;padding:2px 7px;white-space:nowrap}
+.demo .toast .undo{font-size:11.5px;color:var(--d-acc);cursor:pointer;white-space:nowrap}
+
+/* tab bar mobile */
+.demo .phone{width:340px;max-width:100%;border:1px solid var(--d-edge);border-radius:14px;overflow:hidden;background:var(--d-bg)}
+.demo .phone .body{padding:14px 16px 30px;font-size:12px;color:var(--d-muted)}
+.demo .phone .body .ttl{font-family:var(--display);font-variant:small-caps;font-size:17px;color:var(--d-ink-hi);letter-spacing:.03em}
+.demo .phone .body .rs{font-size:11px;color:var(--d-state);margin-top:2px}
+.demo .phone .body .rs b{font-family:var(--mono);font-weight:500;color:var(--d-muted)}
+.demo .tabbar{display:grid;grid-template-columns:repeat(5,1fr);border-top:1px solid var(--d-hairline);background:var(--d-panel)}
+.demo .tabbar a{display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 2px 9px;
+  text-decoration:none;color:var(--d-muted);font-size:9px;letter-spacing:.04em;text-transform:uppercase;font-weight:600}
+.demo .tabbar a .ic{font-size:14px;line-height:1}
+.demo .tabbar a.on{color:var(--d-acc)}
+.demo .tabbar a.on::before{content:"◆";font-size:7px;color:var(--d-acc);margin-bottom:-2px}
+.demo .tabbar a:not(.on)::before{content:"";height:5px}
+
+/* scène du verdict (miniature) */
+.demo .scene{max-width:560px}
+.demo .scene .kick{font-family:var(--mono);font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--d-state)}
+.demo .scene .phrase{font-family:var(--display);font-variant:small-caps;font-size:23px;color:var(--d-ink-hi);letter-spacing:.03em;margin:6px 0 4px;line-height:1.25}
+.demo .scene .phrase b{color:var(--d-acc);font-weight:600}
+.demo .scene .oracle{border-left:3px solid var(--d-util);background:var(--d-util-dim);border-radius:0 8px 8px 0;
+  padding:8px 12px;margin:12px 0;font-size:12px;color:var(--d-muted)}
+.demo .scene .oracle .d{color:var(--d-util)}
+.demo .scene .cta{display:flex;gap:10px;align-items:center;margin-top:12px;flex-wrap:wrap}
+.demo .scene .ghostlink{font-size:12px;color:var(--d-muted);text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+.demo .scene .rulepill{font-family:var(--mono);font-size:10.5px;padding:2px 9px;border-radius:6px;
+  background:var(--d-acc-dim);border:1px solid var(--d-acc-bd);color:var(--d-acc);cursor:pointer}
+
+/* focus mode (téléprompteur, miniature) */
+.demo .tele{max-width:400px;border:1px solid var(--d-edge);border-radius:14px;background:var(--d-bg);padding:18px 20px;text-align:center}
+.demo .tele .g{font-family:var(--mono);font-size:10px;color:var(--d-state);display:flex;justify-content:space-between;margin-bottom:14px}
+.demo .tele .rule{font-family:var(--mono);font-size:19px;color:var(--d-ink-hi);font-variant-numeric:tabular-nums;line-height:1.5}
+.demo .tele .rule small{display:block;font-size:11px;color:var(--d-muted);margin-top:2px}
+.demo .tele .gauge{height:5px;border-radius:3px;box-shadow:var(--d-well);background:var(--d-panel);margin:16px 0 14px;overflow:hidden}
+.demo .tele .gauge i{display:block;height:100%;width:39%;background:var(--d-acc);border-radius:3px}
+.demo .tele .keys{display:flex;gap:10px;justify-content:center}
+.demo .tele .keys .k{flex:1;max-width:150px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;
+  font-size:14px;cursor:pointer;border:1px solid var(--d-hairline);background:var(--d-panel2);color:var(--d-muted)}
+.demo .tele .keys .k.ok{background:var(--d-acc);border-color:var(--d-acc);color:var(--d-acc-ink);font-weight:600}
+
+@media(max-width:700px){.demo .icards,.demo .accs{flex-direction:column}}
+</style>
+</head>
+<body>
+<div class="shell">
+<nav class="toc">
+  <div class="brand"><span class="d">◆</span> Rapport Final</div>
+  <div class="sub">Synthèse des 4 design reviews · sept. 2026</div>
+  <a href="index.html">Vue d'ensemble</a>
+  <div class="grp">Le rapport</div>
+  <a href="01-synthese.html">Synthèse &amp; arbitrages</a>
+  <a href="02-design-system.html" class="on">Design system</a>
+  <a href="03-charte-graphique.html">Charte graphique v3</a>
+  <a href="04-maquettes.html">Maquettes &amp; wireframes</a>
+  <a href="05-roadmap.html">Roadmap</a>
+  <div class="grp">Les 4 rapports</div>
+  <a href="../design-review/index.html">Rapport 1 · audit</a>
+  <a href="../design-review-2/index.html">Rapport 2 · cycle</a>
+  <a href="../design-review-3/index.html">Rapport 3 · cycle</a>
+  <a href="../design-review-4/index.html">Rapport 4 · cycle</a>
+</nav>
+<main>
+
+<span class="kicker">Livrable d'exécution · design system consolidé · conforme aux arbitrages A1-A7 + D1-D17</span>
+<h1>Design system — la référence finale</h1>
+<p class="lede">Une page, quatre sections : les <b>tokens</b> (le bloc CSS à coller, source unique de toute
+couleur, durée et taille), la <b>matrice des composants</b> (le contrat de lecture + les six composants canoniques
+issus des cycles), les <b>états</b> (une grammaire, pas des cas particuliers), la <b>gouvernance</b> (les règles
+qui empêchent le système de fuir à la prochaine feature). Tout ce qui suit applique les arbitrages tranchés —
+plus rien ici n'est une option. Les démos sont rendues en vrai, dans les deux thèmes.</p>
+
+<div class="quote">La règle de lecture qui verrouille tout : <b>bordure pleine = interactif · fond teinté sans
+bordure = badge passif · bordure neutre visible = conteneur · hairline = sous-élément</b>. Un composant qui ne
+sait pas répondre « lequel des quatre suis-je ? » n'entre pas dans l'app.
+<span class="who">— le contrat, consolidé des rapports 1 et 4</span></div>
+
+<h2>1 · Les tokens — le bloc à coller</h2>
+<p>Consolidation finale : l'échelle de luminance à 5 niveaux (rapport 1, plancher AA re-mesuré au rapport 4),
+les tints de familles dérivés par <code>color-mix()</code> (fin des ~39 littéraux à 6 alphas), les accents
+recomposés hors des teintes de tiers (A4), la grammaire d'élévation à 2 niveaux et les 3 matières (D5-D6),
+les tokens motion (D13). Le mode clair « parchemin » ne vit <b>que</b> dans ce bloc : si un composant a besoin
+d'une rustine <code>body.light</code>, c'est le token qui a un trou.</p>
+
+<pre><code>/* ═══ WoR Gear Builder · tokens.css — v3 finale ═══
+   Source unique. Toute couleur, durée, taille passe par ici ;
+   un écart s'écrit en commentaire, jamais en littéral. */
+
+:root{
+  color-scheme:dark;   /* fin de la scrollbar blanche et des popups clairs */
+
+  /* ── Typographie : 3 stacks, zéro webfont (Cinzel écarté, clause dormante) ── */
+  --display:"Palatino Linotype",Palatino,"Book Antiqua",Georgia,serif;
+  --body:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --mono:ui-monospace,"Cascadia Code",Consolas,monospace;
+  --fs-0:11.5px; --fs-1:12.5px; --fs-2:13.5px; --fs-3:15px;   /* corps sans / mono */
+  --fs-4:17px;   --fs-5:21px;   --fs-6:28px;                  /* display — jamais sous 16px */
+
+  /* ── Surfaces : les 3 matières ── */
+  --bg:#131118;                          /* matière 1 · socle assombri */
+  --panel:#1c1923;                       /* matière 2 · carte (reçoit le liseré zénithal) */
+  --panel2:#252130;                      /* sous-surface d'une carte */
+  --hairline:rgba(255,255,255,.055);     /* sous-élément (élévation, niveau 2) */
+  --edge:rgba(255,255,255,.14);          /* conteneur   (élévation, niveau 1) */
+  --zenith:linear-gradient(180deg,rgba(255,255,255,.05),transparent 26%); /* la lumière du haut */
+  --veil:rgba(255,255,255,.03);          /* hover de surface — l'unique */
+  --overlay-bg:rgba(10,8,14,.7);         /* .overlay ET .scrim — un rôle, une valeur */
+  --well:inset 0 1px 3px rgba(0,0,0,.35);                       /* creusé : seg, jauges, pistes */
+  --raised:0 1px 2px rgba(0,0,0,.45),0 4px 14px rgba(0,0,0,.25);/* posé : actif, toast, dialog */
+
+  /* ── Encre : l'échelle de luminance — 5 niveaux + décor ── */
+  --ink-hi:#ece7db;   /* N1 · titre de vue, phrase de verdict — 15,1:1 */
+  --head:#c4bcd0;     /* N2 · titre de section, p-sum, dlg h3 — 10,1:1 */
+  --label:#a59dae;    /* N3 · labels .lab .k th légendes — 7,1:1 AAA */
+  --ink:#d9d2c4;      /* N4 · contenu, valeurs, chips — 12,4:1 */
+  --muted:#9a92a6;    /* N5 · méta, hints, lede — 6,2:1 */
+  --state:#8a8298;    /* textes d'état 11px (save-line…) — remontés AA */
+  --deco:#6f6880;     /* décor pur : puces, traits, drag — JAMAIS de texte */
+
+  /* ── Accent : une source, tout dérive ── */
+  --c-acc:#e2b04a;                       /* or — le défaut, l'identité */
+  --acc:var(--c-acc);
+  --acc-ink:#1c1608;                     /* texte SUR accent (fini les 3 littéraux) */
+  --acc-dim:color-mix(in oklab,var(--acc) 14%,transparent);
+  --acc-bd:color-mix(in oklab,var(--acc) 45%,transparent);
+  --sel:color-mix(in oklab,var(--acc) 35%,transparent);   /* ::selection — visible, enfin */
+
+  /* ── Familles sémantiques : une --c par famille, 3 rôles dérivés ── */
+  --c-off:#dd8277;       /* recyclée (texte — 6,2:1 ; avant 4,45 ✗) */
+  --off-strong:#cf6054;  /* réservé fonds/bordures/bouton armé */
+  --c-util:#6fbf8f;      /* gardée */
+  --c-t0:#8fbde4; --c-t1:#b58cee; --c-t2:#e2b04a; --c-t3:#e87e75; --c-t4:#3fd97a;
+  /* 3 rôles × 8 familles = 24 tints, tous dérivés — plus un seul rgba() en dur : */
+  --off-hi:var(--c-off);
+  --off-bd:color-mix(in oklab,var(--c-off) 50%,transparent);
+  --off-dim:color-mix(in oklab,var(--c-off) 14%,transparent);
+  /* … idem --util-*, --t0-* … --t4-* : mêmes 3 recettes, mécanique.
+     Corollaire : le light et les 5 accents sont cohérents pour rien. */
+
+  /* ── Espacement : le pas de 8 ── */
+  --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px; --sp-5:24px; --sp-6:32px;
+
+  /* ── Rayons ── */
+  --r-xs:3px;      /* barres de progression, micro-barre de requis */
+  --r-s:6px;       /* chips, badges, ids */
+  --r-m:9px;       /* boutons, disclosures, toast */
+  --r-l:14px;      /* cartes, panneaux, carte d'item */
+  --r-pill:999px;  /* seg, filtres, tier-badges */
+
+  /* ── Contrôles ── */
+  --ctl-h:32px; --ctl-h-sm:26px;
+  --tap:44px;      /* cible tactile — téléprompteur, Session, tab bar */
+  /* mobile ≤920px : --ctl-h passe à 40px, toute cible touche --tap */
+
+  /* ── Motion : 2 durées + 1 signature, 1 easing ── */
+  --dur-1:120ms;   /* micro-feedback : press, hover, coche */
+  --dur-2:200ms;   /* changement d'état : pliage, verdict, entrée de toast */
+  --dur-3:600ms;   /* flash « contenu arrivé » — la seule signature longue */
+  --ease-out:cubic-bezier(.2,.7,.3,1);
+  /* transitions toujours ÉNUMÉRÉES (jamais `all`) ; la navigation n'est JAMAIS animée ;
+     cérémonies réservées aux événements rares : import, suppression d'onglet, 18/18, share card */
+
+  /* ── Plans ── */
+  --z-sticky:10; --z-scrim:50; --z-drawer:60; --z-fab:70; --z-modal:80; --z-toast:100;
+}
+
+/* ── Mode clair « parchemin » — les tokens seuls changent, zéro rustine ── */
+body.light{
+  color-scheme:light;
+  --bg:#efe9dd; --panel:#f7f2e8; --panel2:#e9e2d3;
+  --hairline:rgba(30,25,39,.09); --edge:rgba(30,25,39,.18);
+  --zenith:linear-gradient(180deg,rgba(255,255,255,.5),transparent 26%);
+  --veil:rgba(30,25,39,.04); --overlay-bg:rgba(42,36,52,.45);
+  --well:inset 0 1px 3px rgba(30,25,39,.14);
+  --raised:0 1px 2px rgba(30,25,39,.18),0 4px 14px rgba(30,25,39,.10);
+  --ink-hi:#1e1927; --head:#554d63; --label:#5d5569;
+  --ink:#2c2735; --muted:#6a6276; --state:#665e72; --deco:#948da1;
+  --c-acc:#8a6106;        /* or light — 4,83:1 (avant #a1720e = 3,77 ✗) */
+  --acc-ink:#fdf9ef;
+  --c-util:#276b43; --c-t2:#8a6106; --c-t4:#0a7031;
+  --c-t0:#2b6ca3; --c-t1:#6d3fb0; --c-t3:#b4362a; --c-off:#a63d31;
+}
+
+/* ── Picker d'accents — 5 options recomposées HORS des teintes de tiers (A4) ── */
+body[data-acc="sarcelle"]{--c-acc:#5bbcab}  body.light[data-acc="sarcelle"]{--c-acc:#19705f}
+body[data-acc="acier"]{--c-acc:#a3b7cb}     body.light[data-acc="acier"]{--c-acc:#4a627b}
+body[data-acc="mauve"]{--c-acc:#b2a0c6}     body.light[data-acc="mauve"]{--c-acc:#645276}
+body[data-acc="cuivre"]{--c-acc:#cf9068}    body.light[data-acc="cuivre"]{--c-acc:#8a4e24}
+/* le rouge/rose n'est plus une option. Deux interdits de charte :
+   l'accent ne colore JAMAIS un contrôle destructif ni un verdict —
+   il ne pilote que les états de sélection/interaction. */
+
+/* ── Focus mutualisé — l'anneau bicolore, écrit UNE fois ── */
+:where(button,[role=button],a,input,select,summary,[tabindex]):focus-visible{
+  outline:none;
+  box-shadow:0 0 0 2px var(--bg),0 0 0 4px var(--acc);
+}
+::selection{background:var(--sel)}
+
+/* ── Reduced-motion ≠ reduced-feedback ── */
+@media (prefers-reduced-motion:reduce){
+  *{animation-duration:1ms!important;transition-duration:1ms!important}
+  /* chaque animation porteuse de sens a son état statique équivalent :
+     :active passe de scale(.97) à brightness(.92), le flash devient un fond tenu,
+     le cross-fade de verdict devient un swap sec — l'information, elle, ne s'ampute jamais. */
+}</code></pre>
+
+<h3>L'échelle de luminance, rendue</h3>
+<p>Le contenu reste le texte le plus contrasté (c'est lui qu'on lit) ; la chaîne des jalons structurels est
+monotone et <b>aucun jalon textuel ne descend sous 4,5:1</b> — dans les deux thèmes. <code>--deco</code>
+(l'ex-<code>--faint</code>) n'écrit plus jamais de texte.</p>
+
+<div class="duo">
+<div class="demo"><span class="cap">sombre · les 5 niveaux + décor</span>
+  <div class="lum">
+    <div class="n1"><span>N1 --ink-hi 15,1:1</span>Forge des Règles</div>
+    <div class="n2"><span>N2 --head 10,1:1</span>Règles actives</div>
+    <div class="n3"><span>N3 --label 7,1:1</span>Rôles · Sets · Subs</div>
+    <div class="n4"><span>N4 --ink 12,4:1</span>ATK% ≥ 2 parmi les subs de la pièce</div>
+    <div class="n5"><span>N5 --muted 6,2:1</span>36 profils couverts · mis à jour à l'instant</div>
+    <div class="nd"><span>— --deco (jamais de texte)</span>⠿ ◆ ─────</div>
+  </div>
+</div>
+<div class="demo x-light"><span class="cap">clair « parchemin » · mêmes tokens, zéro rustine</span>
+  <div class="lum">
+    <div class="n1"><span>N1 --ink-hi</span>Forge des Règles</div>
+    <div class="n2"><span>N2 --head</span>Règles actives</div>
+    <div class="n3"><span>N3 --label</span>Rôles · Sets · Subs</div>
+    <div class="n4"><span>N4 --ink</span>ATK% ≥ 2 parmi les subs de la pièce</div>
+    <div class="n5"><span>N5 --muted</span>36 profils couverts · mis à jour à l'instant</div>
+    <div class="nd"><span>— --deco (jamais de texte)</span>⠿ ◆ ─────</div>
+  </div>
+</div>
+</div>
+
+<h3>Typographie — la table d'affectation figée (A1)</h3>
+<p>Quatre renversements en quatre cycles ; on a tranché par la doctrine, la charte v3 l'écrit comme
+<b>définitif</b>. Le canal le plus précieux de l'app — « mono = valeur du jeu » — ne se dilue plus.</p>
+<div class="tbl-wrap"><table>
+<tr><th>Rôle</th><th>Fonte</th><th>Spécification</th><th>Interdits attachés</th></tr>
+<tr><td><b>Apparat</b> — titre de vue, phrase de verdict, 18/18, marque</td><td>display (Palatino)</td>
+<td>small-caps <b>réelles</b>, ≥ 16 px (fs-4/5/6), letterspacing .03-.04em</td>
+<td>jamais sous 16 px · jamais sur un interactif · small-caps synthétiques interdites</td></tr>
+<tr><td><b>Titre de section</b> — h4 de carte, p-sum, dlg h3</td><td>display</td>
+<td>fs-4, couleur --head</td><td>idem</td></tr>
+<tr><td><b>Label d'interface</b> — .lab, .k, th, légendes, micro-labels</td><td><b>body sans</b></td>
+<td><b>11.5px / 600 / .08em, uppercase</b>, couleur --label</td>
+<td>jamais en mono (le mono est réservé aux valeurs), jamais sous --label</td></tr>
+<tr><td><b>Contenu courant</b> — phrases, descriptions, contrôles</td><td>body sans</td>
+<td>fs-2/fs-3, couleur --ink</td><td>—</td></tr>
+<tr><td><b>Méta</b> — row-meta, hints, ledes</td><td>body sans</td><td>fs-1, couleur --muted</td><td>jamais sous fs-1</td></tr>
+<tr><td><b>Valeurs du jeu</b> — stats, sigles, IDs de règles, clé in-game, chiffres tabulaires</td><td><b>mono</b></td>
+<td>fs-0/fs-1, <code>font-variant-numeric:tabular-nums</code>, alignées à droite dans les tables</td>
+<td><b>le mono ne s'emploie nulle part ailleurs</b> · pas d'iconification des 11 stats (les sigles sont la langue de la communauté)</td></tr>
+</table></div>
+
+<div class="demo"><span class="cap">les 3 registres, côte à côte — chacun à sa place</span>
+  <div class="typ">
+    <div class="t-disp">La scène du verdict</div>
+    <div class="t-lab">Subs requis</div>
+    <div class="t-mono">ATK% 7.8 · CRIT 12.4 · SPD 4 &nbsp;&nbsp;→&nbsp;&nbsp; G7 · WOR-K4F2-9QX1</div>
+  </div>
+</div>
+
+<h3>Les 5 accents — dérivés d'une seule <code>--c-acc</code></h3>
+<p>Palette recomposée <b>hors des teintes de tiers</b> (A4) : la collision sémantique est évitée par
+construction. Chaque tuile ci-dessous est dérivée par <code>color-mix()</code> depuis la seule valeur d'accent —
+le coût de maintenance d'un accent supplémentaire est une ligne.</p>
+<div class="demo"><span class="cap">picker d'accents · dot = --c-acc · pill = -dim/-bd dérivés</span>
+  <div class="accs">
+    <div class="a" style="--ac:#e2b04a"><div class="nm">or · défaut</div><div class="row"><span class="dot"></span><span class="pill">sélection</span></div></div>
+    <div class="a" style="--ac:#5bbcab"><div class="nm">sarcelle</div><div class="row"><span class="dot"></span><span class="pill">sélection</span></div></div>
+    <div class="a" style="--ac:#a3b7cb"><div class="nm">acier</div><div class="row"><span class="dot"></span><span class="pill">sélection</span></div></div>
+    <div class="a" style="--ac:#b2a0c6"><div class="nm">mauve gris</div><div class="row"><span class="dot"></span><span class="pill">sélection</span></div></div>
+    <div class="a" style="--ac:#cf9068"><div class="nm">cuivre</div><div class="row"><span class="dot"></span><span class="pill">sélection</span></div></div>
+  </div>
+</div>
+
+<h3>Élévation &amp; matières — la grammaire à 2 niveaux</h3>
+<p><b>Conteneur = bordure visible (<code>--edge</code>) · sous-élément = hairline.</b> Il n'existe pas de
+troisième niveau. S'y ajoutent les deux reliefs : <code>--well</code> (creusé — seg, jauges, pistes) et
+<code>--raised</code> (posé — état actif, toast, dialog), et les 3 matières : socle assombri, carte au liseré
+zénithal, encart éditorial (le slot unique de la pédagogie in-situ).</p>
+<div class="demo"><span class="cap">matière 2 (carte + liseré zénithal) · sous-éléments hairline · encart éditorial · well / raised</span>
+  <div class="mat">
+    <h5>Garde tout T4+</h5>
+    <div class="sub">Slots : tous · Main : toutes</div>
+    <div class="sub">Subs : ≥ 2 parmi ATK%, CRIT, SPD</div>
+    <div class="encart"><b>◆</b> Cette règle garde 2,14 % des pièces — l'équivalent d'une grosse session de farm Raid 1 niv. 21.</div>
+  </div>
+  <div class="wellraised">
+    <span class="well"><i>Règles</i><i class="on">Simulation</i><i>Session</i></span>
+    <span class="raised">— actif / toast : --raised</span>
+  </div>
+</div>
+
+<h2>2 · La matrice des composants — le contrat</h2>
+<p>Une forme = un rôle, partout. La matrice ci-dessous est <b>exhaustive</b> : ajouter une famille de composant
+exige d'ajouter sa ligne <i>dans la même PR</i>. Les fusions annoncées sont livrées dans cette version :
+<code>.fchip</code> → <code>.chip.pill</code>, <code>.stat-card</code> ← <code>.cov-card</code>, le slot passe
+en <code>chip.pick</code> comme main et set (un seul contrôle pour « choisir une valeur »), un seul disclosure
+(chevron › unique), <code>.mini</code>/<code>.p-main</code> dé-bordés.</p>
+
+<div class="tbl-wrap"><table>
+<tr><th>Famille</th><th>Rôle</th><th>Fond</th><th>Bordure</th><th>Rayon</th><th>Typo</th><th>Interactif</th></tr>
+<tr><td>.btn (+sm/primary/danger)</td><td>déclencher</td><td>transparent · primaire plein --acc + --acc-ink</td><td>pleine</td><td>r-m</td><td>sans fs-2/1</td><td>toujours</td></tr>
+<tr><td>.seg / tabPicker</td><td>choix exclusif 2-5 · <b>LE sélecteur d'onglet unique</b> (remplace les 2 &lt;select&gt; natifs)</td><td>creusé --well · actif --raised</td><td>aucune</td><td>pill</td><td>sans fs-2</td><td>toujours</td></tr>
+<tr><td>.chip.pill (ex-fchip — fusion livrée)</td><td>filtre on/off</td><td>transparent · on --acc-dim</td><td>pleine</td><td>pill</td><td>label fs-0</td><td>toujours</td></tr>
+<tr><td>.chip (+pick)</td><td>donnée du jeu sélectionnable — slot, main, sub, set</td><td>panel2 · sél. --fam-dim</td><td>teintée --fam-bd</td><td>r-s</td><td>mono fs-0</td><td>contexte</td></tr>
+<tr><td>.tier-badge</td><td>classification passive</td><td>teinté --t-dim</td><td><b>aucune</b></td><td>pill</td><td>mono fs-0</td><td>jamais</td></tr>
+<tr><td>.rc-id</td><td>identifiant statique</td><td>--acc-dim / --t0-dim</td><td><b>aucune</b></td><td>r-s</td><td>mono fs-0</td><td>jamais</td></tr>
+<tr><td>.ruleref</td><td>identifiant-lien — cliquable ET adressable (data-goto + flash, routeur commun avec la palette)</td><td>idem</td><td>teintée (= cliquable)</td><td>r-s</td><td>mono fs-0</td><td>toujours</td></tr>
+<tr><td>.mini, .p-main</td><td>méta passive</td><td>panel2</td><td><b>aucune</b> (dé-bordés)</td><td>r-s</td><td>mono fs-0</td><td>jamais</td></tr>
+<tr><td>Disclosure unique (details.acc)</td><td>replier — chevron › unique, y compris les notes-par-règle</td><td>panel2</td><td>hairline</td><td>r-m</td><td>sans fs-2</td><td>en-tête seul</td></tr>
+<tr><td>.panel</td><td>conteneur</td><td>panel + --zenith</td><td>--edge</td><td>r-l</td><td>h4 display fs-4</td><td>non</td></tr>
+<tr><td>Encart éditorial</td><td><b>slot unique</b> de la pédagogie in-situ (oracle, mode d'emploi de la clé)</td><td>teinté --fam-dim</td><td>filet gauche 3px</td><td>0 r-s r-s 0</td><td>sans fs-1</td><td>non</td></tr>
+<tr><td>Barre d'action contextuelle</td><td>édition à l'échelle — visible <b>seulement</b> s'il y a sélection (D12)</td><td>panel2 --raised, sticky</td><td>--edge</td><td>r-m</td><td>sans fs-1</td><td>toujours</td></tr>
+<tr><td>Sélecteur « Jeu de règles »</td><td>le « sur quoi tout porte » (D1) — rail desktop, ligne compacte sous le titre en mobile</td><td>transparent</td><td>hairline basse</td><td>—</td><td>sans fs-1 + mono compteurs</td><td>toujours</td></tr>
+</table></div>
+
+<h3>Les 6 composants canoniques des cycles</h3>
+<p>Ils entrent dans la matrice avec le même contrat — mais chacun mérite sa fiche : ce sont eux que toute
+feature future réutilise en premier.</p>
+
+<div class="panel"><h4>① La carte d'item vivante — le composant n°1 (D2)</h4>
+<p>Glyphe de slot, main stat en gros corps mono, subs en colonne, filet coloré au tier. <b>Trois usages, un seul
+template</b> : bandeau sticky de Session (se construit tap après tap), grille de Simulation, source de la share
+card. <b>Le verdict est un état de l'objet</b>, jamais un panneau à côté : liseré or « ✓ Gardée par G5 » /
+désaturation + ⚒ « Recyclée ». Subs gagnants surlignés en teinte utilitaire — pas d'or (l'or n'a que trois
+allumages). Cross-fade --dur-1, tint 400&nbsp;ms ; état statique équivalent sous reduced-motion.</p></div>
+
+<div class="demo"><span class="cap">carte d'item vivante · planche d'états — en construction / gardée / recyclée</span>
+  <div class="icards">
+    <div class="icard">
+      <div class="slot">⚔ <b>Épée · T2</b></div>
+      <div class="main">642 <small>ATK</small></div>
+      <div class="subs">ATK%&nbsp;&nbsp;7.8<br>CRIT&nbsp;&nbsp;12.4<br><span class="ghost">— · —</span><br><span class="ghost">— · —</span></div>
+      <div class="build">saisie 2/4 subs…</div>
+    </div>
+    <div class="icard kept">
+      <div class="slot">⚔ <b>Épée · T2</b></div>
+      <div class="main">642 <small>ATK</small></div>
+      <div class="subs"><span class="win">ATK%&nbsp;&nbsp;7.8</span><br><span class="win">CRIT&nbsp;&nbsp;12.4</span><br>SPD&nbsp;&nbsp;&nbsp;4<br>HP%&nbsp;&nbsp;&nbsp;5.1</div>
+      <div class="verdict">✓ Gardée par G5</div>
+    </div>
+    <div class="icard rec">
+      <div class="slot">⚔ <b>Épée · T2</b></div>
+      <div class="main">598 <small>ATK</small></div>
+      <div class="subs">DEF%&nbsp;&nbsp;6.2<br>HP&nbsp;&nbsp;&nbsp;&nbsp;412<br>RES&nbsp;&nbsp;&nbsp;7<br>DEF&nbsp;&nbsp;&nbsp;38</div>
+      <div class="verdict">⚒ Recyclée — aucune règle</div>
+    </div>
+  </div>
+</div>
+
+<div class="panel"><h4>② La pile de commandes — toast = tête de pile (D11)</h4>
+<p>Chaque mutation est une commande (point de passage <code>scheduleSave</code>), pile de snapshots
+(<code>structuredClone</code>, cap 50), <b>Ctrl+Z / Ctrl+Shift+Z globaux</b>. Le toast n'est plus une course
+contre le timeout : il <b>affiche la tête de pile</b> — la dernière commande, avec son annulation à portée. Le
+stepper et le clic-cycle gardent leur vitesse et gagnent leur filet : <b>réversible plutôt que confirmé</b>,
+jamais de confirmation sur un geste fréquent. C'est la brique qui conditionne palette Ctrl+K et édition en masse.</p></div>
+
+<div class="demo"><span class="cap">pile de commandes · le toast est la tête de pile — z-toast, --raised</span>
+  <div class="stack">
+    <div class="cmd">requis G7 : 3 → 4</div>
+    <div class="cmd">set « Rage » ajouté à G7</div>
+    <div class="toast">
+      <span class="msg">Requis <b>G7</b> : 4 → 5</span>
+      <span class="undo">Annuler</span>
+      <span class="kbd">Ctrl+Z</span>
+    </div>
+  </div>
+</div>
+
+<div class="panel"><h4>③ La scène du verdict — l'état composé de Simulation (D3)</h4>
+<p>Pas un composant nouveau : une <b>composition</b> de l'existant sur le socle assombri. Première visite :
+simulation échantillon auto-lancée sur le ruleset démo — UNE phrase de verdict en display, 2-3 cartes d'item,
+un CTA. Subs gagnants en teinte utilitaire, règle gagnante en pill cliquable, « ↳ Créer une règle qui garde
+cette pièce », bandeau-oracle en <b>encart éditorial</b> (◆ vert, symétrique rouge), stat-cards cliquables.
+Visites suivantes : atterrissage contextuel — <b>slot unique</b> de bandeau, priorité import &gt; patch &gt; verdict.</p></div>
+
+<div class="demo"><span class="cap">scène du verdict · miniature — display + item-cards + oracle + un CTA</span>
+  <div class="scene">
+    <div class="kick">Simulation · échantillon 400 pièces · ruleset démo</div>
+    <div class="phrase">Tes règles gardent <b>23 pièces</b> sur 400.</div>
+    <div style="font-size:12px;color:var(--d-muted)">Règle la plus active : <span class="rulepill">G5</span> — 14 pièces gardées</div>
+    <div class="oracle"><span class="d">◆</span> Ce tri automatique t'économise des heures de tri sur chaque session de farm.</div>
+    <div class="cta">
+      <button class="btn primary">Créer mon jeu de règles</button>
+      <span class="ghostlink">Partager ce résultat</span>
+    </div>
+  </div>
+</div>
+
+<div class="panel"><h4>④ La micro-barre de requis — auto-porteuse (A2)</h4>
+<p>Les ●●●● et le ◆ plein/creux sont <b>exclus</b> de cet encodage. Micro-barre (piste --well, remplissage
+--acc, r-xs) + <b>libellé texte</b> « 4/4 subs · 2 sets » : lisible sans légende, tooltip natif toléré
+(« requis : 4 sur 4 »), <b>jamais de légende permanente</b>. Chiffres en mono tabulaire, largeur réservée —
+rien ne bouge quand la valeur change.</p></div>
+
+<div class="demo"><span class="cap">micro-barre + libellé — l'encodage du requis, sans légende</span>
+  <div class="reqs">
+    <div class="req"><span class="bar"><i style="width:50%"></i></span><span class="lbl"><b>2/4</b> subs · <b>2</b> sets</span></div>
+    <div class="req"><span class="bar"><i style="width:100%"></i></span><span class="lbl"><b>4/4</b> subs · <b>2</b> sets — requis atteint</span></div>
+  </div>
+</div>
+
+<div class="panel"><h4>⑤ La tab bar mobile — 5 destinations (A3)</h4>
+<p>≤ 920 px : tab bar basse à 5 entrées — <b>Règles · Simulation · Session · Saisie en jeu · Référence</b> —
+réglages dans une sheet « ⋯ ». Actif = accent + ◆ (l'un des trois usages codifiés du losange). Cibles --tap
+44&nbsp;px. Les focus modes (téléprompteur, farm) la <b>masquent</b>. La save-line est répliquée dans le header
+mobile. <i>Décision client n°1 pendante sur le principe — le composant, lui, est spécifié.</i></p></div>
+
+<div class="demo"><span class="cap">tab bar basse · 375px · actif = ◆ + accent · masquée par les focus modes</span>
+  <div class="phone">
+    <div class="body">
+      <div class="ttl">Règles</div>
+      <div class="rs">Jeu de règles : <b>Late game strict</b> · 12 règles &nbsp;·&nbsp; ● enregistré</div>
+    </div>
+    <div class="tabbar">
+      <a class="on" href="#" onclick="return false"><span class="ic">⚖</span>Règles</a>
+      <a href="#" onclick="return false"><span class="ic">⚗</span>Simul.</a>
+      <a href="#" onclick="return false"><span class="ic">☰</span>Session</a>
+      <a href="#" onclick="return false"><span class="ic">⌨</span>Saisie</a>
+      <a href="#" onclick="return false"><span class="ic">📖</span>Réf.</a>
+    </div>
+  </div>
+</div>
+
+<div class="panel"><h4>⑥ Le focus mode — téléprompteur &amp; farm (D4)</h4>
+<p>Plein écran sur socle <code>&lt;dialog&gt;</code> (trap, inert, Échap, backdrop gratuits — l'utilitaire du
+moteur). Le <b>seul</b> écran où le mono domine. Une règle à la fois : Entrée = coché → suivante, Backspace =
+décocher-revenir, clé copiable (<code>c</code>), jauge 0/18, reprise (« il te reste 7 règles »). <b>Déclinaison
+touch obligatoire dès la v1</b> : boutons ✓ / retour en zone pouce, 44&nbsp;px, bas d'écran. À 18/18 : dorure +
+« ◆ Jeu complet » — le seul état lumineux de l'app, doublé d'un état statique équivalent.</p></div>
+
+<div class="demo"><span class="cap">téléprompteur · miniature — mono dominant, jauge 7/18, ✓/retour en zone pouce</span>
+  <div class="tele">
+    <div class="g"><span>◆ règle 7 / 18</span><span>clé : WOR-K4F2 · c pour copier</span></div>
+    <div class="rule">G7 — ATK% ≥ 2<small>parmi les subs · tous slots · T2+</small></div>
+    <div class="gauge"><i></i></div>
+    <div class="keys"><span class="k">← retour</span><span class="k ok">✓ cochée</span></div>
+  </div>
+</div>
+
+<h2>3 · Les états — une grammaire, pas des cas particuliers</h2>
+<p>Cinq états d'interaction, un tri-état de disponibilité, et la règle daltonisme. Tout composant interactif les
+hérite tels quels — aucun n'a le droit à sa variante locale.</p>
+
+<div class="tbl-wrap"><table>
+<tr><th>État</th><th>Encodage — unique, hérité</th><th>Règle attachée</th></tr>
+<tr><td><b>Repos</b></td><td>selon la matrice (bordure pleine si interactif)</td><td>invisible au repos, jamais inapprenable</td></tr>
+<tr><td><b>Hover</b></td><td>fond <code>--veil</code> (l'unique valeur) + renfort de bordure</td><td>pas de tooltip dans chips ni tables — textes d'aide seulement</td></tr>
+<tr><td><b>Actif (press)</b></td><td><code>:active</code> global — scale(.97), --dur-1</td><td>reduced-motion : <code>brightness(.92)</code></td></tr>
+<tr><td><b>Focus clavier</b></td><td>anneau <b>bicolore</b> <code>0 0 0 2px var(--bg), 0 0 0 4px var(--acc)</code>, mutualisé</td><td>distinct de « sélectionné » — au clavier on sait toujours où l'on est ; le rendu ne détruit jamais le focus (patch-in-place)</td></tr>
+<tr><td><b>Sélectionné</b></td><td>fond <code>--fam-dim</code> + bordure <code>--fam-bd</code> (+ ✓ si c'est un geste confirmé)</td><td>l'accent pilote la sélection — jamais un destructif, jamais un verdict</td></tr>
+</table></div>
+
+<h3>Le tri-état de disponibilité — dashed vs atténué vs disabled</h3>
+<p>L'ancien encodage par opacités .28/.32 est mort (contraste effectif 2,3:1, confondu avec du désactivé).
+Le contrat final :</p>
+<ul>
+<li><b>Sélectionnable, non retenu</b> = bordure <b>solide</b> atténuée, <b>opacité plancher .5</b> — c'est une
+option, pas un déchet ;</li>
+<li><b>Indisponible / hors-liste</b> (incompatible avec la sélection courante) = bordure <b>dashed</b> — le
+pointillé est LE langage « indisponible », il porte le signal sans reposer sur l'opacité ;</li>
+<li><b>Désactivé réel</b> (exemption WCAG) = opacité .45 + <code>cursor:not-allowed</code> — réservé aux vrais
+disabled, jamais utilisé pour une option.</li>
+</ul>
+
+<div class="demo"><span class="cap">le tri-état + focus bicolore — chips réelles : survoler, cliquer, tabuler</span>
+  <div class="states">
+    <span class="st"><button class="chip">CRIT 12.4</button><span class="st-lbl">repos</span></span>
+    <span class="st"><button class="chip sel">✓ ATK% 7.8</button><span class="st-lbl">sélectionné</span></span>
+    <span class="st"><button class="chip avail">SPD 4</button><span class="st-lbl">sélectionnable ·&nbsp;op&nbsp;.5</span></span>
+    <span class="st"><button class="chip unav">DEF% 6.2</button><span class="st-lbl">indisponible · dashed</span></span>
+    <span class="st"><button class="chip dis" disabled>RES 7</button><span class="st-lbl">disabled réel</span></span>
+    <span class="st"><button class="chip focused">HP% 5.1</button><span class="st-lbl">focus bicolore</span></span>
+  </div>
+  <div class="states" style="margin-top:14px">
+    <button class="btn primary">Créer la règle</button>
+    <button class="btn">Dupliquer</button>
+  </div>
+</div>
+
+<h3>Verdicts &amp; daltonisme — jamais la couleur seule</h3>
+<ul>
+<li>Verdicts <b>formulés en positif</b>, canon figé : « gardée / recyclée » (on ne renomme pas) ;</li>
+<li>Triple redondance : <b>glyphe</b> (✓ / ⚒), <b>forme</b> (point plein = gardée, anneau creux = recyclée),
+<b>bordure</b> (continue vs dashed) — vert/rouge convergent en bruns olive pour ~8 % des joueurs ;</li>
+<li><code>--off</code> texte à 6,2:1 (l'ancien <code>#cf6054</code> passe en <code>--off-strong</code>, réservé
+fonds/bordures/bouton armé) ;</li>
+<li>États d'attente : seulement au-delà de ~150 ms <b>mesurés</b> (<code>performance.now()</code>) — on n'habille
+pas une latence qu'on n'a pas.</li>
+</ul>
+
+<h2>4 · La gouvernance — les règles pour toute future feature</h2>
+<div class="panel bad"><h4>Interdit produit (amendement client C2)</h4>
+<p><b>Aucune valeur de roll n'existe dans l'application.</b> Une pièce est décrite par ses stats présentes
+(main, 4 subs) — jamais par leurs valeurs chiffrées, qui ne sont pas pertinentes pour le tri. Les cartes d'item,
+verdicts, simulations et exports n'affichent que des noms de stats. Corollaire C3 : toute quantité de farm
+s'exprime en <b>pièces par session</b>, jamais en durées calendaires.</p></div>
+<p>Consolidées des quatre rapports. Elles se testent en revue de code — pas en réunion.</p>
+<ol>
+<li><b>Zéro littéral de style dans un template JS.</b> Un <code>style=</code> n'est autorisé que pour une valeur
+<i>calculée depuis une donnée</i> (largeur de jauge, couleur d'accent). Test de revue :
+<code>grep 'style="' | grep -vE 'width:|background:#'</code> doit sortir vide.</li>
+<li><b>Une couleur de famille ne s'écrit qu'une fois.</b> Tout passe par <code>--c-fam</code> +
+<code>color-mix()</code>. Plus jamais de rustine <code>body.light .x{color:#…}</code> : si un light diverge,
+c'est le token qui a un trou.</li>
+<li><b>Toute valeur passe par une échelle, tout écart se commente</b> (modèle : le 16 px anti-zoom iOS).</li>
+<li><b>On ne crée pas de composant, on décline.</b> Une nouvelle famille exige sa ligne dans la matrice
+<i>dans la même PR</i>. Toute feature réutilise un point d'entrée existant — le chrome se finance.</li>
+<li><b>La bordure est un contrat.</b> Un passif ne reçoit jamais de bordure pleine ; un interactif n'en manque
+jamais. Un seul disclosure, un seul chevron.</li>
+<li><b>Plancher AA absolu — audité dans le rendu.</b> Aucun texte &lt; 4,5:1 dans aucun thème ; le système se
+vérifie contre le navigateur : <code>color-scheme</code> posé, small-caps synthétiques interdites, focus préservé
+au re-rendu (patch-in-place), contrastes non-texte discriminables, bordures 1 px + outline (125/150 % Windows).</li>
+<li><b>Réversible plutôt que confirmé.</b> Toute mutation passe par la pile de commandes ; jamais de confirmation
+sur un geste fréquent — on ne sécurise pas un outil en le ralentissant. Une nouvelle mutation qui n'entre pas
+dans la pile n'est pas livrable (la palette n'expose que des commandes couvertes à 100 % par l'undo).</li>
+<li><b>Motion gouvernée.</b> 2 durées + 1 signature, 1 easing ; transitions énumérées, jamais <code>all</code> ;
+<b>la navigation n'est jamais animée</b> ; cérémonies réservées aux événements rares (import, suppression
+d'onglet, 18/18, share card) ; reduced-motion ≠ reduced-feedback — chaque animation porteuse de sens a son état
+statique équivalent, co-signé statique + motion.</li>
+<li><b>Jamais de légende permanente.</b> Encodages auto-porteurs ; micro-label éphémère pour nommer au point
+d'action, tooltip / panneau <code>?</code> pour persister ; la palette Ctrl+K affiche ses raccourcis — « la
+palette EST le tutoriel ». Un seul bandeau d'ouverture à la fois (slot unique, priorité import &gt; patch &gt;
+verdict) ; l'encart éditorial est le slot unique de la pédagogie in-situ.</li>
+<li><b>Le précieux est rare.</b> L'or n'a que trois allumages — marque, sélection, accomplissement — et n'est
+généreux que deux fois (18/18, share card) ; jamais de display sous 16 px ni sur un interactif ; le ✓ confirme
+les gestes, le ◆ décore le monde (marque, jalons/pips, onglet actif — trois usages, une seule taille de puce) ;
+tous les glyphes UI vivent sur le système SVG <code>ICON</code> ; l'accent ne colore jamais un destructif ni un
+verdict.</li>
+</ol>
+
+<div class="panel good"><h4>Le test d'entrée d'une feature — 4 questions, 30 secondes</h4>
+<p>① Quel composant de la matrice rend chaque élément — et si aucun : quelle ligne ajoutes-tu à la matrice dans
+cette PR ? ② Chaque mutation est-elle une commande de la pile ? ③ Chaque texte tient-il 4,5:1 dans les deux
+thèmes, via des tokens et sans rustine light ? ④ Ce que la feature ajoute au repos est-il nul, et son
+apprentissage a-t-il un chemin visible (<code>?</code> / palette) ? Quatre oui = la feature entre. Un non =
+elle retourne en conception.</p></div>
+
+<div class="foot">
+  <a href="01-synthese.html">← Synthèse &amp; arbitrages</a>
+  <a href="03-charte-graphique.html">Charte graphique v3 →</a>
+</div>
+</main>
+</div>
+</body>
+</html>

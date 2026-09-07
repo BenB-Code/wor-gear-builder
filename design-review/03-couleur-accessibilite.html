@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Couleur &amp; accessibilité · Design Review — WoR Gear Builder</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="shell">
+<nav class="toc">
+  <div class="brand"><span class="d">◆</span> Design Review</div>
+  <div class="sub">WoR Gear Builder · sept. 2026</div>
+  <a href="index.html">Synthèse exécutive</a>
+  <div class="grp">Fondations</div>
+  <a href="04-typographie.html">Typographie</a>
+  <a href="03-couleur-accessibilite.html" class="on">Couleur &amp; accessibilité</a>
+  <a href="05-design-system.html">Design system &amp; tokens</a>
+  <div class="grp">Interface</div>
+  <a href="01-ui-composants.html">Composants UI</a>
+  <a href="07-dataviz.html">Data-visualisation</a>
+  <a href="06-mobile.html">Mobile</a>
+  <div class="grp">Produit</div>
+  <a href="02-ux-parcours.html">UX &amp; parcours</a>
+  <a href="08-contenu.html">Contenu &amp; microcopy</a>
+  <a href="09-integration-features.html">Intégration des features</a>
+  <div class="grp">Direction</div>
+  <a href="10-synthese.html">Synthèse &amp; roadmap</a>
+</nav>
+<main>
+
+<span class="kicker">Audit spécialiste · colorimétrie &amp; accessibilité — ratios WCAG calculés</span>
+<h1>Couleur — la hiérarchie inversée, chiffrée</h1>
+<p class="lede">Tous les ratios ci-dessous sont <b>calculés</b> (luminance relative WCAG 2.x) sur les hex réels du CSS.
+Seuils : AA texte 4,5:1 · AA texte large 3:1 · AAA 7:1. Le petit mono 11-12 px omniprésent est jugé sur cible
+AAA recommandée / AA impérative. Verdict d'ensemble : le « confort nocturne » est bien calibré <b>en haut</b> de la
+gamme — c'est le <b>plancher</b> qui a traversé le seuil.</p>
+
+<h2><span class="prio p0">P0</span> La plainte client, chiffrée : les labels sous le seuil AA</h2>
+<div class="tbl-wrap"><table>
+<tr><th>Couleur (sombre)</th><th>Usage</th><th class="num">sur --bg</th><th class="num">sur --panel</th><th class="num">sur --panel2</th><th>Verdict</th></tr>
+<tr><td>--ink #d9d2c4</td><td>contenu</td><td class="num">12,35</td><td class="num">11,40</td><td class="num">10,32</td><td><span class="v-ok">AAA partout</span></td></tr>
+<tr><td>--ink-hi #ece7db</td><td>titres de vue</td><td class="num">15,05</td><td class="num">13,89</td><td class="num">12,57</td><td><span class="v-ok">AAA partout</span></td></tr>
+<tr><td>--muted #9a92a6</td><td>titres de groupe, méta</td><td class="num">6,22</td><td class="num">5,74</td><td class="num">5,20</td><td><span class="v-mid">AA ✓ / AAA ✗</span></td></tr>
+<tr><td><b>--faint #6f6880</b></td><td><b>labels .lab, th, .k, légendes</b></td><td class="num">3,51</td><td class="num">3,24</td><td class="num"><b>2,93</b></td><td><span class="v-bad">ÉCHEC AA partout</span></td></tr>
+</table></div>
+<p>Sur une carte de règle ouverte : les chips de contenu mesurent <b>6,8 à 11,4:1</b>, leurs labels
+« Rôles / Sets / Subs » mesurent <b>3,2:1</b> — les jalons structurels sont 2 à 3,5× moins contrastés que ce
+qu'ils étiquettent. Le balayage en F ne fonctionne plus : on lit le contenu avant sa structure. C'est exactement
+la plainte « les noms de sections sont moins visibles que les éléments qui les composent ».</p>
+
+<h2><span class="prio p0">P0</span> Le mode clair est le plus touché</h2>
+<div class="tbl-wrap"><table>
+<tr><th>Couleur (clair)</th><th>Usage</th><th class="num">sur --bg</th><th class="num">sur --panel2</th><th>Verdict</th></tr>
+<tr><td><b>--faint #948da1</b></td><td>labels</td><td class="num">2,82</td><td class="num">2,70</td><td><span class="v-bad">ÉCHEC — pire qu'en sombre</span></td></tr>
+<tr><td><b>--acc or #a1720e</b></td><td>ids, onglets actifs, nav, liens</td><td class="num">3,77</td><td class="num">3,60</td><td><span class="v-bad">ÉCHEC — l'accent PAR DÉFAUT</span></td></tr>
+<tr><td>bouton primaire (texte #f4efe6 sur or)</td><td>« Générer », « Créer la règle »</td><td class="num" colspan="2">3,72</td><td><span class="v-bad">ÉCHEC AA</span></td></tr>
+<tr><td><b>--t4 #0f9d46</b></td><td>badges T∞</td><td class="num">3,13</td><td class="num">3,00</td><td><span class="v-bad">ÉCHEC</span></td></tr>
+<tr><td><b>--util #2e7d4f</b></td><td>verdicts « gardée »</td><td class="num">4,47</td><td class="num">4,27</td><td><span class="v-bad">ÉCHEC limite</span></td></tr>
+</table></div>
+<p>Et en sombre, le verdict « recyclée » <code>#cf6054</code> — du mono 11 px — mesure <b>4,45 sur panel et 4,03
+sur panel2</b> : sous AA sur les surfaces où il vit.</p>
+
+<h2>L'échelle de luminance corrigée — 5 niveaux, plancher AA garanti</h2>
+<p>Principe : le contenu reste le texte le plus contrasté (c'est lui qu'on lit) ; ce qui doit être monotone,
+c'est la chaîne des <b>jalons structurels</b>, et <b>aucun jalon textuel ne descend sous 4,5:1</b>. Deux tokens
+naissent, <code>--faint</code> est requalifié en décor.</p>
+<div class="tbl-wrap"><table>
+<tr><th>Niveau</th><th>Éléments</th><th>Token</th><th>Sombre</th><th class="num">ratio bg</th><th>Clair</th></tr>
+<tr><td>N1 Titre de vue</td><td>h2, marque</td><td>--ink-hi</td><td>#ece7db <i>(inchangé)</i></td><td class="num">15,1</td><td>#1e1927</td></tr>
+<tr><td>N2 Titre de section</td><td>grp-head, p-sum, dlg h3</td><td><b>--head (nouveau)</b></td><td><b>#c4bcd0</b></td><td class="num">10,1</td><td>#554d63</td></tr>
+<tr><td>N3 Label de groupe</td><td>.lab, .k, th, légendes, .p-slot, .tm-step .k</td><td><b>--label (nouveau)</b></td><td><b>#a59dae</b></td><td class="num">7,1 <span class="v-ok">AAA</span></td><td>#5d5569</td></tr>
+<tr><td>N4 Contenu</td><td>valeurs, chips</td><td>--ink</td><td>#d9d2c4 <i>(inchangé)</i></td><td class="num">12,4</td><td>#2c2735</td></tr>
+<tr><td>N5 Méta</td><td>row-meta, hints, lede</td><td>--muted</td><td>#9a92a6 <i>(inchangé)</i></td><td class="num">6,2</td><td>#6a6276</td></tr>
+<tr><td>— Décor pur</td><td>puces, traits, drag, placeholders</td><td><b>--deco (ex-faint)</b></td><td>#6f6880</td><td class="num">—</td><td>#948da1 — <b>jamais de texte</b></td></tr>
+</table></div>
+
+<h2><span class="prio p1">P1</span> L'or porte cinq sémantiques</h2>
+<p>① état sélectionné (onglets, nav, filtres) · ② marque/décor · ③ <b>tier T2</b> · ④ ids de règles · ⑤ primaire +
+focus + progression. Un badge « T2 » doré côtoie un filtre doré actif : même couleur, deux sens sans rapport.
+Et <b>aucun accent n'est neutre</b> vis-à-vis des familles sémantiques :</p>
+<div class="tbl-wrap"><table>
+<tr><th>Accent choisi</th><th>Collision avec</th><th class="num">Écart de contraste mutuel</th></tr>
+<tr><td>or</td><td>tier T2</td><td class="num"><b>1,00 — identique</b></td></tr>
+<tr><td>vert</td><td>« gardée », T∞</td><td class="num">1,03 / 1,45</td></tr>
+<tr><td>bleu</td><td>T0</td><td class="num">1,25</td></tr>
+<tr><td>violet</td><td>T1</td><td class="num">1,28</td></tr>
+<tr><td><b>rouge</b></td><td><b>« recyclée », T3</b></td><td class="num"><b>1,01-1,13</b> — le pire : sélection ≈ danger</td></tr>
+</table></div>
+<p>Reco : réserver l'accent aux <b>états d'interaction</b> ; verrouiller « jamais un tier signifié par la couleur
+seule » (le texte T0…T∞ est déjà là — la collision or/T2 devient tolérable) ; <b>retirer ou décaler l'accent
+rouge</b> (#dd7f8f), a minima interdire l'accent sur tout contrôle destructif.</p>
+
+<h2><span class="prio p1">P1</span> Daltonisme : les verdicts reposent sur vert/rouge + un point de 8 px</h2>
+<p>#6fbf8f / #cf6054 convergent vers des bruns olive en deutéranopie et protanopie, et 8 px de teinte pure est
+invisible pour ~8 % des hommes. Redondances à ajouter : glyphe systématique ✓/✗ ; <b>forme</b> — point plein =
+gardée, anneau creux = recyclée ; bordure de carte continue vs <b>dashed</b> (dashed est déjà le langage « inactif »
+des chips — cohérent). Les familles de stats sont OK : toujours accompagnées du texte.</p>
+
+<h2>Autres constats</h2>
+<ul>
+<li><span class="prio p1">P1</span> <b>Options cliquables à opacité .28/.32</b> (subs à cocher, sets du dialogue) :
+contraste effectif <b>2,3:1</b> — ce ne sont pas des éléments désactivés (exemption WCAG) mais des options.
+→ opacité .5 minimum, le pointillé porte le signal ;</li>
+<li><span class="prio p2">P2</span> <b>Focus = couleur de l'état sélectionné</b> : au clavier on ne distingue plus
+« focalisé » d'« actif » → anneau bicolore <code>0 0 0 2px var(--bg), 0 0 0 4px var(--acc)</code> ;</li>
+<li><span class="prio p2">P2</span> <b>::selection à 1,3:1</b> (or à 14 %) : la sélection de texte est quasi
+invisible → 35 % ;</li>
+<li><span class="prio p2">P2</span> T1/T3 « bases » à 4,5-4,8:1 sur panel2 → #b58cee / #e87e75 ; T∞ #4ef08a
+quasi fluo → #3fd97a.</li>
+</ul>
+
+<h2>Palette corrigée — prête à implémenter</h2>
+<pre><code>:root{ /* sombre — inchangés : bg, panels, ink, ink-hi, muted, acc or */
+  --head:#c4bcd0;   /* N2 titres de section — 10,1:1 */
+  --label:#a59dae;  /* N3 labels — 7,1:1 AAA */
+  --faint:#8f879b;  /* dernier niveau TEXTUEL — 5,4:1 (relevé) */
+  --deco:#6f6880;   /* ex-faint : décor uniquement */
+  --t1:#b58cee; --t3:#e87e75; --t4:#3fd97a;          /* bases relevées */
+  --off:#dd8277;          /* recyclée TEXTE — 6,2:1 (avant 4,45 ✗) */
+  --off-strong:#cf6054;   /* réservé fonds/bordures/bouton armé */
+  --sel:rgba(226,176,74,.35);
+}
+body.light{
+  --head:#554d63; --label:#5d5569; --deco:#948da1;
+  --acc:#8a6106;          /* avant #a1720e = 3,8 ✗ ; primaire passe à 4,83 ✓ */
+  --t2:#8a6106; --t4:#0a7031; --util:#276b43;
+}
+body.light[data-acc="vert"]{--acc:#1a6b44}
+body[data-acc="rouge"]{--acc:#dd7f8f}  /* ou retirer l'option */</code></pre>
+
+<div class="panel good"><h4>Ce qui est bien calibré — à conserver</h4>
+<p>Le « confort nocturne » (<code>--ink #d9d2c4</code>, 12,4:1) : au-dessus d'AAA, sous la zone de halation,
+teinte chaude qui réduit la dominante bleue. <code>--ink-hi</code> à 15,1 pour les titres : bon plafond.
+Le problème n'était pas le plafond — c'était le plancher.</p></div>
+
+<div class="foot">
+  <a href="05-design-system.html">Design system →</a>
+  <a href="index.html">↑ Synthèse exécutive</a>
+</div>
+</main>
+</div>
+</body>
+</html>

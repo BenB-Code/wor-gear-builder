@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Maquettes &amp; wireframes — Rapport Final WoR Gear Builder</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="shell">
+<nav class="toc">
+  <div class="brand"><span class="d">◆</span> Rapport Final</div>
+  <div class="sub">Synthèse des 4 design reviews · sept. 2026</div>
+  <a href="index.html">Vue d'ensemble</a>
+  <div class="grp">Le rapport</div>
+  <a href="01-synthese.html">Synthèse &amp; arbitrages</a>
+  <a href="02-design-system.html">Design system</a>
+  <a href="03-charte-graphique.html">Charte graphique v3</a>
+  <a href="04-maquettes.html" class="on">Maquettes &amp; wireframes</a>
+  <a href="05-roadmap.html">Roadmap</a>
+  <div class="grp">Les 4 rapports</div>
+  <a href="../design-review/index.html">Rapport 1 · audit</a>
+  <a href="../design-review-2/index.html">Rapport 2 · cycle</a>
+  <a href="../design-review-3/index.html">Rapport 3 · cycle</a>
+  <a href="../design-review-4/index.html">Rapport 4 · cycle</a>
+</nav>
+<main>
+
+<span class="kicker">Rapport final · livrable 04 · maquettes haute-fidélité</span>
+<h1><span style="color:var(--acc)">◆</span> Maquettes &amp; wireframes</h1>
+<p class="lede">Neuf écrans en HTML/CSS autonome — chaque maquette applique les tokens finaux (hiérarchie de
+luminance à 5 niveaux, trois matières, dorure à trois allumages) et rend <b>visibles</b> les arbitrages qu'elle
+incarne : ce ne sont pas des illustrations, ce sont les décisions de la <a href="01-synthese.html">synthèse</a>
+posées à l'écran, avec du contenu réel du jeu. Desktop à 1440 px, mobile à 375 px. Chaque page porte un bandeau
+« Maquette » et revient ici.</p>
+
+<h2>Desktop — le poste de construction</h2>
+<div class="cards">
+  <a class="card" href="maquettes/regles.html"><span class="no">M4 · desktop</span><h4>Vue Règles unifiée</h4>
+    <p>Le cœur de l'app après la fusion du mode Couverture : sélecteur « Jeu de règles » dans le rail (D1),
+    stat-cards de couverture en tête et « 36 profils · 2,14 % · ok » sur chaque carte (D8), micro-barre + libellé
+    du requis (A2), carte dépliée avec phrase générée (D16), nav à 5 destinations (A3), labels sans figés (A1).</p>
+    <div class="tags"><span class="prio p1">A1 · A2 · A3</span><span class="prio p2">D1 · D8 · D16</span></div></a>
+
+  <a class="card" href="maquettes/simulation-verdict.html"><span class="no">M1 · desktop</span><h4>Scène du verdict — Simulation</h4>
+    <p>La première visite : simulation auto-lancée sur le jeu démo, UNE phrase de verdict en display, trois
+    cartes d'item vivantes (gardée au liseré or, recyclée désaturée + ⚒), subs gagnants en teinte utilitaire,
+    bandeau-oracle ◆ vert, « Créer une règle qui garde cette pièce », presets d'échantillon.</p>
+    <div class="tags"><span class="prio p1">preuve avant configuration</span><span class="prio p2">D2 · D3 · D9</span></div></a>
+
+  <a class="card" href="maquettes/editeur-regle.html"><span class="no">nouveau · desktop</span><h4>Éditeur de règle (dialogue)</h4>
+    <p>Le dialogue de création réordonné : Ensemble → Sets (grille filtrée par tier, chips lisibles ≥ .5) →
+    Main(s) → Subs (cycle hors-liste → liste → ★, trois états distincts + micro-label éphémère) → Requis
+    (micro-barre A2 + stepper) → Nom suggéré auto. En pied : la prévisualisation de portée <b>live</b>
+    (« ≈ 36 profils gardés · 2,14 % ») ; validation lazy — aucun rouge à l'ouverture.</p>
+    <div class="tags"><span class="prio p1">A2 · A6</span><span class="prio p2">D8 · D16 · socle &lt;dialog&gt;</span></div></a>
+
+  <a class="card" href="maquettes/saisie-recopie.html"><span class="no">nouveau · desktop</span><h4>Saisie en jeu — desktop</h4>
+    <p>La 5ᵉ destination (A3), sortie du pied de sidebar : progression 12/18 en héros, chaque règle à l'état
+    gravée / à saisir avec sa ligne à recopier en mono, la clé in-game copiable et « où la coller », le bouton
+    d'entrée du téléprompteur avec reprise (« reprendre à G13 »), et l'état <b>« modifiée depuis la saisie »</b>
+    (badge d'alerte + quoi a changé).</p>
+    <div class="tags"><span class="prio p1">A3</span><span class="prio p2">D4 · D7 · D16</span></div></a>
+
+  <a class="card" href="maquettes/share-card.html"><span class="no">M7 · 1200×630</span><h4>Share card PNG</h4>
+    <p>L'actif d'acquisition n°1, rendu 1:1 sur fond neutre : fond grimoire au liseré zénithal, ex-libris ◆
+    d'auteur, « End Game | Strict — 18 règles », % gardé en display doré (l'un des deux moments généreux de
+    l'or), sets clés au tier, clé in-game mono, QR placeholder SVG, lien d'import en pied — plus une variante
+    compacte 800×418, avec légendes.</p>
+    <div class="tags"><span class="prio p1">D10</span><span class="prio p2">D6 · D7</span></div></a>
+</div>
+
+<h2>Mobile 375 px — le téléphone posé à côté du jeu</h2>
+<div class="cards">
+  <a class="card" href="maquettes/session-farm-mobile.html"><span class="no">M6 · mobile</span><h4>Session — vérifier une pièce</h4>
+    <p>La saisie à une main : carte d'item sticky qui se construit tap après tap, verdict = état de la carte
+    (jamais de panneau à côté), « Créer une règle qui garde cette pièce » pré-rempli de ce qu'on vient de voir.</p>
+    <div class="tags"><span class="prio p2">D2 · D9 · D15</span></div></a>
+
+  <a class="card" href="maquettes/teleprompteur-mobile.html"><span class="no">M5 · mobile</span><h4>Recopie téléprompteur</h4>
+    <p>Une règle à la fois, plein écran, mono dominant — le seul écran où il règne. Jauge 7/18, boutons ✓ /
+    retour en zone pouce (44 px), reprise, et l'état 18/18 : « ◆ Jeu complet », le seul état lumineux de l'app.</p>
+    <div class="tags"><span class="prio p2">D4 · D6</span></div></a>
+
+  <a class="card" href="maquettes/tab-bar-mobile.html"><span class="no">M8 · mobile</span><h4>Navigation 5 destinations</h4>
+    <p>La tab bar basse à 5 entrées (◆ = actif), la sheet « ⋯ » de réglages, le sélecteur « Jeu de règles »
+    compact sous le titre — la décision client n°1, montrée telle qu'elle se vivrait.</p>
+    <div class="tags"><span class="prio p1">A3 · A5</span><span class="prio p2">D1</span></div></a>
+
+  <a class="card" href="maquettes/carte-item-mobile.html"><span class="no">M3 · composant</span><h4>Carte d'item vivante — planche d'états</h4>
+    <p>Le composant canonique n°1 dans ses quatre états : en construction (Session), ✓ gardée par G5 (liseré
+    or), recyclée (désaturée + ⚒), subs gagnants surlignés. <b>En cours d'écriture</b> — la planche rejoint
+    cet index à sa livraison.</p>
+    <div class="tags"><span class="prio p2">mobile 375px</span><span class="prio p2">D2</span></div></a>
+</div>
+
+<h2>Ce que les maquettes ne montrent pas — et pourquoi</h2>
+<div class="panel"><h4>Le périmètre refusé reste refusé</h4>
+<p>Aucune maquette ne contient de vignettage, de grain, de légende permanente, de confirmation sur un geste
+fréquent ni de dégradé d'or hors du 18/18 et de la share card : les écrans appliquent la
+<a href="03-charte-graphique.html">charte v3</a> jusque dans ses interdits. La palette Ctrl+K et le panneau
+<code>?</code> (M9) ainsi que l'édition à l'échelle (M10) suivront le même gabarit une fois le chantier moteur
+engagé — leurs specs sont déjà figées dans la <a href="01-synthese.html">synthèse</a> (A7, D12).</p></div>
+
+<div class="foot">
+  <span>Rapport Final · WoR Gear Builder · septembre 2026</span>
+  <a href="05-roadmap.html">Lire la roadmap →</a>
+</div>
+</main>
+</div>
+</body>
+</html>

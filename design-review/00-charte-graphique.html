@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WoR Gear Builder — Charte graphique (refonte)</title>
+<style>
+/* ════════════════════════════════════════════════════════════════
+   TOKENS — APRÈS (la proposition). Les démos « avant » embarquent
+   leurs valeurs actuelles en dur, copiées de l'app.
+   ════════════════════════════════════════════════════════════════ */
+:root{
+  --bg:#14121a; --bg-side:#100e15; --panel:#1d1a24; --panel2:#262230;
+  --border:#35303f; --border-soft:#2a2632; --hairline:rgba(255,255,255,.05);
+  /* Confort nocturne : le texte courant descend d'un cran (#ece7db → #d9d2c4),
+     l'ancien ink devient --ink-hi, réservé aux titres display et aux grands chiffres */
+  --ink:#d9d2c4; --ink-hi:#ece7db; --muted:#9a92a6; --faint:#6f6880;
+  --t3:#e0635a; --t2:#e2b04a; --t1:#a678e8; --t0:#5f9fd6; --t4:#4ef08a;
+  --off:#cf6054; --deff:#5f9fd6; --util:#6fbf8f;
+  --acc:#e2b04a; --acc-bd:rgba(226,176,74,.5); --acc-dim:rgba(226,176,74,.14);
+  --display:"Palatino Linotype","Iowan Old Style",Palatino,"Book Antiqua",Georgia,serif;
+  --body:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --mono:ui-monospace,"SF Mono","Cascadia Code",Menlo,Consolas,monospace;
+  /* Échelle typo — 6 crans au lieu de 19 tailles */
+  --fs-0:11px; --fs-1:12px; --fs-2:13px; --fs-3:15px; --fs-4:18px; --fs-5:22px;
+  /* Espacements — base 4 */
+  --s-1:4px; --s-2:8px; --s-3:12px; --s-4:16px; --s-5:24px; --s-6:32px;
+  /* Rayons — 3 crans + pilule */
+  --r-s:6px; --r-m:10px; --r-l:16px; --r-pill:999px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:var(--fs-3);line-height:1.6;padding:34px 26px 120px;max-width:1180px;margin:0 auto}
+::selection{background:var(--acc-dim)}
+
+/* ── Chrome de la charte elle-même ── */
+h1{font-family:var(--display);font-variant:small-caps;letter-spacing:.05em;font-size:30px;font-weight:600;color:var(--ink-hi)}
+h1 .d{color:var(--acc)}
+.lede{color:var(--muted);font-size:14px;max-width:820px;margin-top:6px}
+h2.sec{font-family:var(--display);font-variant:small-caps;letter-spacing:.06em;font-size:var(--fs-5);font-weight:600;color:var(--ink-hi);
+  margin:58px 0 6px;padding-top:22px;border-top:1px solid var(--border-soft);display:flex;align-items:baseline;gap:12px}
+h2.sec .no{font-family:var(--mono);font-size:13px;color:var(--acc)}
+.sec-lede{color:var(--muted);font-size:13.5px;max-width:860px;margin-bottom:18px}
+h3.cmp{font-family:var(--display);font-variant:small-caps;letter-spacing:.05em;font-size:17px;font-weight:600;color:var(--ink);margin:34px 0 4px}
+.cmp-note{color:var(--muted);font-size:13px;max-width:860px;margin-bottom:12px}
+.cmp-note b{color:var(--ink)}
+code{font-family:var(--mono);font-size:.88em;background:var(--panel2);border-radius:4px;padding:1px 5px;color:var(--t2)}
+
+/* Vitrines avant/après */
+.duo{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:stretch}
+.duo.solo{grid-template-columns:1fr}
+@media(max-width:900px){.duo{grid-template-columns:1fr}}
+.pane{border-radius:var(--r-l);padding:18px;position:relative;min-width:0}
+.pane.avant{background:#17151d;border:1px dashed #3a3444}
+.pane.apres{background:#181622;border:1px solid rgba(226,176,74,.25)}
+.pane .tag{position:absolute;top:-9px;left:14px;font-family:var(--mono);font-size:10px;letter-spacing:.12em;
+  text-transform:uppercase;padding:2px 9px;border-radius:var(--r-pill)}
+.pane.avant .tag{background:#3a3444;color:#a89fb8}
+.pane.apres .tag{background:var(--acc);color:#1c1608;font-weight:700}
+.pane .why{margin-top:14px;padding-top:10px;border-top:1px dashed var(--border-soft);color:var(--faint);font-size:12px;line-height:1.55}
+.pane .why b{color:var(--muted)}
+
+/* Tables de la charte */
+table.doc{width:100%;border-collapse:collapse;font-size:13px;margin:14px 0}
+table.doc th{font-family:var(--display);font-variant:small-caps;font-size:13px;letter-spacing:.04em;text-align:left;color:var(--muted);padding:7px 10px;border-bottom:1px solid var(--border)}
+table.doc td{padding:7px 10px;border-bottom:1px solid var(--border-soft);vertical-align:top}
+.v-ok{color:var(--util);font-family:var(--mono);font-size:11px;white-space:nowrap}
+.v-merge{color:var(--t0);font-family:var(--mono);font-size:11px;white-space:nowrap}
+.v-simpl{color:var(--acc);font-family:var(--mono);font-size:11px;white-space:nowrap}
+.v-fold{color:var(--t1);font-family:var(--mono);font-size:11px;white-space:nowrap}
+.v-kill{color:var(--off);font-family:var(--mono);font-size:11px;white-space:nowrap}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin:10px 0 4px}
+
+.swatches{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+.sw{width:120px;border-radius:var(--r-m);overflow:hidden;border:1px solid var(--hairline)}
+.sw .c{height:44px}
+.sw .l{font-family:var(--mono);font-size:10px;color:var(--muted);padding:5px 8px;background:var(--panel)}
+.typerow{display:flex;align-items:baseline;gap:18px;padding:7px 0;border-bottom:1px dashed var(--border-soft)}
+.typerow .tk{font-family:var(--mono);font-size:11px;color:var(--faint);width:120px;flex:0 0 auto}
+.pill-list{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:8px 0}
+.rad-demo{background:var(--panel2);border:1px solid var(--border);width:74px;height:44px;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:10px;color:var(--muted)}
+
+/* Principes */
+.principles{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px;margin:16px 0}
+.prin{background:var(--panel);border-radius:var(--r-l);padding:16px 18px;border:1px solid var(--hairline)}
+.prin .n{font-family:var(--mono);font-size:11px;color:var(--acc)}
+.prin h4{font-family:var(--display);font-variant:small-caps;font-size:16px;margin:2px 0 6px}
+.prin p{color:var(--muted);font-size:12.5px;line-height:1.55}
+
+/* Stats d'audit */
+.audit-strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px;margin:16px 0}
+.audit-card{background:var(--panel);border-radius:var(--r-l);padding:14px 16px;border:1px solid var(--hairline)}
+.audit-card .num{font-family:var(--display);font-size:26px;color:var(--off);line-height:1.1}
+.audit-card .num .to{color:var(--util);font-size:20px}
+.audit-card .num .arr{color:var(--faint);font-size:16px;font-family:var(--mono)}
+.audit-card .lbl{color:var(--muted);font-size:12px;margin-top:3px;line-height:1.4}
+
+/* ════════════════════════════════════════════════════════════════
+   AVANT — copie exacte des styles actuels, préfixée .av
+   ════════════════════════════════════════════════════════════════ */
+.av .panel{background:var(--panel);border:1px solid var(--border-soft);border-radius:12px;padding:18px 20px;margin:8px 0}
+.av .panel h4{font-family:var(--display);font-variant:small-caps;letter-spacing:.05em;font-size:16px;font-weight:600;margin-bottom:8px}
+.av .hint{color:var(--faint);font-size:12px;margin:8px 0 0}
+.av .hint b{color:var(--muted);font-weight:600}
+.av .hint ul{list-style:none;margin:0;padding:0}
+.av .hint li{padding:2px 0 2px 15px;position:relative}
+.av .hint li::before{content:"◆";position:absolute;left:0;top:7px;font-size:7px;color:var(--faint)}
+.av .btn{appearance:none;background:var(--panel);border:1px solid var(--border);color:var(--ink);font-family:var(--mono);font-size:12px;padding:7px 14px;border-radius:8px;cursor:pointer}
+.av .btn.primary{background:var(--acc-dim);border-color:var(--acc-bd);color:var(--acc);font-weight:600}
+.av .sbtn{appearance:none;background:var(--panel2);border:1px solid var(--border);color:var(--muted);font-family:var(--mono);font-size:11px;padding:4px 11px;border-radius:6px;cursor:pointer}
+.av .side-btn{appearance:none;background:var(--panel);border:1px solid var(--border);color:var(--muted);font-family:var(--mono);font-size:11.5px;padding:7px 10px;border-radius:8px;cursor:pointer;text-align:center}
+.av .fchip{appearance:none;background:var(--panel);border:1px solid var(--border);color:var(--muted);font-family:var(--mono);font-size:11.5px;padding:5px 12px;border-radius:20px;cursor:pointer}
+.av .fchip.on{color:var(--acc);border-color:var(--acc-bd);background:var(--acc-dim)}
+.av .seg{display:inline-flex;background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:3px;gap:3px}
+.av .seg button{appearance:none;background:none;border:none;color:var(--muted);font-family:var(--display);font-variant:small-caps;letter-spacing:.04em;font-size:14px;padding:5px 14px;border-radius:7px;cursor:pointer}
+.av .seg button.on{background:var(--acc-dim);color:var(--acc)}
+.av .chip{display:inline-block;font-family:var(--mono);font-size:11.5px;padding:2px 8px;border-radius:5px;border:1px solid var(--border);background:var(--panel2);color:var(--ink);margin:2px 3px 2px 0;white-space:nowrap}
+.av .chip.off{border-color:rgba(207,96,84,.5);color:#e8968c}
+.av .chip.deff{border-color:rgba(95,159,214,.5);color:#93c1e8}
+.av .chip.util{border-color:rgba(111,191,143,.5);color:#9ed9b4}
+.av .chip.ess{border-width:1.5px;font-weight:700}
+.av .chip.ess.deff{background:rgba(95,159,214,.14)}
+.av .chip.set{font-family:var(--body);font-size:12px;background:transparent}
+.av .chip.set.t3{border-color:rgba(224,99,90,.55);color:#ef948c}
+.av .chip.set.t2{border-color:rgba(226,176,74,.55);color:var(--t2)}
+.av .rule{background:var(--panel);border:1px solid var(--border-soft);border-radius:12px;border-left:3px solid var(--acc);margin:9px 0;overflow:hidden}
+.av .row-head{display:flex;align-items:center;gap:11px;padding:11px 14px;cursor:pointer;flex-wrap:wrap}
+.av .chk{appearance:none;flex:0 0 auto;width:17px;height:17px;border:1.5px solid var(--faint);border-radius:5px;background:transparent;cursor:pointer;position:relative}
+.av .chk:checked{background:var(--acc);border-color:var(--acc)}
+.av .chk:checked::after{content:"✓";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#1c1608;font-size:12px;font-weight:700}
+.av .rc-id{font-family:var(--mono);font-size:11px;font-weight:600;color:var(--acc);background:var(--acc-dim);border:1px solid var(--acc-bd);border-radius:5px;padding:2px 8px}
+.av .rc-name{font-family:var(--display);font-variant:small-caps;letter-spacing:.03em;font-size:16px;font-weight:600}
+.av .role{font-family:var(--mono);font-size:9px;letter-spacing:.06em;text-transform:uppercase;color:var(--faint);border:1px solid var(--border-soft);border-radius:4px;padding:1px 5px;margin-left:6px;vertical-align:2px}
+.av .row-mains{font-family:var(--mono);font-size:11.5px;color:var(--muted)}
+.av .row-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.av .minis{display:flex;gap:3px}
+.av .mini{font-family:var(--mono);font-size:10px;padding:1px 6px;border-radius:4px;border:1px solid var(--border);color:var(--muted)}
+.av .mini.e{color:var(--acc);border-color:var(--acc-bd)}
+.av .dots{display:flex;gap:4px}
+.av .dot{width:10px;height:10px;border-radius:50%;border:1.5px solid var(--faint)}
+.av .dot.fill{background:var(--acc);border-color:var(--acc)}
+.av .cov-card{background:var(--panel);border:1px solid var(--border-soft);border-radius:12px;padding:12px 15px}
+.av .cov-card .num{font-family:var(--display);font-size:23px;color:var(--acc);line-height:1.15}
+.av .cov-card .lbl{color:var(--muted);font-size:11.5px;margin-top:2px}
+.av .ctl-label{font-family:var(--mono);font-size:9.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--faint);display:block;margin-bottom:5px}
+.av .grp-label{display:block;font-family:var(--display);font-variant:small-caps;letter-spacing:.04em;font-size:13px;color:var(--faint);margin-bottom:5px}
+.av h3.grp-head{font-family:var(--display);font-variant:small-caps;letter-spacing:.05em;font-weight:600;font-size:15.5px;color:var(--muted);margin:10px 0;display:flex;align-items:center;gap:10px}
+.av h3.grp-head::after{content:"";flex:1;height:1px;background:linear-gradient(to right,var(--border),transparent)}
+.av select{background:var(--panel2);border:1px solid var(--border);border-radius:7px;color:var(--ink);padding:6px 9px;font:inherit;font-size:13px}
+.av .controls{display:flex;flex-wrap:wrap;align-items:flex-end;gap:12px 18px;margin:8px 0;background:var(--panel);border:1px solid var(--border-soft);border-radius:12px;padding:11px 14px}
+.av .piece{background:var(--panel);border:1px solid var(--border-soft);border-left:3px solid var(--util);border-radius:10px;overflow:hidden;max-width:250px}
+.av .piece.rej{border-left-color:var(--off);opacity:.82}
+.av .p-head{display:flex;align-items:center;gap:7px;padding:9px 11px 6px;flex-wrap:wrap}
+.av .p-slot{font-family:var(--display);font-variant:small-caps;font-size:12.5px;color:var(--faint)}
+.av .p-main{font-family:var(--mono);font-size:11.5px;font-weight:700;color:var(--ink);margin-left:auto;background:var(--panel2);border:1px solid var(--border);border-radius:5px;padding:1px 7px}
+.av .p-subs{display:flex;gap:4px;flex-wrap:wrap;padding:0 11px 9px}
+.av .p-verdict{font-family:var(--mono);font-size:11px;padding:0 11px 9px}
+.av .p-verdict .v-okk{color:var(--util)}
+.av .p-verdict .v-rejj{color:var(--off)}
+.av table{width:100%;border-collapse:collapse;font-size:13.5px;margin:4px 0}
+.av th{font-family:var(--display);font-variant:small-caps;letter-spacing:.04em;font-weight:600;text-align:left;color:var(--muted);padding:8px 10px;border-bottom:1px solid var(--border);white-space:nowrap}
+.av td{padding:8px 10px;border-bottom:1px solid var(--border-soft)}
+.av .tier-badge{display:inline-block;font-family:var(--mono);font-size:11px;font-weight:600;padding:1px 8px;border-radius:4px}
+.av .tier-badge.b2{background:rgba(226,176,74,.15);color:var(--t2);border:1px solid rgba(226,176,74,.4)}
+.av .tier-badge.b3{background:rgba(224,99,90,.13);color:#ef948c;border:1px solid rgba(224,99,90,.4)}
+
+/* ════════════════════════════════════════════════════════════════
+   APRÈS — la proposition, préfixée .ap
+   ════════════════════════════════════════════════════════════════ */
+.ap .panel{background:var(--panel);border:1px solid var(--hairline);border-radius:var(--r-l);padding:var(--s-5);margin:var(--s-2) 0}
+.ap .panel h4{font-family:var(--display);font-variant:small-caps;letter-spacing:.05em;font-size:var(--fs-4);font-weight:600;margin-bottom:var(--s-2);display:flex;align-items:center;gap:8px}
+.ap .help{appearance:none;width:19px;height:19px;border-radius:50%;border:1px solid var(--border);background:none;color:var(--faint);font-family:var(--mono);font-size:11px;line-height:1;cursor:pointer;flex:0 0 auto;transition:all .15s}
+.ap .help:hover,.ap .help.on{color:var(--acc);border-color:var(--acc-bd);background:var(--acc-dim)}
+.ap .hint{color:var(--faint);font-size:var(--fs-1);margin-top:var(--s-2)}
+.ap .hint ul{list-style:none;margin:0;padding:0}
+.ap .hint li{padding:2px 0 2px 15px;position:relative}
+.ap .hint li::before{content:"◆";position:absolute;left:0;top:7px;font-size:7px;color:var(--faint)}
+.ap .btn{appearance:none;height:32px;display:inline-flex;align-items:center;gap:7px;background:transparent;border:1px solid var(--border);
+  color:var(--muted);font-family:var(--body);font-size:var(--fs-2);font-weight:500;padding:0 var(--s-4);border-radius:8px;cursor:pointer;transition:all .15s}
+.ap .btn:hover{color:var(--ink);border-color:var(--faint)}
+.ap .btn.sm{height:26px;padding:0 var(--s-3);font-size:var(--fs-1)}
+.ap .btn.primary{background:var(--acc);border-color:var(--acc);color:#1c1608;font-weight:600}
+.ap .btn.primary:hover{filter:brightness(1.08)}
+.ap .btn.danger:hover{color:var(--off);border-color:var(--off)}
+.ap .chip{display:inline-flex;align-items:center;font-family:var(--mono);font-size:var(--fs-0);padding:3px 9px;border-radius:var(--r-s);border:1px solid var(--border);background:var(--panel2);color:var(--ink);white-space:nowrap}
+.ap .chip.off{border-color:rgba(207,96,84,.5);color:#e8968c}
+.ap .chip.deff{border-color:rgba(95,159,214,.5);color:#93c1e8}
+.ap .chip.util{border-color:rgba(111,191,143,.5);color:#9ed9b4}
+.ap .chip.ess{border-width:1.5px;font-weight:700}
+.ap .chip.ess.deff{background:rgba(95,159,214,.14)}
+.ap .chip.set{font-family:var(--body);font-size:var(--fs-1);background:transparent}
+.ap .chip.set.t3{border-color:rgba(224,99,90,.55);color:#ef948c}
+.ap .chip.set.t2{border-color:rgba(226,176,74,.55);color:var(--t2)}
+.ap .chip.pill{border-radius:var(--r-pill);background:transparent;color:var(--muted);cursor:pointer}
+.ap .chip.pill.on{color:var(--acc);border-color:var(--acc-bd);background:var(--acc-dim)}
+.ap .seg{display:inline-flex;background:var(--panel2);border-radius:var(--r-m);padding:3px;gap:2px}
+.ap .seg button{appearance:none;background:none;border:none;color:var(--muted);font-family:var(--display);font-variant:small-caps;letter-spacing:.04em;font-size:14px;padding:5px 14px;border-radius:calc(var(--r-m) - 3px);cursor:pointer;transition:all .15s}
+.ap .seg button.on{background:var(--panel);color:var(--acc);box-shadow:0 1px 4px rgba(0,0,0,.3)}
+.ap .rule{background:var(--panel);border:1px solid var(--hairline);border-radius:var(--r-m);margin:var(--s-2) 0;overflow:hidden;transition:background .15s}
+.ap .rule:hover{background:#211d2b}
+.ap .row-head{display:flex;align-items:center;gap:var(--s-3);padding:var(--s-3) var(--s-4);cursor:pointer;flex-wrap:wrap}
+.ap .chk{appearance:none;flex:0 0 auto;width:17px;height:17px;border:1.5px solid var(--faint);border-radius:5px;background:transparent;cursor:pointer;position:relative}
+.ap .chk:checked{background:var(--acc);border-color:var(--acc)}
+.ap .chk:checked::after{content:"✓";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#1c1608;font-size:12px;font-weight:700}
+.ap .rc-id{font-family:var(--mono);font-size:var(--fs-0);font-weight:600;color:var(--acc);background:var(--acc-dim);border-radius:var(--r-s);padding:2px 8px}
+.ap .rc-id.d3{color:#8fbde4;background:rgba(95,159,214,.12)}
+.ap .rc-name{font-family:var(--display);font-variant:small-caps;letter-spacing:.03em;font-size:16px;font-weight:600}
+.ap .row-meta{margin-left:auto;display:flex;align-items:center;gap:var(--s-3);color:var(--faint);font-family:var(--mono);font-size:var(--fs-0)}
+.ap .dots{display:flex;gap:4px}
+.ap .dot{width:9px;height:9px;border-radius:50%;border:1.5px solid var(--border)}
+.ap .dot.fill{background:var(--acc);border-color:var(--acc)}
+.ap .cov-card{background:var(--panel);border:1px solid var(--hairline);border-radius:var(--r-l);padding:var(--s-4) var(--s-4)}
+.ap .cov-card .num{font-family:var(--display);font-size:27px;color:var(--ink-hi);line-height:1.15}
+.ap .cov-card .num b{color:var(--acc);font-weight:400}
+.ap .cov-card .lbl{color:var(--faint);font-size:var(--fs-0);margin-top:2px;text-transform:uppercase;letter-spacing:.07em;font-family:var(--mono);font-size:10px}
+.ap .lab{display:block;font-family:var(--display);font-variant:small-caps;letter-spacing:.06em;font-size:var(--fs-2);color:var(--faint);margin-bottom:var(--s-1)}
+.ap select{background:var(--panel2);border:1px solid var(--border);border-radius:var(--r-s);color:var(--ink);padding:6px 10px;font:inherit;font-size:var(--fs-2)}
+.ap .controls{display:flex;flex-wrap:wrap;align-items:flex-end;gap:var(--s-3) var(--s-5);margin:var(--s-2) 0;padding:0}
+.ap .piece{background:var(--panel);border:1px solid var(--hairline);border-radius:var(--r-m);overflow:hidden;max-width:250px}
+.ap .p-head{display:flex;align-items:center;gap:7px;padding:10px 12px 6px;flex-wrap:wrap}
+.ap .p-verd-ico{width:8px;height:8px;border-radius:50%;flex:0 0 auto}
+.ap .piece.ok .p-verd-ico{background:var(--util)}
+.ap .piece.rej .p-verd-ico{background:var(--off)}
+.ap .piece.rej{opacity:.72}
+.ap .p-slot{font-family:var(--display);font-variant:small-caps;font-size:12.5px;color:var(--faint)}
+.ap .p-main{font-family:var(--mono);font-size:var(--fs-0);font-weight:700;color:var(--ink);margin-left:auto;background:var(--panel2);border-radius:var(--r-s);padding:2px 8px}
+.ap .p-subs{display:flex;gap:4px;flex-wrap:wrap;padding:0 12px 8px}
+.ap .p-foot{font-family:var(--mono);font-size:var(--fs-0);padding:0 12px 10px}
+.ap .p-foot .ok{color:var(--util)} .ap .p-foot .rej{color:var(--off)}
+.ap table{width:100%;border-collapse:collapse;font-size:var(--fs-2);margin:4px 0}
+.ap th{font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;font-weight:500;text-align:left;color:var(--faint);padding:7px 10px;border-bottom:1px solid var(--border);white-space:nowrap}
+.ap td{padding:9px 10px;border-bottom:1px solid var(--hairline)}
+.ap tr:hover td{background:rgba(255,255,255,.018)}
+.ap .tier-badge{display:inline-flex;font-family:var(--mono);font-size:var(--fs-0);font-weight:600;padding:2px 9px;border-radius:var(--r-pill)}
+.ap .tier-badge.b2{background:rgba(226,176,74,.15);color:var(--t2)}
+.ap .tier-badge.b3{background:rgba(224,99,90,.13);color:#ef948c}
+</style>
+</head>
+<body>
+
+<h1><span class="d">◆</span> Charte graphique — refonte</h1>
+<p class="lede">Audit de densité + design system avant/après du WoR Gear Builder. Objectif : <b>garder l'identité</b>
+(sombre, Palatino small-caps, accent or, codes couleur des tiers/stats) mais <b>retirer du bruit</b> — moins de bordures,
+moins de tailles, moins de texte toujours visible — pour que la hiérarchie porte l'information au lieu de l'encre.</p>
+
+<!-- ═══════════════ 1 · AUDIT ═══════════════ -->
+<h2 class="sec"><span class="no">1</span> L'audit en chiffres</h2>
+<p class="sec-lede">Mesuré sur le CSS actuel (lignes 15-507 de l'app). Chaque chiffre rouge est une source d'hétérogénéité
+que l'œil paie à chaque écran ; la cible verte est ce que le design system impose.</p>
+
+<div class="audit-strip">
+  <div class="audit-card"><div class="num">19 <span class="arr">→</span> <span class="to">6</span></div><div class="lbl">tailles de police distinctes (9 à 25 px, par demi-points) → échelle à 6 crans</div></div>
+  <div class="audit-card"><div class="num">11 <span class="arr">→</span> <span class="to">4</span></div><div class="lbl">rayons de bordure différents → 6 / 10 / 16 px + pilule</div></div>
+  <div class="audit-card"><div class="num">6 <span class="arr">→</span> <span class="to">1</span></div><div class="lbl">variantes de bouton (btn, sbtn, side-btn, fchip, seg, tab-btn) → un système à modificateurs</div></div>
+  <div class="audit-card"><div class="num">~90 <span class="arr">→</span> <span class="to">~55</span></div><div class="lbl">composants CSS nommés → fusion des redondants</div></div>
+  <div class="audit-card"><div class="num">3 <span class="arr">→</span> <span class="to">1</span></div><div class="lbl">styles de label de groupe (ctl-label, grp-label, p-sum) → un seul</div></div>
+  <div class="audit-card"><div class="num">100 % <span class="arr">→</span> <span class="to">à la demande</span></div><div class="lbl">des hints affichés en permanence → repliés derrière un « ? »</div></div>
+</div>
+
+<!-- ═══════════════ 2 · PRINCIPES ═══════════════ -->
+<h2 class="sec"><span class="no">2</span> Les 5 principes de la refonte</h2>
+
+<div class="principles">
+  <div class="prin"><span class="n">P1</span><h4>La bordure est une affordance</h4>
+    <p>Aujourd'hui tout a une bordure 1px : panneaux, chips, badges, boutons, inputs. Après : une bordure visible = « tu peux
+    interagir avec moi ». Les conteneurs passifs (panneaux, cartes) se distinguent par leur fond (3 paliers bg → panel → panel2)
+    et un liseré quasi invisible (<code>--hairline</code>).</p></div>
+  <div class="prin"><span class="n">P2</span><h4>L'aide est là quand on la demande</h4>
+    <p>Les laïus explicatifs (sémantique ★, scope, taux…) sont utiles 3 fois puis relus jamais. Ils se replient derrière un
+    bouton <b>?</b> à côté du titre de section — mémorisé : un habitué ne les revoit plus, un nouveau les trouve en un clic.</p></div>
+  <div class="prin"><span class="n">P3</span><h4>Un seul vrai bouton d'action par zone</h4>
+    <p>Le primaire actuel (fond or à 14 %) se distingue à peine du secondaire. Après : le primaire est <b>plein accent</b> —
+    il n'y en a qu'un par zone (Générer, Nouvelle règle, Enregistrer) et l'œil le trouve sans lire.</p></div>
+  <div class="prin"><span class="n">P4</span><h4>Le doré est un signal, pas un décor</h4>
+    <p>Liseré or sur chaque règle, id or, badge or, primaire or : tout brille, rien ne ressort. Après : les cartes de règles
+    sont neutres, l'or reste aux ids, à la navigation active, au primaire et aux valeurs importantes.</p></div>
+  <div class="prin"><span class="n">P5</span><h4>Une échelle, pas des réglages au pixel</h4>
+    <p>Typo (6 crans), espacements (base 4 : 4/8/12/16/24/32), rayons (6/10/16/pilule). Tout écart à l'échelle doit se
+    justifier — c'est la règle qui rendra les futurs devs (et la migration framework) rapides et cohérents.</p></div>
+</div>
+
+<!-- ═══════════════ 3 · TOKENS ═══════════════ -->
+<h2 class="sec"><span class="no">3</span> Tokens</h2>
+<p class="sec-lede">La palette ne bouge pas (identité conservée, light mode et 5 accents inclus) — on <b>ajoute</b> les échelles
+qui manquent et le token <code>--hairline</code> pour les conteneurs passifs.</p>
+
+<h3 class="cmp">Palette (fonds et couleurs sémantiques inchangés)</h3>
+<div class="swatches">
+  <div class="sw"><div class="c" style="background:#14121a"></div><div class="l">--bg</div></div>
+  <div class="sw"><div class="c" style="background:#1d1a24"></div><div class="l">--panel</div></div>
+  <div class="sw"><div class="c" style="background:#262230"></div><div class="l">--panel2</div></div>
+  <div class="sw"><div class="c" style="background:#e2b04a"></div><div class="l">--acc (or)</div></div>
+  <div class="sw"><div class="c" style="background:#cf6054"></div><div class="l">--off</div></div>
+  <div class="sw"><div class="c" style="background:#5f9fd6"></div><div class="l">--deff / --t0</div></div>
+  <div class="sw"><div class="c" style="background:#6fbf8f"></div><div class="l">--util</div></div>
+  <div class="sw"><div class="c" style="background:#a678e8"></div><div class="l">--t1</div></div>
+  <div class="sw"><div class="c" style="background:#4ef08a"></div><div class="l">--t4 (T∞)</div></div>
+</div>
+
+<h3 class="cmp">Confort nocturne — l'encre descend d'un cran</h3>
+<p class="cmp-note">Le texte courant actuel (<code>--ink:#ece7db</code>, contraste ≈ 13:1 sur <code>--bg</code>) éblouit dans
+le noir dès qu'une zone est dense. La refonte scinde l'encre en deux : le <b>texte courant</b> descend à
+<code>#d9d2c4</code> (≈ 11:1 — toujours très au-dessus du AAA), l'ancienne valeur devient <code>--ink-hi</code>,
+réservée aux <b>titres display et grands chiffres</b>. Règle associée : <b>plus aucun <code>#fff</code> de texte</b> —
+les deux survivants de l'app (<code>.btn.arm</code>, coche du mode clair) passent à <code>--ink-hi</code>.
+Cette page applique déjà la nouvelle encre partout.</p>
+<div class="duo">
+  <div class="pane avant"><span class="tag">Avant</span>
+    <div style="color:#ece7db;font-size:15px">Tout le texte — corps, tables, chips, labels de règles — porte la même encre
+    #ece7db. Sur un paragraphe entier comme celui-ci, dans une pièce sombre, la masse claire fatigue :
+    l'œil n'a aucune zone de repos.</div>
+  </div>
+  <div class="pane apres"><span class="tag">Après</span>
+    <div style="color:var(--ink);font-size:15px">Le corps de texte respire un cran plus bas (#d9d2c4) ; seuls
+    <span style="color:var(--ink-hi);font-family:var(--display);font-variant:small-caps">les titres</span> et les
+    <span style="color:var(--ink-hi);font-family:var(--display)">172 410</span> gardent l'encre claire — la hiérarchie
+    gagne ce que la luminance perd.</div>
+  </div>
+</div>
+
+<h3 class="cmp">Échelle typographique — 6 crans</h3>
+<p class="cmp-note">Remplace les 19 tailles actuelles. Règle de correspondance : 9/9.5/10/10.5/11 → <b>fs-0</b> ;
+11.5/12/12.5 → <b>fs-1</b> ; 13/13.5/14 → <b>fs-2</b> ; 14.5/15/15.5/16 → <b>fs-3</b> ; 16.5/17/19 → <b>fs-4</b> ; 23/25 → <b>fs-5</b>.</p>
+<div>
+  <div class="typerow"><span class="tk">--fs-0 · 11px</span><span style="font-size:11px">Chips, badges, méta — jamais en dessous (les 9-10px actuels sont illisibles)</span></div>
+  <div class="typerow"><span class="tk">--fs-1 · 12px</span><span style="font-size:12px">Hints, labels secondaires, verdicts</span></div>
+  <div class="typerow"><span class="tk">--fs-2 · 13px</span><span style="font-size:13px">Corps de texte dense : tables, contrôles, boutons</span></div>
+  <div class="typerow"><span class="tk">--fs-3 · 15px</span><span style="font-size:15px">Corps de texte par défaut, noms de règles</span></div>
+  <div class="typerow"><span class="tk">--fs-4 · 18px</span><span style="font-size:18px;font-family:var(--display);font-variant:small-caps">Titres de panneaux et de sections</span></div>
+  <div class="typerow"><span class="tk">--fs-5 · 22px</span><span style="font-size:22px;font-family:var(--display);font-variant:small-caps">Titres de vues, grands chiffres</span></div>
+</div>
+
+<h3 class="cmp">Espacements & rayons</h3>
+<p class="cmp-note">Espacements sur base 4 : <code>4 / 8 / 12 / 16 / 24 / 32</code>. Rayons :</p>
+<div class="pill-list">
+  <div class="rad-demo" style="border-radius:6px">6 — chips</div>
+  <div class="rad-demo" style="border-radius:10px">10 — boutons, cartes</div>
+  <div class="rad-demo" style="border-radius:16px">16 — panneaux</div>
+  <div class="rad-demo" style="border-radius:999px">pilule — filtres</div>
+</div>
+
+<!-- ═══════════════ 4 · INVENTAIRE ═══════════════ -->
+<h2 class="sec"><span class="no">4</span> Inventaire exhaustif des éléments visuels</h2>
+<p class="sec-lede">Tous les composants du CSS actuel, avec leur verdict. Les démos rendues (section 5) couvrent tout ce qui
+est marqué <i>simplifier</i> ou <i>fusionner</i>.</p>
+<div class="legend">
+  <span><span class="v-ok">garder</span> — inchangé (retouche de tokens au plus)</span>
+  <span><span class="v-merge">fusionner</span> — absorbé par un autre composant</span>
+  <span><span class="v-simpl">simplifier</span> — redessiné</span>
+  <span><span class="v-fold">replier</span> — masqué par défaut</span>
+  <span><span class="v-kill">supprimer</span></span>
+</div>
+
+<table class="doc">
+<tr><th style="width:190px">Élément</th><th>Où</th><th>Problème</th><th style="width:90px">Verdict</th></tr>
+<tr><td><b>Structure</b> · sidebar, burger/tiroir mobile, .wrap</td><td>global</td><td>—</td><td><span class="v-ok">garder</span></td></tr>
+<tr><td>.nav-btn + .count</td><td>sidebar</td><td>—</td><td><span class="v-ok">garder</span></td></tr>
+<tr><td>.side-foot (progression, thème, densité, langue, accents)</td><td>sidebar</td><td>6 contrôles empilés toujours visibles ; thème/densité/langue/accent servent une fois</td><td><span class="v-fold">replier</span></td></tr>
+<tr><td>.side-btn</td><td>sidebar</td><td>3ᵉ style de bouton</td><td><span class="v-merge">fusionner</span> → .btn</td></tr>
+<tr><td>.view-head (h2 + lede)</td><td>toutes vues</td><td>—</td><td><span class="v-ok">garder</span></td></tr>
+<tr><td>h3.grp-head (sticky + filet)</td><td>listes</td><td>—</td><td><span class="v-ok">garder</span></td></tr>
+<tr><td>.ctl-label / .grp-label / .p-sum</td><td>partout</td><td>3 styles de label concurrents (mono 9.5px uppercase vs display 13px vs display 16px)</td><td><span class="v-simpl">simplifier</span> → .lab unique</td></tr>
+<tr><td>.tab-btn / .tab-add / .tab-rename</td><td>onglets</td><td>4ᵉ style de bouton mais rôle distinct (ok)</td><td><span class="v-ok">garder</span></td></tr>
+<tr><td>.key-row + .key-input</td><td>clé in-game</td><td>—</td><td><span class="v-ok">garder</span></td></tr>
+<tr><td>.seg (segmented)</td><td>modes, slots, scopes</td><td>bordure + fond : lourd ; l'état actif (teinte) se voit mal</td><td><span class="v-simpl">simplifier</span> (fond creusé, actif surélevé)</td></tr>
+<tr><td>.controls (barre grise)</td><td>testeur, filtres</td><td>panneau dans le panneau — la boîte n'apporte rien</td><td><span class="v-simpl">simplifier</span> (sans boîte)</td></tr>
+<tr><td>.controls-acc (accordéon filtres)</td><td>règles</td><td>—</td><td><span class="v-ok">garder</span></td></tr>
+<tr><td>.search</td><td>règles</td><td>—</td><td><span class="v-ok">garder</span></td></tr>
+<tr><td>.fchip (pilule filtre)</td><td>filtres, rôles</td><td>5ᵉ style de bouton</td><td><span class="v-merge">fusionner</span> → .chip.pill</td></tr>
+<tr><td>.btn (+primary/danger/arm)</td><td>partout</td><td>primaire trop discret (teinte 14 %) ; mono partout</td><td><span class="v-simpl">simplifier</span> (primaire plein, police body)</td></tr>
+<tr><td>.sbtn (+ok/del)</td><td>corps de règle, steppers</td><td>2ᵉ style de bouton</td><td><span class="v-merge">fusionner</span> → .btn.sm</td></tr>
+<tr><td>.hint (+listes ◆)</td><td>partout</td><td>toujours visibles, répétés par mode — 1ʳᵉ source de densité</td><td><span class="v-fold">replier</span> derrière « ? »</td></tr>
+<tr><td>.rule (carte de règle)</td><td>règles</td><td>liseré or systématique + bordure + fond : tout ressort</td><td><span class="v-simpl">simplifier</span> (carte neutre, id porte la couleur)</td></tr>
+<tr><td>.row-head (chk, rc-id, rc-name, role, row-mains, minis, dots, drag, chev)</td><td>règles</td><td>8 objets par ligne ; minis + dots + mains = 3 résumés concurrents</td><td><span class="v-simpl">simplifier</span> (un seul résumé méta)</td></tr>
+<tr><td>.row-body + .rb-grid</td><td>règles</td><td>—</td><td><span class="v-ok">garder</span></td></tr>
+<tr><td>.chip (stats) + .ess/.stateoff/.pick/.sel</td><td>partout</td><td>anatomie ok (familles de couleurs = force du produit) — juste tokens</td><td><span class="v-ok">garder</span></td></tr>
+<tr><td>.chip.set (tiers)</td><td>partout</td><td>idem</td><td><span class="v-ok">garder</span></td></tr>
+<tr><td>.tier-badge</td><td>tables sets</td><td>bordure + fond + couleur = surchargé</td><td><span class="v-simpl">simplifier</span> (pilule sans bordure)</td></tr>
+<tr><td>.ruleref (id cliquable)</td><td>testeur, sets</td><td>—</td><td><span class="v-ok">garder</span></td></tr>
+<tr><td>.stepper (numérique)</td><td>requis</td><td>—</td><td><span class="v-ok">garder</span></td></tr>
+<tr><td>.cov-strip / .cov-card</td><td>couverture</td><td>chiffre or sur carte bordée : concurrence visuelle</td><td><span class="v-simpl">simplifier</span> (chiffre encre, label mono uppercase)</td></tr>
+<tr><td>.covbar (barres de taux)</td><td>couverture</td><td>—</td><td><span class="v-ok">garder</span></td></tr>
+<tr><td>.piece (carte de pièce)</td><td>échantillon</td><td>liseré vert/rouge + opacité + verdict texte : 3 signaux pour 1 info</td><td><span class="v-simpl">simplifier</span> (point de verdict + opacité)</td></tr>
+<tr><td>.tm-step (stepper pièce manuelle)</td><td>testeur</td><td>récent, déjà validé</td><td><span class="v-ok">garder</span></td></tr>
+<tr><td>.slot-row / contraintes</td><td>testeur</td><td>—</td><td><span class="v-ok">garder</span></td></tr>
+<tr><td>.panel (+note) / details.panel</td><td>partout</td><td>bordure visible sur conteneur passif</td><td><span class="v-simpl">simplifier</span> (hairline)</td></tr>
+<tr><td>table th/td</td><td>partout</td><td>th en display small-caps : concurrence les titres ; lignes serrées</td><td><span class="v-simpl">simplifier</span> (th mono uppercase discret)</td></tr>
+<tr><td>.rtable (tables empilées mobile)</td><td>mobile</td><td>—</td><td><span class="v-ok">garder</span></td></tr>
+<tr><td>.transfo-row</td><td>sets</td><td>—</td><td><span class="v-ok">garder</span> (tokens)</td></tr>
+<tr><td>.strip / .stat-card</td><td>sets, référence</td><td>doublon exact de .cov-card</td><td><span class="v-merge">fusionner</span> → .cov-card</td></tr>
+<tr><td>details.acc</td><td>référence, couverture</td><td>—</td><td><span class="v-ok">garder</span></td></tr>
+<tr><td>ul.clean</td><td>référence</td><td>—</td><td><span class="v-ok">garder</span></td></tr>
+<tr><td>.empty (état vide)</td><td>règles</td><td>—</td><td><span class="v-ok">garder</span></td></tr>
+<tr><td>.overlay / .dlg (dialogue création)</td><td>éditeur</td><td>structure ok — hérite des nouveaux tokens/labels/boutons</td><td><span class="v-ok">garder</span></td></tr>
+<tr><td>.toast</td><td>global</td><td>—</td><td><span class="v-ok">garder</span></td></tr>
+<tr><td>#print-view</td><td>impression</td><td>—</td><td><span class="v-ok">garder</span></td></tr>
+<tr><td>.footer-note / .save-line / .prog-bar</td><td>divers</td><td>—</td><td><span class="v-ok">garder</span></td></tr>
+</table>
+
+<!-- ═══════════════ 5 · AVANT / APRÈS ═══════════════ -->
+<h2 class="sec"><span class="no">5</span> Avant / après — les composants redessinés</h2>
+<p class="sec-lede">Chaque vitrine rend le composant avec son CSS <b>réel</b> : à gauche la copie exacte des styles actuels,
+à droite la proposition. Les « pourquoi » sont sous chaque démo.</p>
+
+<!-- Boutons -->
+<h3 class="cmp">Boutons — 6 variantes → 1 système</h3>
+<p class="cmp-note"><code>.btn</code> absorbe <code>.sbtn</code> (→ <code>.btn.sm</code>) et <code>.side-btn</code>.
+Le primaire devient <b>plein accent</b> : un seul par zone.</p>
+<div class="duo">
+  <div class="pane avant av"><span class="tag">Avant</span>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+      <button class="btn">＋ Nouvelle règle</button>
+      <button class="btn primary">Générer</button>
+      <button class="sbtn">✎ modifier</button>
+      <button class="sbtn">vider</button>
+      <button class="side-btn">Importer des règles (JSON)</button>
+    </div>
+    <div class="why"><b>3 styles</b> pour le même métier ; le primaire (teinte or 14 %) ne se distingue du secondaire
+    qu'en cherchant ; tout est en mono, qui fatigue en dehors des données.</div>
+  </div>
+  <div class="pane apres ap"><span class="tag">Après</span>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+      <button class="btn">＋ Nouvelle règle</button>
+      <button class="btn primary">Générer</button>
+      <button class="btn sm">✎ modifier</button>
+      <button class="btn sm">vider</button>
+      <button class="btn">Importer des règles (JSON)</button>
+    </div>
+    <div class="why">Un composant, deux tailles (<code>sm</code> 26px / normal 32px), trois intentions
+    (défaut fantôme / <code>primary</code> plein / <code>danger</code>). Police body : le mono reste réservé aux données.</div>
+  </div>
+</div>
+
+<!-- Carte de règle -->
+<h3 class="cmp">Carte de règle — l'or redevient un signal</h3>
+<p class="cmp-note">Le liseré or sur <b>chaque</b> règle + les 3 résumés concurrents (mains en mono + minis + points ★)
+saturent la liste — c'est l'écran le plus dense de l'app.</p>
+<div class="duo">
+  <div class="pane avant av"><span class="tag">Avant</span>
+    <div class="rule"><div class="row-head">
+      <span style="color:var(--faint);font-size:13px">⠿</span>
+      <input type="checkbox" class="chk" checked>
+      <span class="rc-id">G7</span>
+      <span class="rc-name">Dps ATK</span><span class="role">dps</span>
+      <span class="row-mains">ATK · HP</span>
+      <span class="row-right">
+        <span class="minis"><span class="mini e">4★</span><span class="mini">6 sets</span></span>
+        <span class="dots"><span class="dot fill"></span><span class="dot fill"></span><span class="dot fill"></span><span class="dot fill"></span></span>
+        <span style="opacity:.55">⌄</span>
+      </span>
+    </div></div>
+    <div class="rule"><div class="row-head">
+      <span style="color:var(--faint);font-size:13px">⠿</span>
+      <input type="checkbox" class="chk">
+      <span class="rc-id">G8</span>
+      <span class="rc-name">Dps HP</span><span class="role">dps</span>
+      <span class="row-mains">ATK · HP</span>
+      <span class="row-right">
+        <span class="minis"><span class="mini e">4★</span><span class="mini">2 sets</span></span>
+        <span class="dots"><span class="dot fill"></span><span class="dot fill"></span><span class="dot fill"></span><span class="dot"></span></span>
+        <span style="opacity:.55">⌄</span>
+      </span>
+    </div></div>
+    <div class="why">Liseré or × N règles = rien ne ressort ; <b>3 résumés</b> de la même règle sur une ligne
+    (mains, minis, points) ; bordure + liseré + fond = 3 séparateurs.</div>
+  </div>
+  <div class="pane apres ap"><span class="tag">Après</span>
+    <div class="rule"><div class="row-head">
+      <span style="color:var(--faint);font-size:13px">⠿</span>
+      <input type="checkbox" class="chk" checked>
+      <span class="rc-id">G7</span>
+      <span class="rc-name">Dps ATK</span>
+      <span class="row-meta">
+        <span>ATK · HP</span>
+        <span class="dots"><span class="dot fill"></span><span class="dot fill"></span><span class="dot fill"></span><span class="dot fill"></span></span>
+        <span>6 sets</span>
+        <span style="opacity:.55">⌄</span>
+      </span>
+    </div></div>
+    <div class="rule"><div class="row-head">
+      <span style="color:var(--faint);font-size:13px">⠿</span>
+      <input type="checkbox" class="chk">
+      <span class="rc-id">G8</span>
+      <span class="rc-name">Dps HP</span>
+      <span class="row-meta">
+        <span>ATK · HP</span>
+        <span class="dots"><span class="dot fill"></span><span class="dot fill"></span><span class="dot fill"></span><span class="dot"></span></span>
+        <span>2 sets</span>
+        <span style="opacity:.55">⌄</span>
+      </span>
+    </div></div>
+    <div class="why">Carte neutre (hairline, hover en éclaircissement de fond) — <b>l'id coloré suffit</b> à dire
+    G(or)/D(bleu). Un seul groupe méta à droite : mains, ★ en points, nb de sets. Le rôle part dans le corps déplié.</div>
+  </div>
+</div>
+
+<!-- Hints -->
+<h3 class="cmp">Aide contextuelle — toujours là → à la demande</h3>
+<p class="cmp-note">Le plus gros gain de densité de la refonte. Le bloc « Sémantique appliquée » (3 lignes, répété sur les
+3 modes du Testeur), les hints de scope, de taux… deviennent un bouton <b>?</b> dans le titre — cliquable, état mémorisé.</p>
+<div class="duo">
+  <div class="pane avant av"><span class="tag">Avant</span>
+    <div style="color:var(--muted);font-size:13px;margin-bottom:6px">Sémantique appliquée (confirmée in-game) :</div>
+    <div class="hint"><ul>
+      <li>chaque <b>★ est obligatoire</b> ;</li>
+      <li>le <b>nombre requis</b> se compte sur toute la liste sélectionnée, ★ incluses ;</li>
+      <li>si les ★ suffisent à l'atteindre, les positions restantes de la pièce sont libres.</li>
+    </ul></div>
+    <div class="panel" style="margin-top:12px"><h4>Échantillon</h4>
+      <div class="hint"><ul>
+        <li>Scope : <b>9 set(s)</b>. Tirage : set, puis slot, puis main légal, puis 4 subs distincts.</li>
+        <li>En <b>Gear Raid</b>, le tier est tiré selon des taux théoriques mesurés au niveau 21…</li>
+        <li>Les <b>pièces anciennes</b> (≈ 0,87 % des drops de raid)…</li>
+        <li>Donjons, niveaux avec T0 : tirage uniforme, faute de données.</li>
+      </ul></div>
+    </div>
+    <div class="why">~9 lignes d'explication <b>avant</b> le premier contrôle utile, relues jamais après la 3ᵉ visite —
+    et re-répétées à chaque changement de mode.</div>
+  </div>
+  <div class="pane apres ap"><span class="tag">Après</span>
+    <div class="panel"><h4>Échantillon <button class="help on" title="Aide">?</button></h4>
+      <div class="hint" id="d-hint"><ul>
+        <li>Scope : <b>9 set(s)</b>. Tirage : set, puis slot, puis main légal, puis 4 subs distincts.</li>
+        <li>En <b>Gear Raid</b>, tier tiré selon les taux mesurés au niveau 21…</li>
+      </ul></div>
+      <div style="margin-top:12px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <span class="lab" style="margin:0">Source</span>
+        <span class="seg"><button>Raid 1</button><button class="on">Raid 3</button><button>Donjon</button></span>
+        <button class="btn primary" style="margin-left:auto">Générer</button>
+      </div>
+    </div>
+    <div class="why">Le <b>?</b> ouvre/ferme le hint (état persisté : fermé par défaut dès la 2ᵉ visite). La sémantique ★
+    n'existe plus qu'à <b>un</b> endroit (l'éditeur de règle) au lieu de 4. — Démo cliquable ci-dessus.</div>
+  </div>
+</div>
+
+<!-- Segmented + filtres -->
+<h3 class="cmp">Segmented & filtres — l'actif se voit enfin</h3>
+<div class="duo">
+  <div class="pane avant av"><span class="tag">Avant</span>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+      <span class="seg"><button>Couverture</button><button class="on">Échantillon</button><button>Pièce manuelle</button></span>
+    </div>
+    <div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:12px">
+      <button class="fchip">Tous</button><button class="fchip">T∞</button><button class="fchip on">T3</button><button class="fchip">T2</button><button class="fchip">T1</button>
+    </div>
+    <div class="why">Le seg a bordure + fond, l'actif n'est qu'une teinte 14 % ; les fchips sont un 5ᵉ style de bouton.</div>
+  </div>
+  <div class="pane apres ap"><span class="tag">Après</span>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+      <span class="seg"><button>Couverture</button><button class="on">Échantillon</button><button>Pièce manuelle</button></span>
+    </div>
+    <div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:12px">
+      <button class="chip pill">Tous</button><button class="chip pill">T∞</button><button class="chip pill on">T3</button><button class="chip pill">T2</button><button class="chip pill">T1</button>
+    </div>
+    <div class="why">Seg <b>creusé</b> (fond panel2 sans bordure), l'actif est une pastille surélevée avec ombre — lisible
+    en vision périphérique. Les filtres deviennent <code>.chip.pill</code> : même anatomie que toutes les chips.</div>
+  </div>
+</div>
+
+<!-- Cartes de stats -->
+<h3 class="cmp">Cartes de chiffres (couverture, sets, référence)</h3>
+<div class="duo">
+  <div class="pane avant av"><span class="tag">Avant</span>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="cov-card"><div class="num">172 410</div><div class="lbl">profils de pièces possibles (sets × slots × mains légaux × combinaisons de 4 subs)</div></div>
+      <div class="cov-card"><div class="num">1 767</div><div class="lbl">gardés — 1,02 % de tout ce qui peut dropper</div></div>
+    </div>
+    <div class="why">Chiffre or + carte bordée : le chiffre et son cadre se disputent l'attention ; le label en phrase
+    complète charge la carte.</div>
+  </div>
+  <div class="pane apres ap"><span class="tag">Après</span>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="cov-card"><div class="num">172 410</div><div class="lbl">profils possibles</div></div>
+      <div class="cov-card"><div class="num">1 767 <b>· 1,02 %</b></div><div class="lbl">profils gardés</div></div>
+    </div>
+    <div class="why">Chiffre <b>encre</b> (l'or souligne la valeur secondaire), label court en mono uppercase — le détail
+    du calcul part dans le « ? » de section. Fusionne <code>.stat-card</code> (doublon exact).</div>
+  </div>
+</div>
+
+<!-- Carte de pièce -->
+<h3 class="cmp">Carte de pièce — 3 signaux de verdict → 1</h3>
+<div class="duo">
+  <div class="pane avant av"><span class="tag">Avant</span>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <div class="piece"><div class="p-head"><span class="p-slot">Torse</span> <span class="chip set t2" style="margin:0">Seigneur de guerre</span><span class="p-main">HP</span></div>
+        <div class="p-subs"><span class="chip deff" style="margin:0">DEF</span><span class="chip off" style="margin:0">ATK%</span><span class="chip off" style="margin:0">CD</span><span class="chip util" style="margin:0">HE</span></div>
+        <div class="p-verdict"><span class="v-rejj">✗ Recyclée</span></div></div>
+      <div class="piece"><div class="p-head"><span class="p-slot">Arme</span> <span class="chip set t3" style="margin:0">Cataclysme</span><span class="p-main">ATK</span></div>
+        <div class="p-subs"><span class="chip off" style="margin:0">ATK%</span><span class="chip off" style="margin:0">CC</span><span class="chip off" style="margin:0">CD</span><span class="chip util" style="margin:0">AS</span></div>
+        <div class="p-verdict"><span class="v-okk">✓ Gardée par D6 · Dps ATK</span></div></div>
+    </div>
+    <div class="why">Liseré coloré + ligne de verdict + opacité : <b>3 encodages</b> de la même info, et le liseré
+    vert/rouge se confond avec les codes tier des sets.</div>
+  </div>
+  <div class="pane apres ap"><span class="tag">Après</span>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <div class="piece rej"><div class="p-head"><span class="p-verd-ico"></span><span class="p-slot">Torse</span> <span class="chip set t2">Seigneur de guerre</span><span class="p-main">HP</span></div>
+        <div class="p-subs"><span class="chip deff">DEF</span><span class="chip off">ATK%</span><span class="chip off">CD</span><span class="chip util">HE</span></div>
+        <div class="p-foot"><span class="rej">recyclée</span></div></div>
+      <div class="piece ok"><div class="p-head"><span class="p-verd-ico"></span><span class="p-slot">Arme</span> <span class="chip set t3">Cataclysme</span><span class="p-main">ATK</span></div>
+        <div class="p-subs"><span class="chip off">ATK%</span><span class="chip off">CC</span><span class="chip off">CD</span><span class="chip util">AS</span></div>
+        <div class="p-foot"><span class="ok">gardée — D6 · Dps ATK</span></div></div>
+    </div>
+    <div class="why">Un <b>point de verdict</b> en tête + opacité réduite pour les recyclées ; le liseré disparaît,
+    les couleurs de tier des sets redeviennent le seul code couleur de la carte. Le verdict d'une gardée affiche
+    <b>id + nom de la règle</b> — la ref seule n'était pas parlante.</div>
+  </div>
+</div>
+
+<!-- Labels + tables -->
+<h3 class="cmp">Labels de groupe & tables</h3>
+<div class="duo">
+  <div class="pane avant av"><span class="tag">Avant</span>
+    <div style="margin-bottom:14px">
+      <span class="ctl-label">Onglet</span>
+      <span class="grp-label">Main(s) — le main effectif d'une pièce est ignoré de ses critères</span>
+      <h3 class="grp-head">Taux de conservation par set</h3>
+    </div>
+    <table><tr><th>Set</th><th>Tier</th><th>Gardées</th></tr>
+      <tr><td>Rugissement infernal</td><td><span class="tier-badge b2">T2</span></td><td>141</td></tr>
+      <tr><td>Cataclysme</td><td><span class="tier-badge b3">T3</span></td><td>36</td></tr></table>
+    <div class="why"><b>3 styles de label</b> concurrents (mono 9.5px / display 13px / display 15.5px) ; les th en
+    small-caps display concurrencent les vrais titres ; badges tier bordés+fond+couleur.</div>
+  </div>
+  <div class="pane apres ap"><span class="tag">Après</span>
+    <div style="margin-bottom:14px">
+      <span class="lab">Onglet</span>
+      <span class="lab">Main(s)</span>
+      <h3 class="cmp" style="margin:8px 0 0;font-size:17px">Taux de conservation par set</h3>
+    </div>
+    <table><tr><th>Set</th><th>Tier</th><th>Gardées</th></tr>
+      <tr><td>Rugissement infernal</td><td><span class="tier-badge b2">T2</span></td><td>141</td></tr>
+      <tr><td>Cataclysme</td><td><span class="tier-badge b3">T3</span></td><td>36</td></tr></table>
+    <div class="why"><b>Un seul label</b> (display small-caps 13px) — le complément d'explication du label part dans le
+    « ? ». Th en mono uppercase discret : la table respire, les titres restent les seuls en display. Badge tier en
+    pilule sans bordure. Les précisions longues (« le main effectif est ignoré… ») migrent dans l'aide.</div>
+  </div>
+</div>
+
+<!-- ═══════════════ 6 · MOBILE ═══════════════ -->
+<h2 class="sec"><span class="no">6</span> Intégration mobile (≤ 680 px)</h2>
+<p class="sec-lede">Les patterns mobiles existants qui marchent sont <b>conservés</b> (tiroir latéral, tables empilées
+en cartes, grilles uniformes de chips, seg en grille). Chaque composant redessiné définit son comportement mobile
+<b>dans la charte</b>, pas en rattrapage — et chaque lot de la refonte se valide aussi en 375 px.</p>
+
+<table class="doc">
+<tr><th style="width:220px">Composant (après)</th><th>Comportement ≤ 680 px</th></tr>
+<tr><td>Boutons <code>.btn</code></td><td>hauteur mini <b>40 px</b> (cible tactile) ; le primaire d'un formulaire passe <b>pleine largeur</b> en fin de bloc (Générer, Enregistrer) ; les <code>.sm</code> restent 32 px minimum</td></tr>
+<tr><td>Aide « ? »</td><td>zone de tap étendue à <b>40 × 40 px</b> (padding invisible autour des 19 px visibles) ; c'est un <b>clic</b>, jamais un survol — aucune info uniquement au hover dans toute l'app</td></tr>
+<tr><td>Carte de règle</td><td>le résumé méta unique <b>reste affiché</b> (points ★ + nb de sets tiennent en largeur) — aujourd'hui mains/minis/rôle sont tous masqués et la ligne perd toute info ; seules les mains disparaissent</td></tr>
+<tr><td>Segmented <code>.seg</code></td><td>grille pleine largeur à colonnes égales (pattern actuel conservé) ; la pastille surélevée remplace la teinte</td></tr>
+<tr><td>Filtres <code>.chip.pill</code></td><td>rangée scrollable horizontale avec fondu de débord en bord droit (indice visuel qu'il y a une suite — aujourd'hui le débord est invisible)</td></tr>
+<tr><td>Chips <code>.pick</code> (sélecteurs)</td><td>grilles uniformes 6 col. stats / 2 col. sets (pattern actuel conservé), hauteur de chip ≥ 32 px</td></tr>
+<tr><td>Cartes de chiffres</td><td>2 colonnes, chiffre à 20 px (pattern actuel conservé) — les labels courts de la refonte y gagnent le plus</td></tr>
+<tr><td>Cartes de pièces</td><td>inchangées (le point de verdict économise la largeur du liseré) ; verdict « gardée — id · nom » tronqué par ellipse, jamais sur 2 lignes</td></tr>
+<tr><td>Tables</td><td>empilage en cartes (<code>.rtable</code>) conservé tel quel — il bénéficie du th mono et des badges pilule</td></tr>
+<tr><td>Panneaux</td><td>padding réduit à <code>--s-4</code> (16 px) ; les hairlines restent (pas de bordures pleines réintroduites)</td></tr>
+<tr><td>Sidebar / tiroir</td><td>conservé ; le panneau « Apparence » replié (lot E) raccourcit le tiroir, qui scrolle aujourd'hui</td></tr>
+</table>
+
+<!-- ═══════════════ 7 · PLAN ═══════════════ -->
+<h2 class="sec"><span class="no">7</span> Plan d'exécution proposé</h2>
+<table class="doc">
+<tr><th style="width:60px">Lot</th><th>Contenu</th><th style="width:220px">Risque / remarque</th></tr>
+<tr><td><b>A</b></td><td>Poser les tokens (échelles typo/espace/rayons, --hairline) et remapper les valeurs existantes cran par cran — <b>zéro changement de structure</b></td><td>quasi nul, tout est mécanique</td></tr>
+<tr><td><b>B</b></td><td>Fusion des boutons (.sbtn/.side-btn → .btn) + primaire plein + labels unifiés (.lab)</td><td>touche beaucoup de templates, mais trivialement</td></tr>
+<tr><td><b>C</b></td><td>Système d'aide « ? » repliable (état persisté) + dédoublonnage de la sémantique ★ + raccourcissement des labels de cartes</td><td>le plus gros gain visuel ; à valider écran par écran</td></tr>
+<tr><td><b>D</b></td><td>Cartes : règles neutres, pièces à point de verdict, cov-cards, badges pilule, seg creusé, controls sans boîte</td><td>c'est « le nouveau look » — captures avant/après par vue</td></tr>
+<tr><td><b>E</b></td><td>Sidebar : replier thème/densité/langue/accents dans un panneau « Apparence »</td><td>petit, indépendant</td></tr>
+</table>
+<p class="sec-lede" style="margin-top:8px">Chaque lot passe seul (l'app reste cohérente entre deux lots), se vérifie
+visuellement en <b>sombre / clair / mobile 375 px</b>, et se valide avec toi avant le suivant. Le lot A embarque le
+confort nocturne (--ink scindé, zéro #fff).</p>
+
+<script>
+document.querySelector('.help').addEventListener('click', function(){
+  const h = document.getElementById('d-hint');
+  h.style.display = h.style.display==='none' ? '' : 'none';
+  this.classList.toggle('on');
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Design system &amp; tokens · Design Review — WoR Gear Builder</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="shell">
+<nav class="toc">
+  <div class="brand"><span class="d">◆</span> Design Review</div>
+  <div class="sub">WoR Gear Builder · sept. 2026</div>
+  <a href="index.html">Synthèse exécutive</a>
+  <div class="grp">Fondations</div>
+  <a href="04-typographie.html">Typographie</a>
+  <a href="03-couleur-accessibilite.html">Couleur &amp; accessibilité</a>
+  <a href="05-design-system.html" class="on">Design system &amp; tokens</a>
+  <div class="grp">Interface</div>
+  <a href="01-ui-composants.html">Composants UI</a>
+  <a href="07-dataviz.html">Data-visualisation</a>
+  <a href="06-mobile.html">Mobile</a>
+  <div class="grp">Produit</div>
+  <a href="02-ux-parcours.html">UX &amp; parcours</a>
+  <a href="08-contenu.html">Contenu &amp; microcopy</a>
+  <a href="09-integration-features.html">Intégration des features</a>
+  <div class="grp">Direction</div>
+  <a href="10-synthese.html">Synthèse &amp; roadmap</a>
+</nav>
+<main>
+
+<span class="kicker">Audit spécialiste · ingénierie design system</span>
+<h1>Design system — les fuites entre les lots</h1>
+<p class="lede">La plainte « manque de cohérence » est fondée, mais elle ne vient pas des lots livrés — elle vient
+de ce qui est passé <b>entre</b> eux : ~39 couleurs de familles recopiées en dur avec des alphas incohérents,
+la vue Pièce manuelle construite en styles inline hors système (exactement l'écran que le client pointe),
+et deux fusions annoncées par la charte jamais livrées.</p>
+
+<h2><span class="prio p0">P0</span> Les familles de couleurs en dur — 39 occurrences, 6 alphas</h2>
+<p>Chaque famille sémantique (off/deff/util, tiers t0-t4) est déclinée à la main partout : bordures teintées
+à .5 sur les chips de stats mais <b>.55</b> sur les sets et <b>.3</b> sur les rulerefs ; fonds « sélectionné » à
+.16 ici, .14 là, badges à .12/.13/.15 selon le tier. Personne ne peut ajouter un composant teinté sans se tromper —
+et le mode clair doit se rappeler d'écrire sa rustine à chaque fois. Deux l'ont oublié :</p>
+<div class="panel bad"><h4>Bugs de contraste light déjà présents</h4>
+<p><code>.s-t1 .rc-id</code> et <code>.ruleref.t1r</code> : texte <code>#8fbde4</code> sans surcharge light —
+bleu pastel sur fond crème, ≈ 2,1:1, quasi illisible. Le symptôme type du non-tokenisé.</p></div>
+<p><b>Correctif</b> : 3 rôles × 8 familles = 24 tokens de tints (<code>--off-hi/-bd/-dim</code>,
+<code>--t0-hi/-bd/-dim</code>…) posés dans <code>:root</code> et surchargés une fois dans <code>body.light</code> ;
+les ~39 consommateurs se réécrivent mécaniquement et les rustines light disparaissent. ~2-3 h, mécanique.</p>
+
+<h2><span class="prio p0">P0</span> Le « mix bizarre » : un 6ᵉ disclosure</h2>
+<p>L'app compte <b>cinq coquilles repliables</b> : <code>details.acc</code>, <code>details.panel</code>,
+<code>.controls-acc</code>, <code>.side-acc</code>… et <code>.tm-step</code>, qui a <b>exactement la même anatomie</b>
+que <code>details.acc</code> mais réimplémente le pliage en JS avec un chevron différent (▾ droite/180° vs
+› gauche/90°). Deux grammaires de chevron dans la même vue. S'y ajoutent : un bouton dans un bouton (« vider »
+dans le header cliquable, d'où un hack de marges commenté dans le CSS), et trois contrôles différents pour le même
+geste « choisir une valeur » (seg pour le slot, chips pour main et set) — avec un seg fond-panel2 posé sur un corps
+panel2 qui le rend invisible.</p>
+<p><b>Correctif</b> : une seule coquille disclosure (chevron › unique), le slot passe en <code>chip.pick</code>
+comme main et set, « vider » sort du header. ~2 h.</p>
+
+<h2><span class="prio p1">P1</span> Les styles inline de la Pièce manuelle</h2>
+<p><b>37 occurrences de <code>style="</code></b> dans les templates JS. Légitimes : les valeurs calculées
+(largeur de jauge, couleur d'accent). Tout le reste est du CSS déguisé, concentré sur la vue que le client trouve
+incohérente : panneaux de verdict (<code>border-left</code> inline), lignes d'explication en 12.5/11.5 px —
+<b>les tailles que l'échelle devait tuer, réintroduites par cette vue</b> —, marges ad hoc partout.</p>
+<pre><code>/* Classes à créer (extrait) */
+.panel.verdict.ok{border-left:3px solid var(--util)}
+.panel.verdict.rej{border-left:3px solid var(--off)}
+.xr{font-size:var(--fs-1);color:var(--muted)}  .xr.dim{color:var(--faint)}
+.ctl.grow{flex:1 1 240px}  .cols-2{…}  .dim{color:var(--faint)}</code></pre>
+<p>Critère de tri : un <code>style=</code> qui encode une <b>donnée</b> est légitime ; un <code>style=</code> qui
+encode un <b>choix de design</b> est une classe qui n'a pas été créée.</p>
+
+<h2><span class="prio p1">P1</span> Les fusions annoncées, jamais livrées</h2>
+<ul>
+<li><code>.stat-card</code> vs <code>.cov-card</code> : la charte disait « doublon exact — fusionner » ; les deux
+existent, avec paddings, labels et grilles différents ;</li>
+<li><code>.fchip</code> vs <code>.chip.pill</code> : la charte décrit une classe qui n'existe pas — soit livrer,
+soit amender ;</li>
+<li><code>.mini</code>/<code>.p-main</code> : badges <b>passifs</b> à bordure pleine = costume d'interactif
+(violation du principe « la bordure est une affordance »).</li>
+</ul>
+<div class="quote">La charte est le contrat, pas la brochure. Un document de référence qui décrit un état qui
+n'existe pas produit exactement l'incohérence que le client ressent.<span class="who">— ingénieur design system</span></div>
+
+<h2><span class="prio p2">P2</span> Tokens manquants — le bloc complet</h2>
+<pre><code>:root{
+  --acc-ink:#1c1608;            /* texte sur accent (3 littéraux aujourd'hui) */
+  --ctl-h:32px; --ctl-h-sm:26px;/* hauteurs de contrôles (40px en mobile) */
+  --dur-1:.12s; --dur-2:.18s; --dur-3:.25s;   /* 8 durées actuelles → 3 */
+  --z-sticky:10; --z-scrim:50; --z-drawer:60; --z-fab:70; --z-modal:80; --z-toast:100;
+  --shadow-1/2/3;               /* 3 élévations, redéfinies en light (fin des rustines) */
+  --veil:rgba(255,255,255,.03); /* hovers de surfaces (2 valeurs actuelles → 1) */
+  --overlay-bg:rgba(10,8,14,.7);/* .overlay ET .scrim (2 valeurs pour 1 rôle) */
+  --r-xs:3px;                   /* barres de progression, assumé */
+}</code></pre>
+<p>Plus un focus ring mutualisé (<code>:where(button,[role=button],input,select,summary):focus-visible</code>)
+au lieu des ~25 répétitions.</p>
+
+<h2>La matrice de taxonomie — à coller dans la charte</h2>
+<div class="tbl-wrap"><table>
+<tr><th>Famille</th><th>Rôle</th><th>Fond</th><th>Bordure</th><th>Rayon</th><th>Typo</th><th>Interactif</th></tr>
+<tr><td>.btn (+sm/primary/danger)</td><td>déclencher</td><td>transparent · primaire plein</td><td>pleine</td><td>r-m</td><td>body fs-2/1</td><td>toujours</td></tr>
+<tr><td>.seg</td><td>choix exclusif 2-5</td><td>creusé --well, actif --raised</td><td>aucune</td><td>pilule</td><td>fs-2</td><td>toujours</td></tr>
+<tr><td>.fchip / .chip.pill</td><td>filtre on/off</td><td>transparent · on acc-dim</td><td>pleine</td><td>pilule</td><td>mono fs-0</td><td>toujours</td></tr>
+<tr><td>.chip (+pick/ess/stateoff)</td><td>donnée stat sélectionnable</td><td>panel2 · sel = fam-dim</td><td>teintée fam-bd</td><td>r-s</td><td>mono fs-0</td><td>contexte</td></tr>
+<tr><td>.tier-badge</td><td>classification passive</td><td>teinté t-dim</td><td><b>aucune</b></td><td>pilule</td><td>mono fs-0</td><td>jamais</td></tr>
+<tr><td>.rc-id</td><td>identifiant statique</td><td>acc-dim / t0-dim</td><td><b>aucune</b></td><td>r-s</td><td>mono fs-0</td><td>jamais</td></tr>
+<tr><td>.ruleref</td><td>identifiant-lien</td><td>idem</td><td>teintée (= cliquable)</td><td>r-s</td><td>mono fs-0</td><td>toujours</td></tr>
+<tr><td>.mini, .p-main</td><td>méta passive</td><td>panel2</td><td><b>à retirer</b></td><td>r-s</td><td>mono fs-0</td><td>jamais</td></tr>
+<tr><td>Disclosure (acc ≡ tm-step)</td><td>replier</td><td>panel2</td><td>hairline (step : solide)</td><td>r-m</td><td>fs-2</td><td>en-tête</td></tr>
+<tr><td>.panel</td><td>conteneur</td><td>panel</td><td>hairline</td><td>r-l</td><td>h4 display fs-4</td><td>non</td></tr>
+</table></div>
+<p>La règle de lecture qui verrouille tout : <b>bordure pleine = interactif · fond teinté sans bordure = badge
+passif · hairline = conteneur</b>. <code>.ruleref</code> vs <code>.rc-id</code> illustrent déjà ce contrat
+(même costume ± la bordure) — c'est le modèle à généraliser.</p>
+
+<h2>Gouvernance — les 6 règles pour toute future feature</h2>
+<ol>
+<li><b>Zéro littéral de style dans un template JS</b> — un <code>style=</code> n'est autorisé que pour une valeur
+calculée depuis une donnée. Test de revue : <code>grep 'style="' | grep -vE 'width:|background:#'</code> doit sortir vide ;</li>
+<li><b>Une couleur de famille ne s'écrit qu'une fois</b> — tout passe par <code>--fam-hi/-bd/-dim</code> ;
+plus jamais de rustine <code>body.light .x{color:#…}</code> : si un light diverge, c'est le token qui a un trou ;</li>
+<li><b>Toute valeur passe par une échelle, tout écart se commente</b> (modèle existant : le 16px anti-zoom iOS) ;</li>
+<li><b>On ne crée pas de composant, on décline</b> — une nouvelle famille exige une ligne ajoutée à la matrice
+<i>dans la même PR</i>. La recopie guidée et le mode farm se construisent intégralement avec l'existant ;</li>
+<li><b>La bordure est un contrat</b> — un passif ne reçoit jamais de bordure pleine ;</li>
+<li><b>Un seul disclosure, un seul chevron</b> — les notes par règle, typiquement, sont un
+<code>details.acc</code> dans le corps de carte, rien d'autre.</li>
+</ol>
+
+<h2>Récapitulatif chiffré</h2>
+<div class="tbl-wrap"><table>
+<tr><th>Prio</th><th>Action</th><th class="num">Effort</th></tr>
+<tr><td><span class="prio p0">P0</span></td><td>Tokens tints familles + réécriture des ~39 consommateurs + fix light .s-t1/.t1r</td><td class="num">2-3 h</td></tr>
+<tr><td><span class="prio p0">P0</span></td><td>Disclosure unifié + slot en chip.pick (la plainte « mix bizarre »)</td><td class="num">2 h</td></tr>
+<tr><td><span class="prio p1">P1</span></td><td>Dé-inliner Pièce manuelle/Testeur (.panel.verdict, .xr, utilitaires)</td><td class="num">3 h</td></tr>
+<tr><td><span class="prio p1">P1</span></td><td>--acc-ink, fusion stat-card→cov-card, trancher fchip/chip.pill, dé-border mini/p-main</td><td class="num">2 h</td></tr>
+<tr><td><span class="prio p2">P2</span></td><td>Tokens durées/z/ombres/voiles + focus mutualisé ; remap espacements (avec data-density)</td><td class="num">2 h + 1 j</td></tr>
+<tr><td><span class="prio p2">P2</span></td><td>Matrice + 6 règles intégrées à la charte</td><td class="num">1 h</td></tr>
+</table></div>
+
+<div class="foot">
+  <a href="01-ui-composants.html">Composants UI →</a>
+  <a href="index.html">↑ Synthèse exécutive</a>
+</div>
+</main>
+</div>
+</body>
+</html>

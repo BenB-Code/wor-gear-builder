@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Conclusions &amp; recommandations · Design Review 4 — WoR Gear Builder</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="shell">
+<nav class="toc">
+  <div class="brand"><span class="d">◆</span> Design Review 4</div>
+  <div class="sub">Cycle brainstorm &amp; challenge · sept. 2026</div>
+  <a href="index.html">Synthèse du cycle</a>
+  <div class="grp">Le cycle</div>
+  <a href="01-analyses.html">Les 3 analyses à froid</a>
+  <a href="02-debat.html">Le débat</a>
+  <a href="03-challenge.html">Challenge du rapport 3</a>
+  <a href="04-conclusions.html" class="on">Conclusions &amp; recommandations</a>
+  <div class="grp">Référence</div>
+  <a href="../design-review-3/index.html">← Rapport 3</a>
+  <a href="../design-review-2/index.html">← Rapport 2</a>
+  <a href="../design-review/index.html">← Rapport 1</a>
+</nav>
+<main>
+
+<span class="kicker">Consolidation · révisions du rapport 3 · les arbitrages de l'équipe finale</span>
+<h1>Conclusions &amp; recommandations</h1>
+<p class="lede">Ce que le cycle 4 verse au corpus — pour la dernière fois : les recommandations consolidées après
+débat (origine, confirmations croisées, et pour la première fois des <b>efforts chiffrés</b>), les points du
+rapport 3 à réviser, et, ce cycle étant le dernier, la <b>liste des arbitrages ouverts pour l'équipe finale</b> à
+la place des questions pour un cycle suivant. Ordre des P0 : <b>par dépendance fonctionnelle</b> (la méthode du
+cycle 3, appliquée par la colline du design engineer) — chaque lot débloque le suivant.</p>
+
+<h2>Les nouvelles entrées au corpus</h2>
+
+<h3>P0 — le moteur (dans cet ordre : chaque lot est le prérequis du suivant)</h3>
+<div class="tbl-wrap"><table>
+<tr><th style="width:56px">Prio</th><th>Recommandation consolidée</th><th style="width:140px">Origine</th><th style="width:180px">Confirmée / amendée par</th><th class="num" style="width:70px">Effort</th></tr>
+<tr><td><span class="prio p0">P0</span></td>
+<td><b>1 · Le lot « 1 jour » : color-scheme + scroll instant + légendes.</b>
+<code>:root{color-scheme:dark}</code> / <code>body.light{color-scheme:light}</code> (fin de la scrollbar blanche
+et des popups clairs) ; <code>scrollTo({behavior:"instant"})</code> au routeur, smooth réservé aux
+<code>scrollIntoView</code> explicites ; tooltips natifs sur les dots (« requis : 4/4 »), hover renforcé sur les
+chips à 28&nbsp;% — <b>jamais de légende permanente</b> (amendement power-user), la légende complète vit dans le
+panneau <code>?</code> (P1-1).</td>
+<td>DE 1, 3 + H6 correctifs</td><td>Power-user (le scroll = « fix de vitesse, pas d'esthétique » ; borne la
+légende) ; heuristicien (H6 sev 3)</td><td class="num">~1 j</td></tr>
+<tr><td><span class="prio p0">P0</span></td>
+<td><b>2 · La discipline du focus + <code>&lt;dialog&gt;</code>.</b> Patch-in-place des toggles (classe +
+<code>aria-pressed</code> + <code>.val</code>, fin du <code>outerHTML</code> destructeur) ; roving tabindex j/k
+sur la liste de règles (<code>o</code> déplie, <code>x</code> coche, <code>d</code> duplique, <code>+/−</code>
+requis) ; Alt+↑/↓ réordonne (règle aussi H7 sev 2 — le drag souris-only) ; migration du dialogue vers
+<code>&lt;dialog&gt;</code>/<code>showModal()</code> en <b>utilitaire réutilisable</b> (trap, inert, Échap,
+backdrop gratuits). Débloque la palette, la recopie et la scène du verdict.</td>
+<td>Fusion 4 (DE 2/4 × PU P0-5/P2-11 × H7)</td><td>Les trois explicitement — l'heuristicien retire son correctif
+« Échap + × » au profit du <code>&lt;dialog&gt;</code> et remonte le dialogue en sev 3 confirmée</td>
+<td class="num">2-3 j</td></tr>
+<tr><td><span class="prio p0">P0</span></td>
+<td><b>3 · La pile de commandes unique — la fusion signature.</b> Chaque mutation devient une commande (point de
+passage <code>scheduleSave</code> existant), pile de snapshots (structuredClone, cap 50) → <b>Ctrl+Z /
+Ctrl+Shift+Z globaux</b> ; le toast devient le simple affichage de la tête de pile (fin de la course contre le
+timeout) ; le stepper et le clic-cycle gardent leur vitesse et gagnent leur filet — <b>réversibilité plutôt que
+confirmation</b>. Solde H3 sev 3, H5 sev 2 et le prérequis de toute édition en masse.</td>
+<td>Fusion 1 (PU P0-1 × H3 × DE-2)</td><td>DE (faisabilité vérifiée dans le code, « LE multiplicateur du cycle ») ;
+heuristicien (« une brique, trois heuristiques : H3, H5, H9 » — retire son toast allongé) ; colline du
+power-user</td><td class="num">~2 j</td></tr>
+<tr><td><span class="prio p0">P0</span></td>
+<td><b>4 · Le sélecteur d'onglet unique.</b> Extraire <code>tabPicker(current, onChange)</code> des pills
+existantes (état actif + compteurs) et remplacer les deux <code>&lt;select&gt;</code> natifs (Testeur, Sets) ;
+différencier visuellement rangée d'onglets et rangée d'outils (ligne d'attache). Traite H4 sev 3 — la racine
+probable du « app jugée incohérente » — et supprime au passage deux popups système clairs.</td>
+<td>H4 (TOP 1)</td><td>DE (chiffré ~55 lignes, « le meilleur ratio du cycle » ; s'avoue battu : « l'heuristique a
+regardé ENTRE les vues »)</td><td class="num">~1 j</td></tr>
+<tr><td><span class="prio p0">P0</span></td>
+<td><b>5 · La recopie guidée sur socle <code>&lt;dialog&gt;</code>.</b> Une règle plein écran, clé copiable
+(<code>c</code>), <b>Entrée = saisie ✓ → suivante</b>, Backspace = décocher-revenir, ←/→ naviguent, jauge 0/18 ;
+l'état système répliqué dans le mode focus : clé in-game <b>avec</b> son mode d'emploi (« à coller dans l'écran
+Tri du jeu » — H2), état de sauvegarde visible. Implémente le téléprompteur du corpus (3ᵉ cycle, 7ᵉ regard) sur
+l'utilitaire du lot 2 — ~60 lignes au lieu d'un développement séparé. <i>Spec touch toujours due — voir
+arbitrages.</i></td>
+<td>Fusion 2 (PU P0-4 × DE-4 × H1/H2)</td><td>Rapport 3 (P0-5), rapport 2 (destination Saisie en jeu) — le point
+le plus validé du corpus, désormais chiffré</td><td class="num">~2 j</td></tr>
+<tr><td><span class="prio p0">P0</span></td>
+<td><b>6 · Contraste et élévation — la lisibilité mesurée.</b> <code>--faint</code> remonté (~#8a8298, AA sur les
+textes d'état 11&nbsp;px) ; grammaire d'élévation à 2 niveaux (conteneurs = bordure visible, sous-éléments =
+hairline) + ombre courte sur <code>.rule</code> ; <code>line-height:1.2</code> sur chips/boutons, ellipsis sur
+<code>.rc-name</code>, <code>text-wrap:balance/pretty</code>. La grammaire typographique des labels attend
+l'arbitrage n°1 — <b>ne pas trancher en P0</b>.</td>
+<td>DE 8, 11 × H8</td><td>Heuristicien (« "estompé" sous le seuil = de l'information supprimée » — même chantier,
+même PR) ; rapport 1 (plancher AA, 4ᵉ cycle)</td><td class="num">~1 j</td></tr>
+</table></div>
+
+<h3>P1 — le royaume de l'invisible, rendu apprenable</h3>
+<div class="tbl-wrap"><table>
+<tr><th style="width:56px">Prio</th><th>Recommandation consolidée</th><th style="width:140px">Origine</th><th style="width:180px">Confirmée / amendée par</th></tr>
+<tr><td><span class="prio p1">P1</span></td>
+<td><b>1 · Le système d'apprentissage unifié : <code>?</code> + palette Ctrl+K.</b> Le <code>?</code> global ouvre
+un panneau unique — raccourcis, légende des encodages (dots, tri-état), syntaxe de recherche — et la palette
+Ctrl+K expose les mêmes commandes <b>avec leurs raccourcis affichés</b> (« la palette EST le tutoriel ») ; mention
+« Ctrl+K » visible dans le header. Fuzzy sur règles/onglets/vues/actions via <code>data-goto</code>+flash.
+<b>Conditionnée aux P0 2-3</b> (focus trap, restitution du focus, undo) — rétrogradée de P0 sur l'argument
+« cathédrale sur du sable », acté au débat.</td>
+<td>Fusion 3 (PU P0-2 × H4/H6/H10)</td><td>DE (l'ordre, non négociable) ; heuristicien (l'affordance
+d'apprentissage, sa colline)</td></tr>
+<tr><td><span class="prio p1">P1</span></td>
+<td><b>2 · L'édition à l'échelle, en explicite.</b> Shift-clic / <code>x</code> sélectionne des règles → barre
+d'action contextuelle visible seulement s'il y a sélection (ajouter/retirer set, rôle, ±requis, dupliquer,
+supprimer) ; « remplacer set A → set B dans cet onglet » en entrée de palette. Préférée à l'alt-clic : « l'étendue
+de l'action visible <b>avant</b> l'action ».</td>
+<td>PU P0-3</td><td>Heuristicien (H5 : la prévention prime la récupération) ; l'alt-clic rétrogradé par son propre
+auteur</td></tr>
+<tr><td><span class="prio p1">P1</span></td>
+<td><b>3 · Recherche globale + syntaxe de requête.</b> <code>/</code> étendu aux 4 vues (« son confinement à
+Règles est un bug d'attente ») ; préfixes <code>set: sub: req: role:</code> ; chips de syntaxe suggérées sous le
+champ (l'affordance exigée par l'heuristicien) ; <code>g r/t/s/f</code> et <code>1..9</code> pour la navigation.</td>
+<td>PU P1-6/P1-7</td><td>Heuristicien (amendement découvrabilité) ; documentée dans le <code>?</code> (P1-1)</td></tr>
+<tr><td><span class="prio p1">P1</span></td>
+<td><b>4 · La ligne repliée enrichie</b> (remplace le « mode tableur ») : quand
+<code>data-density="compact"</code>, la ligne montre sets en abrégé + chips de subs cliquables-cyclables — un seul
+template, écrit dans la grammaire de labels consolidée. ~30 lignes.</td>
+<td>PU P1-9 amendé DE</td><td>Fusion 5 du débat — le power-user y gagne au change (« livré plus vite »)</td></tr>
+<tr><td><span class="prio p1">P1</span></td>
+<td><b>5 · Comparaison d'onglets par delta.</b> Second select « comparer à » dans Testeur/Couverture : colonnes
+delta (gardés A/B, règles muettes ici et pas là, sets couverts par l'un seul). Pas de split-screen.</td>
+<td>PU P1-10</td><td>— (non contesté)</td></tr>
+<tr><td><span class="prio p1">P1</span></td>
+<td><b>6 · <code>color-mix()</code> — tuer la jungle des rgba dupliqués.</b> Une <code>--c</code> par famille,
+dérivations en oklab : −60 lignes, thèmes et 5 accents automatiquement cohérents. Prérequis technique de tout
+re-theming (matières du cycle 3 comprises) et du sort du picker d'accents (arbitrage n°4).</td>
+<td>DE 7</td><td>Compatible avec la dérivation exigée par les 3 matières du rapport 3</td></tr>
+<tr><td><span class="prio p1">P1</span></td>
+<td><b>7 · L'état système lisible.</b> Save-line remontée en taille/contraste + tooltip explicite sur chaque état
+(« session seule » = risque de perte réelle) + réplication dans le header mobile ; warning « injouable » qui
+<b>bloque</b> « Créer la règle » (avec raison) ; flash sur la modification inline du requis (le filet, lui, est le
+Ctrl+Z — jamais de confirmation) ; mesurer le recalcul du Testeur (<code>performance.now()</code>) et n'afficher
+un état d'attente qu'au-delà de ~150&nbsp;ms.</td>
+<td>H1/H5 amendés</td><td>Power-user (poison de la confirmation, flash accepté) ; DE (« mesurer avant
+d'habiller »)</td></tr>
+</table></div>
+
+<h3>P2 — le poli, gouverné</h3>
+<div class="tbl-wrap"><table>
+<tr><th style="width:56px">Prio</th><th>Recommandation consolidée</th><th style="width:150px">Origine</th></tr>
+<tr><td><span class="prio p2">P2</span></td>
+<td><b>Cérémonies hors navigation.</b> View Transitions et <code>@starting-style</code> réservés aux événements
+rares (import, suppression d'onglet, 18/18) — <b>la navigation n'est jamais animée</b>, doctrine du cycle. Entrée/
+sortie déclaratives des toasts.</td>
+<td>DE 9-10, bornés par PU + H</td></tr>
+<tr><td><span class="prio p2">P2</span></td>
+<td><b>Alt-clic « édition verticale » — gelé.</b> Ne revient qu'après la pile de commandes (P0-3) ET le renfort
+d'affordance des chips (P0-1), avec tooltip de découverte. La sélection multiple (P1-2) couvre le besoin d'ici
+là.</td>
+<td>PU P1-8, révisé par son auteur</td></tr>
+<tr><td><span class="prio p2">P2</span></td>
+<td><b>Micro-gestes et poli de plateforme.</b> Double-clic « créer une règle depuis cette pièce » (rejoint le
+créer-depuis-pièce P0-6 du rapport 3 — le geste d'entrée, pas un bouton par carte) ; glyphes UI migrés sur le
+système SVG <code>ICON</code> existant (⠿ ＋ ▾ ✓) ; bordures 1&nbsp;px + outline (rendu 125/150&nbsp;% Windows) ;
+<code>orphans/widows</code> + <code>print-color-adjust</code> sur la print view ; alignement
+<code>7ch</code> des grilles de cartes. Subgrid et container queries : explicitement <b>refusés</b> sur cette
+base.</td>
+<td>DE 12-15 + PU P2-12/13</td></tr>
+<tr><td><span class="prio p2">P2</span></td>
+<td><b>État vide actif</b> : « Explorer la démo » + « Créer ma première règle » sur « Mes règles 0 » — la part du
+cycle 4 à l'onboarding, en attendant la scène du verdict du rapport 3 (qui reste la vraie réponse).</td>
+<td>H10 — 4ᵉ cycle sur l'empty state</td></tr>
+</table></div>
+
+<h2>Les points du rapport 3 à réviser</h2>
+<div class="tbl-wrap"><table>
+<tr><th>Point du rapport 3</th><th>Révision recommandée</th><th style="width:110px">Nature</th></tr>
+<tr><td><b>P0-3 « La scène du verdict » — premier grand chantier du cœur</b></td>
+<td>Maintenue en P0 mais <b>re-séquencée derrière les lots 1-3 du cycle 4</b> : la scène est un écran composé
+(cartes cliquables, CTA, bandeau) qui hérite du moteur — la construire sur un rendu qui perd le focus et un dark
+mode trahi par <code>color-scheme</code>, c'est l'erreur « afficher plus vite un résultat toujours illisible »
+au niveau du code. La logique de dépendance du rapport 3 lui-même l'exige. L'ordre relatif reste un arbitrage —
+voir n°6.</td>
+<td><span class="v-mid">re-séquencé</span></td></tr>
+<tr><td><b>P1 « Trois familles typographiques — labels et th en sans, mono = valeurs du jeu »</b></td>
+<td>Contredit à nouveau : le DE démontre que les small-caps synthétiques sont défaillantes sous 15&nbsp;px et
+propose mono uppercase pour tout label technique. Quatre positions en quatre cycles — <b>plus jamais de débat
+d'opinion : un A/B maquetté, tranché une fois</b> (arbitrage n°1).</td>
+<td><span class="v-bad">contredit</span></td></tr>
+<tr><td><b>Q4 « La temporalité des cérémonies »</b></td>
+<td>Répondue à rebours : la doctrine du cycle 4 borne le périmètre <i>avant</i> les millisecondes — navigation
+jamais animée, cérémonies réservées aux événements rares (import, suppression, 18/18). Les durées/easings restent
+à écrire pour ces seuls événements, avec les tokens du rapport 2.</td>
+<td><span class="v-mid">bornée</span></td></tr>
+<tr><td><b>Q6 « Le chiffrage » (reconduite depuis le rapport 1)</b></td>
+<td>Enfin entamée : les lots du moteur sont chiffrés (lignes + jours, faisabilité vérifiée dans le code). Reste à
+chiffrer les chantiers du cœur (scène, share card, matières) <b>avec la même méthode</b> — contre le code, pas
+contre une app idéale.</td>
+<td><span class="v-mid">partiellement réglé</span></td></tr>
+<tr><td><b>P0-1 micro-labels : « éphémère pour nommer, persistant pour décider »</b></td>
+<td>Confirmée et précisée : « persistant » ne signifie pas « permanent à l'écran » — tooltip et panneau
+<code>?</code>, jamais de bandeau pédagogique permanent (le pixel du scan prime après le jour 2). La clé in-game
+reste dépliée (l'artefact de la boucle hebdomadaire) mais gagne son mode d'emploi.</td>
+<td><span class="v-ok">confirmé + borné</span></td></tr>
+<tr><td><b>« Toute mention de règle est cliquable » (P1)</b></td>
+<td>Étendue : cliquable ET adressable — « G7 » dans la palette saute et flash ; le mécanisme
+<code>data-goto</code>+<code>.flash</code> devient le routeur commun des rulerefs et de la palette.</td>
+<td><span class="v-ok">étendu</span></td></tr>
+</table></div>
+
+<h2>Les arbitrages ouverts pour l'équipe finale</h2>
+<p>Dernier cycle : plus de « questions pour le cycle suivant ». Ce qui suit est la liste consolidée des décisions
+que quatre cycles n'ont pas pu — ou pas dû — prendre seuls, avec l'état exact du dossier pour chacune.</p>
+
+<div class="cards">
+  <div class="card"><span class="no">A1</span><h4>Typo des labels : mono vs sans</h4>
+  <p>Quatre positions en quatre cycles — R1 : sans uppercase ; R2 : mono uppercase ; R3 : sans, mono réservé aux
+  valeurs du jeu ; C4 : mono uppercase (avec la preuve que les small-caps synthétiques sont défaillantes sous
+  15&nbsp;px). Deux écoles, deux voix chacune. À trancher par maquettes A/B des th de tables et des micro-labels —
+  et à figer en charte, définitivement. Donnée nouvelle : une fois les labels tokenisés, le swap coûte une
+  ligne.</p></div>
+  <div class="card"><span class="no">A2</span><h4>L'encodage du requis : texte vs ◆ vs micro-barres</h4>
+  <p>R2 : texte « 4 subs · 4 sets » ; C3 : ◆ plein/creux (visual) ou micro-barres (cognitif) ; C4 ajoute deux
+  contraintes dures — H6 sev 3 (l'encodage actuel est le n°2 du TOP violations) et la doctrine anti-légende du
+  power-user : l'encodage retenu doit être <b>auto-porteur</b> (tooltip toléré, bandeau interdit). L'hybride
+  barre + libellé du rapport 3 reste le favori — à maquetter, plus à débattre.</p></div>
+  <div class="card"><span class="no">A3</span><h4>4 vs 5 destinations de nav</h4>
+  <p>R1 : 4 entrées (contractuel) ; R2 : 5 destinations en dissolvant des vues ; R3 : fait nouveau (la scène du
+  verdict candidate à être Simulation) ; C4 : muet sur la nav — mais sa palette Ctrl+K change l'équation : une
+  partie de la surface de navigation peut vivre dans la palette plutôt que dans le chrome. Trancher structure
+  d'abord (la scène est-elle Simulation ?), chrome ensuite, mobile enfin (tab bar du R2).</p></div>
+  <div class="card"><span class="no">A4</span><h4>Le picker d'accents</h4>
+  <p>Trois écoles au corpus (conservé+décalé / supprimé / recomposé hors teintes de tier) — décision toujours
+  bloquée par la vérification in-game des couleurs de tiers (Q1 du cycle 2, <b>pendante depuis trois cycles</b>).
+  Apport C4 : <code>color-mix()</code> rend les 5 accents dérivés et cohérents pour rien — l'argument « coût de
+  maintenance » disparaît, ne reste que l'argument sémantique du cycle 3. Faire la vérification, puis trancher
+  les deux ensemble.</p></div>
+  <div class="card"><span class="no">A5</span><h4>✓ vs ◆ — à figer en charte</h4>
+  <p>Le dossier est clos sur le fond : deux cycles, deux contestations internes, un seul verdict (« le ◆ décore le
+  monde, il ne confirme pas les gestes ») — et le C4 ajoute la couche technique : les glyphes texte (✓ compris)
+  migrent sur le système SVG <code>ICON</code>, ce qui fige aussi leur rendu. Il ne reste qu'à l'écrire dans la
+  charte. Aucun nouveau débat recevable.</p></div>
+  <div class="card"><span class="no">A6</span><h4>Scène du verdict vs pile de commandes en priorité 1</h4>
+  <p>Le seul vrai conflit inter-cycles : le cœur du R3 (l'activation du novice) contre le moteur du C4 (l'outil de
+  l'installé). Position de la modération : <b>faux dilemme aux extrêmes, vrai choix au milieu</b> — les lots 1-2
+  du C4 (~4 jours : color-scheme, scroll, focus, dialog) sont des prérequis <i>des deux</i> ; après eux, l'équipe
+  choisit entre pile de commandes (2 j, sert la rétention experte) et scène du verdict (non chiffrée, sert
+  l'activation). Décision de produit — qui perd-on le plus : le novice du lien Discord ou l'expert à 4 onglets ? —
+  que seule la donnée utilisateur (A7) peut éclairer.</p></div>
+  <div class="card"><span class="no">A7</span><h4>La palette Ctrl+K et son séquençage — et les dettes de terrain</h4>
+  <p>La palette est actée (P1-1) mais trois curseurs restent à l'équipe : son moment (strictement après focus +
+  dialog + undo — l'ordre du DE est co-signé), son affichage (mention header vs raccourci discret), et son
+  périmètre (navigation seule, ou aussi les mutations — qui exigent alors l'undo à 100&nbsp;% de couverture).
+  Et les deux dettes que quatre cycles lèguent intactes : <b>la vérification in-game (Q1)</b> et <b>les 5 sessions
+  d'observation de vrais joueurs (Q5)</b> — vingt-deux regards experts, zéro donnée utilisateur ; plus un seul
+  arbitrage de cette liste ne devrait se prendre sans elles.</p></div>
+</div>
+
+<h2>Le mot de la fin — du corpus entier</h2>
+<div class="quote" style="font-size:16px">Le cycle 1 a rendu à chaque forme un rôle ; le cycle 2, à chaque vue un
+moment du jeu ; le cycle 3, à l'app son premier moment tout court. Le cycle 4 ferme la boucle en descendant là où
+aucun regard n'était allé — dans le code qui exécute tout cela — et en remontant la seule brique qui manquait à
+tous les plans : la pile de commandes, le filet qui rend l'audace bon marché. Quatre cycles, vingt-deux regards,
+et un legs qui tient en trois lignes : <b>un moteur réparé avant toute scène, une erreur toujours réversible en un
+geste, une capacité toujours apprenable par un chemin visible</b>. L'équipe finale hérite de sept arbitrages
+instruits, de lots enfin chiffrés — et des deux seules choses qu'aucun brainstorm ne pouvait fabriquer : l'écran
+du jeu réel, et les mains d'un vrai joueur.
+<span class="who">— modération du cycle 4, clôture de la série</span></div>
+
+<div class="foot">
+  <a href="03-challenge.html">← Challenge du rapport 3</a>
+  <a href="index.html">↑ Synthèse du cycle</a>
+</div>
+</main>
+</div>
+</body>
+</html>

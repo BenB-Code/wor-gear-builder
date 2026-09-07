@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Le débat · Design Review 4 — WoR Gear Builder</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="shell">
+<nav class="toc">
+  <div class="brand"><span class="d">◆</span> Design Review 4</div>
+  <div class="sub">Cycle brainstorm &amp; challenge · sept. 2026</div>
+  <a href="index.html">Synthèse du cycle</a>
+  <div class="grp">Le cycle</div>
+  <a href="01-analyses.html">Les 3 analyses à froid</a>
+  <a href="02-debat.html" class="on">Le débat</a>
+  <a href="03-challenge.html">Challenge du rapport 3</a>
+  <a href="04-conclusions.html">Conclusions &amp; recommandations</a>
+  <div class="grp">Référence</div>
+  <a href="../design-review-3/index.html">← Rapport 3</a>
+  <a href="../design-review-2/index.html">← Rapport 2</a>
+  <a href="../design-review/index.html">← Rapport 1</a>
+</nav>
+<main>
+
+<span class="kicker">Phase 2 · appuis · contestations · fusions · révisions · collines</span>
+<h1>Le débat</h1>
+<p class="lede">Chaque profil a lu les deux autres analyses et réagi : ce qu'il appuie, ce qu'il conteste, ce qu'il
+fusionne, ce qu'il révise de sa propre copie — et la colline qu'il refuse de céder. Le cycle 4 a débattu de
+<b>vitesse contre sécurité</b> et d'<b>invisible contre apprenable</b> — et sa particularité est que les trois
+protagonistes ont fini par converger sur un <b>ordre de construction</b>, pas seulement sur une liste : fondations
+du rendu, pile de commandes, puis seulement le royaume de l'invisible.</p>
+
+<div class="panel"><h4>Le constat d'ouverture — trois instruments, une même mesure</h4>
+<p>Le design engineer parle en lignes de code, le power-user en gestes, l'heuristicien en sévérités — et les trois
+échelles pointent les mêmes objets : le focus détruit au re-render (15 lignes / « le clavier ne tient pas la
+cadence » / H7 sev 2), l'undo absent (80 lignes / « le mis-clic sans filet » / H3 sev 3), les onglets à deux
+visages (~55 lignes / « la bascule la plus fréquente, souris obligatoire » / H4 sev 3). Quand trois métriques
+indépendantes désignent les mêmes cibles, le débat ne porte plus sur <i>quoi</i> — il porte sur <i>dans quel
+ordre</i> et <i>jusqu'où</i>.</p></div>
+
+<h2>Les appuis — qui signe quoi</h2>
+<div class="tbl-wrap"><table>
+<tr><th style="width:180px">Qui appuie</th><th>Quoi</th><th>L'argument ajouté</th></tr>
+<tr><td><b>DE → Heuristicien</b></td><td>H4 sev 3, le sélecteur d'onglet unique — « le constat le plus important
+du cycle, et je le dis en ayant raté sa racine »</td>
+<td>Chiffrage : les pills existent déjà avec état actif et compteurs ; en extraire <code>tabPicker()</code> et
+remplacer les deux <code>&lt;select&gt;</code> ≈ 55 lignes. Bonus : on supprime du même coup deux popups système
+clairs qui poignardent le dark mode. « Deux griefs client traités par un seul composant : le meilleur ratio du
+cycle. »</td></tr>
+<tr><td><b>DE → Power-user</b></td><td>P0-1, l'undo global Ctrl+Z — « faisable en 2 jours, et il rembourse trois
+findings »</td>
+<td>Faisabilité vérifiée dans le code : toutes les mutations passent par <code>scheduleSave</code>, state
+sérialisable unique, pile de snapshots ~80 lignes. Il solde d'un coup H3 (toast éphémère), H5 (stepper silencieux)
+et le filet manquant de l'alt-clic. « LE multiplicateur du cycle. »</td></tr>
+<tr><td><b>DE → Heuristicien</b></td><td>H6 sev 3, les légendes des encodages — « coût quasi nul, je le prends
+dans mon lot »</td>
+<td>Tooltip natif sur les dots, une ligne de légende, hover renforcé sur les chips à 28&nbsp;% : du template
+déterministe, ~20 lignes, livrable avec ses P0 sans coordination.</td></tr>
+<tr><td><b>Power-user → DE</b></td><td>DE-2, le focus perdu au re-render — « c'est MON prérequis, je le co-signe
+des deux mains »</td>
+<td>Sans focus stable, tout le modèle j/k est mort-né. Et le patch-in-place est <b>supérieur</b> à la restauration
+de focus : zéro re-render = zéro scintillement pendant l'édition rapide. « La différence entre "le clavier existe"
+et "le clavier tient la cadence". »</td></tr>
+<tr><td><b>Power-user → DE</b></td><td>DE-3, le scroll animé — « plus grave que du poli »</td>
+<td>L'expert bascule des dizaines de fois par session : chaque bascule qui « glisse » 300&nbsp;ms × 40 = de la
+latence pure sur la boucle la plus fréquente. « <code>behavior:"instant"</code> est un fix de vitesse, pas
+d'esthétique. »</td></tr>
+<tr><td><b>Power-user → Heuristicien</b></td><td>H3 sev 3 — « convergence totale avec mon P0-1 »</td>
+<td>« Quand l'heuristicien et moi arrivons au même point par deux chemins (lui : 18 règles perdues sans recours ;
+moi : le mis-clic d'édition rapide), ce n'est plus une proposition, c'est un diagnostic. » Idem H7 sur le
+réordonnancement clavier : son P2-11 mot pour mot.</td></tr>
+<tr><td><b>Heuristicien → DE</b></td><td>DE-5/6, la grammaire des labels — « c'est MON H4 vu au microscope »</td>
+<td>Il avait localisé l'incohérence au niveau composant (pills vs select) ; l'ingénieur la localise au niveau
+typographique — la même violation de cohérence interne, et ensemble elles expliquent la totalité du grief
+« app incohérente ». La règle de tranchage est <b>systémique</b> : une grammaire, pas une retouche.</td></tr>
+<tr><td><b>Heuristicien → Power-user</b></td><td>P0-1, l'undo global — « la vraie réponse à ma violation H3 »</td>
+<td>« Mon correctif (allonger le toast à 8-10&nbsp;s) était un pansement ; sa pile de commandes est le traitement.
+Nielsen H3 ne demande pas un toast plus long, il demande une <b>sortie de secours toujours disponible</b>. » Une
+brique, trois heuristiques servies (H3, H5, H9).</td></tr>
+<tr><td><b>Heuristicien → DE</b></td><td>DE-8, l'élévation à deux niveaux</td>
+<td>Il apporte la mesure qui manquait au constat H8 : « "estompé" n'est pas une esthétique quand c'est sous le
+seuil de discrimination — c'est de l'information supprimée. » Le correctif contraste (<code>--faint</code>
+remonté) s'y rattache : même chantier, même PR.</td></tr>
+</table></div>
+
+<h2>Les contestations — trois fronts nommés</h2>
+
+<h3>Front 1 · Heuristicien vs power-user — l'invisible, jusqu'où ?</h3>
+<div class="panel bad"><h4>L'heuristicien conteste l'alt-clic « édition verticale » (P1-8) : « une erreur
+catastrophique en puissance »</h4>
+<p>« Appliquer un état à <i>toutes les règles filtrées</i> d'un geste dont le modificateur est invisible, c'est
+fabriquer l'erreur catastrophique : alt enfoncé par accident — alt-tab raté, c'est un classique Windows — et 18
+règles modifiées silencieusement. Mon audit relevait qu'UN clic de stepper silencieux était sev 2 ; multiplier ce
+clic par 18 sans confirmation, même avec Ctrl+Z en filet, inverse la charge : <b>la prévention d'erreur (H5) prime
+sur la récupération (H9)</b>. Je préfère sa propre alternative P0-3 — sélection multiple + barre contextuelle :
+l'étendue de l'action y est <b>visible avant</b> l'action. » Et plus largement : « trois accélérateurs sur quatre
+sont invisibles par conception — Ctrl+K "invisible par définition", alt-clic, syntaxe <code>set:salut</code>.
+Nielsen H7 dit le contraire : les accélérateurs servent l'expert à condition d'être appris. Je n'accepte aucune de
+ces briques <b>sans son affordance d'apprentissage</b>. L'invisible au repos, oui ; l'inapprenable, non. »</p></div>
+<div class="panel bad"><h4>Le power-user conteste la légende permanente (H6) et la confirmation du stepper (H5) :
+« on ne sécurise pas un outil en le ralentissant »</h4>
+<p>« Une légende une ligne au-dessus de la première carte, c'est du chrome permanent que l'expert relira zéro fois
+après le jour 2 — mais qu'il scrollera 10&nbsp;000 fois. Les dots et le tri-état s'apprennent en une session ; la
+densité se consomme à chaque session. Tooltip natif, oui ; bandeau pédagogique permanent, non. » Même objection au
+repli de la clé in-game (H8) : « c'est l'artefact central de la recopie hebdomadaire — la replier ajoute un clic à
+LA boucle récurrente pour gagner 40&nbsp;px chez le débutant. » Et sur le stepper : « une édition inline qui
+demande confirmation n'est plus une édition inline — c'est le dialogue qu'on vient d'éviter, en pire. Le vrai
+correctif du "clic de trop sur +" s'appelle Ctrl+Z. Le flash visuel, lui, je le prends : feedback sans
+friction. »</p></div>
+<div class="panel reco"><h4>Résolution — réversibilité plutôt que confirmation, apprentissage plutôt que chrome</h4>
+<p>Le front se solde par un échange équilibré : le power-user <b>rétrograde lui-même l'alt-clic</b> (voir
+révisions) et accepte l'affordance d'apprentissage (mention « Ctrl+K » dans le header, tooltips sur les gestes,
+chips de syntaxe sous la recherche) ; l'heuristicien <b>abandonne la confirmation du stepper</b> au profit de
+flash + Ctrl+Z et la légende permanente au profit du panneau <code>?</code> unifié. La doctrine commune qui en
+sort : <b>toute erreur réversible en un geste, toute capacité apprenable par un chemin visible</b>.</p></div>
+
+<h3>Front 2 · Design engineer vs power-user — le séquençage</h3>
+<div class="panel bad"><h4>Le DE conteste la palette Ctrl+K en P0 : « construire une cathédrale sur du sable »</h4>
+<p>« Une palette de commandes, c'est un overlay avec focus trap — que l'app ne sait pas faire : le dialogue actuel
+laisse Tab s'échapper —, une restitution du focus au point de départ — que le moteur de rendu détruit à chaque
+<code>outerHTML</code> —, et un routage d'actions vers des mutations qui n'ont pas encore d'undo. Livrer Ctrl+K
+aujourd'hui, c'est livrer une palette qui exécute "incrémenter requis" puis laisse l'utilisateur focus sur
+<code>&lt;body&gt;</code>, sans Ctrl+Z. <b>L'ordre est non négociable</b> : focus management +
+<code>&lt;dialog&gt;</code> + undo D'ABORD, palette ensuite. Elle passe de P0 à P1, conditionnée. » Même verdict
+sur le cran « tableur » (P1-9) : « un troisième rendu triple la surface de template sur une base sans composants
+ni tests — chaque évolution du modèle de règle sera implémentée et testée trois fois. Contre-proposition :
+enrichir la ligne repliée EXISTANTE quand <code>data-density="compact"</code> — un seul template, densité obtenue,
+~30 lignes. »</p></div>
+<div class="panel bad"><h4>Le power-user riposte : « attention au cycle qui se dépense en CSS »</h4>
+<p>« Onze de ses seize points sont du poli à effort faible — c'est précisément leur danger : ils se laissent tous
+faire "d'abord", et l'undo global, la palette et la sélection multiple glissent au cycle suivant, puis au suivant.
+Une ligne de <code>color-scheme</code>, oui, évidemment. Mais un cycle entier de grammaire typographique pendant
+que la recopie coûte toujours 18 clics + scroll, c'est <b>repeindre le cockpit d'un avion sans
+commandes</b>. »</p></div>
+<div class="panel reco"><h4>Résolution — l'ordre du DE, avec la pile de commandes DANS le cycle</h4>
+<p>Le compromis n'est pas mou, il est séquencé : le power-user accepte l'ordre de dépendance (focus →
+<code>&lt;dialog&gt;</code> → undo → palette) <b>à condition que la pile de commandes se livre ce cycle</b> — sa
+colline — et le DE le lui accorde d'autant plus volontiers qu'il l'a lui-même chiffrée à 2 jours. Le poli
+typographique P1 du DE passe <i>après</i> la pile dans l'ordre de livraison. Le cran tableur est remplacé par la
+ligne repliée enrichie ; le power-user y gagne au change (« un seul template » = livré plus vite).</p></div>
+
+<h3>Front 3 · Les contestations croisées sur le mouvement et le feedback</h3>
+<div class="panel bad"><h4>Power-user et heuristicien contre les View Transitions (DE-9) — deux angles, même
+verdict</h4>
+<p>Le power-user y voit une incohérence interne : « on vient d'établir que le scroll animé fait "app qui rame" ;
+réintroduire une transition animée à chaque bascule de vue refait le même trou par l'autre bout. Pour qui bascule
+40 fois par session, <b>le cut sec est une feature</b>. » L'heuristicien y voit un hors-sujet stratégique :
+« techniquement juste, mais le client se plaint d'incohérence et d'illisibilité ; animer le swap de vue polit un
+cut que personne n'a reproché, pendant que les dots de requis restent un code à déchiffrer. La loi de Jakob joue
+aussi contre : une SPA artisanale qui "transitionne" crée une attente d'app native qu'on ne tiendra pas
+ailleurs. » Verdict commun : <b>P2, réservées aux événements rares</b> (import, suppression d'onglet), jamais la
+navigation — et le DE lui-même le concède (voir révisions).</p></div>
+<div class="panel bad"><h4>Le DE contre le spinner du Testeur (H1) : « mesurer avant d'habiller »</h4>
+<p>« 172&nbsp;410 profils, c'est une combinatoire, pas 172&nbsp;410 itérations lourdes — sur le code actuel je
+parie &lt; 100&nbsp;ms sur machine médiane. Un spinner sur une opération sub-100&nbsp;ms AJOUTE de la latence
+perçue. Le correctif honnête : <code>performance.now()</code> autour du calcul, et n'afficher un état d'attente
+que s'il dépasse ~150&nbsp;ms. L'audit disait "sev 1, à vérifier" — alors vérifions avant de coder. » Non
+contesté : la sévérité conditionnelle de l'heuristicien appelait exactement cette vérification.</p></div>
+
+<h2>Les fusions — cinq chantiers au lieu de quatorze demandes</h2>
+
+<div class="panel reco"><h4>Fusion 1 · La pile de commandes unique — un chantier, trois P0 (la fusion signature)</h4>
+<p>Formulée par le power-user, chiffrée par le DE, doctrinée par l'heuristicien : chaque mutation passe par une
+<b>commande</b> (le point de passage <code>scheduleSave</code> existe) → la pile donne Ctrl+Z / Ctrl+Shift+Z ;
+<b>le toast devient le simple affichage de la tête de pile</b> — plus de course contre le timeout (H3 réglé) ; et
+parce qu'une commande sait ce qu'elle a touché, elle <b>patche en place</b> au lieu de re-render — le focus survit
+gratuitement (DE-2 réglé), le stepper garde sa vitesse et gagne son filet (H5 réglé). ~80 lignes, 2 jours,
+trois violations sev 2-3 soldées.</p></div>
+
+<div class="panel reco"><h4>Fusion 2 · <code>&lt;dialog&gt;</code> → recopie guidée — la modale accessible devient
+le mode focus</h4>
+<p>Le DE-4 (migrer vers <code>&lt;dialog&gt;</code>/<code>showModal()</code>) donne gratuitement focus trap,
+Échap, <code>inert</code> du fond. Le flux « recopie guidée » du power-user est exactement un
+<code>&lt;dialog&gt;</code> plein écran avec un handler Entrée : en construisant la migration comme un utilitaire
+réutilisable (~30 lignes), le mode recopie coûte ~60 lignes de plus au lieu d'un développement séparé.
+L'heuristicien y verse ses exigences H1/H2 : le mode focus devient <b>l'écran d'état</b> — clé in-game <b>avec</b>
+son mode d'emploi (« où la coller »), jauge 0/18, état de sauvegarde — et impose l'undo de la coche (Backspace =
+décocher-revenir). « Le moment de plus forte anxiété devient le moment de plus forte visibilité. »</p></div>
+
+<div class="panel reco"><h4>Fusion 3 · « La palette EST le tutoriel » — ? global + Ctrl+K + légende, un seul
+système d'apprentissage</h4>
+<p>L'heuristicien relevait trois systèmes d'aide sans logique (H4) ; le power-user veut une cheat-sheet et une
+palette. Fusion : le <code>?</code> global ouvre un panneau unique — raccourcis, légende des encodages (dots,
+tri-état des chips : H6), syntaxe de recherche — et la palette Ctrl+K expose <b>les mêmes commandes avec leurs
+raccourcis affichés à droite</b> (pattern VS Code). Trois violations (H4-aide, H6-légende, H7-découvrabilité)
+traitées par un seul objet — et la palette répond aussi à H4 côté navigation : « aller à l'onglet Strict » devient
+une commande unique, identique depuis les 4 vues, avec <code>1..9</code> en raccourci.</p></div>
+
+<div class="panel reco"><h4>Fusion 4 · Le chantier « discipline du focus » — trois demandes, un socle</h4>
+<p>Le DE-2 (restauration/patch-in-place), le modèle j/k du power-user (P0-5) et le réordonnancement clavier
+(H7 sev 2 + P2-11) sont le même chantier : rendre le focus <b>prévisible et pilotable</b> sur la liste de règles.
+Livré ensemble : patch in place des toggles, roving tabindex j/k, Alt+↑/↓ pour réordonner. ~120 lignes — et il
+débloque la palette et le flux recopie derrière.</p></div>
+
+<div class="panel reco"><h4>Fusion 5 · Le cran dense écrit dans la grammaire mono du DE</h4>
+<p>Issue du front 2 : la ligne repliée enrichie (sets en abrégé, subs cliquables en mode compact) s'écrit dans la
+grammaire « labels techniques = mono uppercase » du DE — « exactement la typo qu'exige une ligne-règle dense :
+chips abrégés, colonnes alignées, 11&nbsp;px lisibles. Le cran de densité devient la vitrine de sa grammaire au
+lieu d'un dialecte de plus. »</p></div>
+
+<h2>Les révisions — ce que chacun a lâché</h2>
+<div class="tbl-wrap"><table>
+<tr><th style="width:160px">Qui</th><th>Révision assumée</th></tr>
+<tr><td><b>Design engineer</b></td>
+<td>« J'ai audité le CSS ligne à ligne et classé <code>color-scheme</code> "bug cheap n°1" — mais j'ai raté que la
+racine du ressenti "incohérent" n'est pas chromatique : c'est le même objet métier rendu par deux composants (H4).
+Mon analyse optimisait chaque vue isolément ; l'heuristique a regardé <b>entre</b> les vues. » Révise aussi ses
+View Transitions : « tant que le focus n'est pas réglé, <code>startViewTransition</code> anime joliment une perte
+de focus » — derrière le chantier focus, comme la palette.</td></tr>
+<tr><td><b>Power-user</b></td>
+<td>« Mon P1-8 (alt-clic vertical), je le rétrograde honnêtement. L'heuristicien démontre que le tri-état des subs
+est déjà illisible ; un geste invisible qui mute cet état sur 18 règles d'un coup, c'est de la vitesse construite
+sur du sable — l'utilisateur ne saura pas ce qu'il vient de faire. » L'alt-clic ne revient qu'après le Ctrl+Z
+global ET un renfort de l'affordance des chips ; d'ici là, la sélection multiple explicite fait le même
+travail.</td></tr>
+<tr><td><b>Heuristicien</b></td>
+<td>Double révision : « ma violation H3 "dialogue" passe de conditionnelle (sev 2) à <b>confirmée sev 3</b> —
+l'ingénieur a vérifié : le fond reste tabbable. Et mon correctif était le mauvais : je demandais "Échap + ×",
+c'était traiter les symptômes ; je le retire au profit du <code>&lt;dialog&gt;</code>. » Et : « ma note H7 (1)
+était trop généreuse — j'avais audité la <i>présence</i> d'accélérateurs, le power-user a audité leur
+<i>couverture</i> : 30 gestes pour un scénario hebdomadaire. La flexibilité de Nielsen se mesure sur les tâches
+fréquentes, pas sur l'inventaire des features. <b>H7 passe à 2.</b> »</td></tr>
+</table></div>
+
+<h2>Les collines — ce que personne ne cédera</h2>
+<div class="cards">
+  <div class="card"><span class="no">DE</span><h4>L'ordre de livraison</h4>
+  <p>« Aucune nouvelle surface de commande — palette, édition en masse, alt-clic, mode tableur — ne se construit
+  tant que le moteur de rendu détruit le focus et que l'undo global n'existe pas. (1) color-scheme + scroll +
+  légendes [1 j], (2) discipline du focus + dialog [2-3 j], (3) undo global [2 j], (4) sélecteur d'onglet unifié
+  [1 j] — et SEULEMENT ensuite le royaume de l'invisible, qui devient alors bon marché et sûr. Toute inversion
+  produit des features pro qui humilient l'utilisateur clavier qu'elles prétendent servir. »</p></div>
+  <div class="card"><span class="no">PU</span><h4>La pile de commandes, CE cycle</h4>
+  <p>« Le Ctrl+Z universel se livre ce cycle, avant tout chantier de poli. Ce n'est pas une feature parmi seize :
+  c'est le prérequis structurel de tout ce que nous voulons tous les trois — l'édition inline sans confirmation,
+  l'édition en masse, le toast fiabilisé, le patch-in-place, et un jour l'alt-clic. Chaque cycle sans undo, l'app
+  reste un formulaire qu'on manipule avec des gants. Je lâcherai la palette, je lâcherai le mode tableur, je ne
+  lâcherai pas ça. »</p></div>
+  <div class="card"><span class="no">H</span><h4>Rien d'inapprenable, un composant par fonction</h4>
+  <p>« Aucune fonctionnalité dont la seule porte d'entrée est invisible : chaque capacité doit avoir au moins un
+  chemin visible ou auto-enseigné — mention à l'écran, tooltip, entrée de palette listant son raccourci. Et le
+  corollaire H4 : un seul sélecteur d'onglets, une seule grammaire de label, un seul système d'aide. Un pro
+  apprend un outil cohérent en une session ; personne n'apprend un outil secret. Là-dessus, je ne bouge pas. »</p></div>
+</div>
+
+<div class="quote">Le débat du cycle 4 a inventé peu et ordonné beaucoup : ses cinq fusions transforment quatorze
+demandes en cinq chantiers empilables, et ses trois collines — l'ordre, le filet, l'apprenable — sont
+compatibles : elles décrivent la même livraison vue par l'ingénieur, l'expert et le pédagogue.
+<span class="who">— modération du cycle 4</span></div>
+
+<div class="foot">
+  <a href="01-analyses.html">← Les 3 analyses à froid</a>
+  <a href="03-challenge.html">Challenge du rapport 3 →</a>
+</div>
+</main>
+</div>
+</body>
+</html>

@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Roadmap — Rapport Final · WoR Gear Builder</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="shell">
+<nav class="toc">
+  <div class="brand"><span class="d">◆</span> Rapport Final</div>
+  <div class="sub">Synthèse des 4 design reviews · sept. 2026</div>
+  <a href="index.html">Vue d'ensemble</a>
+  <div class="grp">Le rapport</div>
+  <a href="01-synthese.html">Synthèse &amp; arbitrages</a>
+  <a href="02-design-system.html">Design system</a>
+  <a href="03-charte-graphique.html">Charte graphique v3</a>
+  <a href="04-maquettes.html">Maquettes &amp; wireframes</a>
+  <a href="05-roadmap.html" class="on">Roadmap</a>
+  <div class="grp">Les 4 rapports</div>
+  <a href="../design-review/index.html">Rapport 1 · audit</a>
+  <a href="../design-review-2/index.html">Rapport 2 · cycle</a>
+  <a href="../design-review-3/index.html">Rapport 3 · cycle</a>
+  <a href="../design-review-4/index.html">Rapport 4 · cycle</a>
+</nav>
+<main>
+
+<span class="kicker">Delivery · plan d'exécution consolidé · dev solo · single-file vanilla</span>
+<h1>Roadmap — le plan d'exécution final</h1>
+<p class="lede">Une seule roadmap remplace désormais les trois plans du corpus (les 5 chantiers du rapport 1,
+les 3 vagues de features du backlog produit, les lots chiffrés du cycle 4). Elle applique l'arbitrage
+<b>A6 — le moteur d'abord</b> — et le principe 4 de la doctrine : tout s'ordonne <b>par dépendance
+fonctionnelle</b>. Six chantiers séquentiels, un chantier zéro optionnel d'une soirée, deux dettes de terrain
+en parallèle. Total : <b>~40 jours dev-solo (~8 semaines)</b>, chaque chantier livrant un progrès que
+l'utilisateur voit.</p>
+
+<h2>La logique de séquencement — pourquoi cet ordre et pas un autre</h2>
+<div class="panel reco">
+<p><b>1 · Le moteur d'abord (A6).</b> Construire la scène du verdict sur un rendu qui détruit le focus, un dark
+mode trahi par <code>color-scheme</code> et zéro filet d'annulation, c'est « afficher plus vite un résultat
+toujours illisible » au niveau du code — l'argument du cycle 4, accepté par le promoteur de la scène lui-même.
+Les lots moteur sont les seuls <b>chiffrés et vérifiés contre le code</b> (~1 semaine), ils servent le novice
+ET l'expert, et la pile de commandes (D11) rend toute la suite <b>moins risquée à construire</b> : chaque
+chantier ultérieur mute l'état sous un Ctrl+Z global au lieu d'exiger ses propres garde-fous.</p>
+<p><b>2 · La peau ensuite.</b> Tokens, échelle de luminance à 5 niveaux, trois matières, typo figée (A1),
+encodage du requis (A2) : tout ce que les chantiers suivants dessinent — cartes, scène, téléprompteur, share
+card — s'écrit dans ce vocabulaire. Le poser après, c'est repeindre deux fois. Ce chantier porte aussi le
+checkpoint client « mode clair → clause Cinzel » (D14), qui doit tomber avant tout pixel-work du cœur.</p>
+<p><b>3 · Le cœur avant le squelette.</b> La scène du verdict (D3) et la carte d'item vivante (D2) précèdent la
+refonte de nav : la carte d'item est le composant n°1 du design system, réutilisé par Session, Simulation et la
+share card — on le construit une fois, tôt, et tout le reste le consomme. La scène, elle, ne dépend que du
+moteur et de la peau, pas de la nav à 5 entrées.</p>
+<p><b>4 · La structure et les boucles du joueur.</b> La nav 5 destinations (A3) reclasse des vues dont certaines
+n'existent qu'après le cœur (Simulation = la scène) — d'où sa place ici. Elle embarque les deux boucles à plus
+forte valeur vécue : la recopie téléprompteur (le point le plus validé du corpus, 7 regards) et Session/farm.</p>
+<p><b>5-6 · L'expert, puis l'acquisition.</b> La palette Ctrl+K est contractuellement conditionnée au moteur
+(A7 : focus + <code>&lt;dialog&gt;</code> + undo) et gagne à venir après la nav qu'elle indexe. L'acquisition
+ferme la marche : templates, onboarding et share card s'appuient sur la scène du verdict déjà en place, et la
+PWA — seul vrai risque de régression globale — ferme la roadmap (D17).</p>
+</div>
+
+<h2>Vue d'ensemble</h2>
+<div class="tbl-wrap"><table>
+<tr><th>#</th><th>Chantier</th><th>En une phrase</th><th class="num">Effort</th><th>Ce que l'utilisateur voit</th></tr>
+<tr><td class="num">0</td><td><b>Quick-wins</b> <span class="v-mid">(optionnel)</span></td><td>Les fixes ≤ 1 h du cycle 4, en une soirée</td><td class="num">~0,5 j</td><td>Dark mode sans scrollbar blanche, dots enfin explicables</td></tr>
+<tr><td class="num">1</td><td><b>Le moteur</b></td><td>Focus, <code>&lt;dialog&gt;</code>, pile de commandes, sélecteur d'onglet unique</td><td class="num">~7 j</td><td>Ctrl+Z partout, plus jamais de focus perdu, onglets cohérents</td></tr>
+<tr><td class="num">2</td><td><b>La peau</b></td><td>Tokens, 5 niveaux, 3 matières, typo et encodages figés</td><td class="num">~6 j</td><td>App nettement plus lisible, deux thèmes propres, labels unifiés</td></tr>
+<tr><td class="num">3</td><td><b>Le cœur</b></td><td>Carte d'item vivante + scène du verdict + verdicts compréhensibles</td><td class="num">~7 j</td><td>La première visite démontre la valeur en une scène</td></tr>
+<tr><td class="num">4</td><td><b>Le squelette</b></td><td>Nav 5 destinations, téléprompteur, Session &amp; farm</td><td class="num">~9 j</td><td>Le cycle du joueur (construire → vérifier → recopier → farmer) a ses écrans</td></tr>
+<tr><td class="num">5</td><td><b>L'expert</b></td><td>Palette Ctrl+K + panneau <code>?</code>, édition à l'échelle, recherche</td><td class="num">~5 j</td><td>Tout est atteignable au clavier, tout est apprenable</td></tr>
+<tr><td class="num">6</td><td><b>L'acquisition</b></td><td>Templates, onboarding, share card + landing, PWA en dernier</td><td class="num">~6 j</td><td>Première règle &lt; 5 min ; la card qui circule sur Discord</td></tr>
+<tr><td></td><td colspan="2"><b>Total (hors chantier 0)</b></td><td class="num"><b>~40 j</b></td><td>≈ 8 semaines dev-solo</td></tr>
+</table></div>
+
+<h2>Chantier 0 — les quick-wins d'une soirée <span class="v-mid">(optionnel)</span></h2>
+<p>Tous les fixes ≤ 1 h identifiés par le design engineer du cycle 4 (lot « 1 jour », partiel) : un premier
+commit gratifiant, zéro risque, qui allège d'autant le chantier 1. À faire la veille du lancement — ou à
+fusionner dans le chantier 1 si on préfère démarrer d'un bloc.</p>
+<div class="tbl-wrap"><table>
+<tr><th>Fix</th><th>Source</th><th class="num">Coût</th></tr>
+<tr><td><code>:root{color-scheme:dark}</code> / <code>body.light{color-scheme:light}</code> — fin de la scrollbar blanche et des popups système clairs</td><td>R4 lot 1</td><td class="num">~10 min</td></tr>
+<tr><td><code>scrollTo({behavior:"instant"})</code> au changement de vue — smooth réservé aux <code>scrollIntoView</code> explicites (et aux ancres)</td><td>R4 lot 1</td><td class="num">~15 min</td></tr>
+<tr><td>Tooltips natifs sur les dots de requis (« requis : 4 sur 4 ») + hover renforcé sur les chips à 28 % — jamais de légende permanente</td><td>R4 lot 1</td><td class="num">~30 min</td></tr>
+<tr><td><code>line-height:1.2</code> sur chips/boutons, ellipsis sur <code>.rc-name</code>, <code>text-wrap:balance/pretty</code> sur les titres</td><td>R4 lot 6 (partiel)</td><td class="num">~30 min</td></tr>
+<tr><td><code>::selection</code> accordé à l'accent + <code>:active</code> global (scale .97)</td><td>R4 / D13</td><td class="num">~15 min</td></tr>
+</table></div>
+
+<h2>Chantier 1 — le moteur <span class="kicker">~7 j (~6 si chantier 0 fait)</span></h2>
+<div class="tbl-wrap"><table>
+<tr><th>Contenu</th><th>Source</th><th class="num">Effort</th></tr>
+<tr><td>Reliquat du lot « 1 jour » si chantier 0 non fait (color-scheme, scroll instant, tooltips dots)</td><td>R4 lot 1</td><td class="num">~1 j</td></tr>
+<tr><td><b>Discipline du focus</b> : patch-in-place des toggles (classe + <code>aria-pressed</code> + <code>.val</code>, fin du <code>outerHTML</code> destructeur) ; roving tabindex j/k sur la liste de règles (<code>o</code> déplie, <code>x</code> coche, <code>d</code> duplique, <code>+/−</code> requis) ; Alt+↑/↓ réordonne (règle le drag souris-only)</td><td>R4 lot 2</td><td class="num">~1,5 j</td></tr>
+<tr><td><b>Utilitaire <code>&lt;dialog&gt;</code></b> réutilisable : migration du dialogue vers <code>showModal()</code> (trap, inert, Échap, backdrop gratuits) — le socle de la palette, de la recopie et des modales à venir</td><td>R4 lot 2</td><td class="num">~1 j</td></tr>
+<tr><td><b>Pile de commandes</b> : chaque mutation = une commande (point de passage <code>scheduleSave</code> existant), pile de snapshots (structuredClone, cap 50), <b>Ctrl+Z / Ctrl+Shift+Z globaux</b>, toast = affichage de la tête de pile. Réversibilité plutôt que confirmation — ~80 lignes</td><td>R4 lot 3 · D11</td><td class="num">~2 j</td></tr>
+<tr><td><b>Sélecteur d'onglet unique</b> : extraire <code>tabPicker(current, onChange)</code> des pills existantes, remplacer les deux <code>&lt;select&gt;</code> natifs (Testeur, Sets), différencier rangée d'onglets et rangée d'outils (~55 lignes)</td><td>R4 lot 4 · H4</td><td class="num">~1 j</td></tr>
+<tr><td><b>Contraste &amp; élévation mesurés</b> : <code>--faint</code> remonté ~#8a8298 (AA sur les textes d'état 11 px), grammaire d'élévation à 2 niveaux (conteneur = bordure visible, sous-élément = hairline), ombre courte sur <code>.rule</code></td><td>R4 lot 6</td><td class="num">~1 j</td></tr>
+</table></div>
+<div class="tbl-wrap"><table>
+<tr><th style="width:150px">Dépendances</th><td>Aucune — c'est le point d'entrée de tout le plan. Les deux dettes de terrain se paient <b>pendant</b> ce chantier (voir plus bas).</td></tr>
+<tr><th>Risques</th><td>La pile de commandes touche toutes les mutations : tester l'undo sur chaque geste (stepper, clic-cycle, duplication, suppression) avant de fermer. Le patch-in-place peut casser des listeners attachés aux nœuds recréés — inventorier les <code>outerHTML</code> avant de commencer.</td></tr>
+<tr><th>Critère de sortie</th><td>Aucune interaction ne perd le focus (parcours clavier complet enregistré) ; Ctrl+Z annule 100 % des mutations ; zéro <code>&lt;select&gt;</code> natif pour choisir un onglet ; zéro popup système clair en dark ; textes d'état 11 px ≥ 4,5:1.</td></tr>
+<tr><th>Ce que l'utilisateur voit</th><td>Le dark mode cesse de « fuir » (scrollbar, popups) ; Ctrl+Z marche partout et le toast dit ce qu'il vient de faire ; le clavier navigue la liste de règles ; les deux sélecteurs d'onglets exotiques ressemblent enfin au reste.</td></tr>
+</table></div>
+
+<h2>Chantier 2 — la peau <span class="kicker">~6 j</span></h2>
+<div class="tbl-wrap"><table>
+<tr><th>Contenu</th><th>Source</th><th class="num">Effort</th></tr>
+<tr><td><b>Échelle de luminance à 5 niveaux</b> : <code>--ink-hi</code> / <code>--ink</code> / <code>--head</code> (#c4bcd0) / <code>--label</code> (#a59dae) / <code>--deco</code> (ex-<code>--faint</code>, jamais de texte) + palette light corrigée + réécriture des duretés codées en dur</td><td>R1 ch. 1 · D5</td><td class="num">~1,5 j</td></tr>
+<tr><td><b><code>color-mix()</code></b> : une <code>--c</code> par famille, dérivations oklab (−60 lignes, thèmes et accents cohérents par construction) — prérequis technique des matières et des accents</td><td>R4 P1-6</td><td class="num">~0,5 j</td></tr>
+<tr><td><b>Les 3 matières + le pas de 8</b> : socle assombri, carte au liseré zénithal, encart éditorial (slot unique de la pédagogie in-situ) ; marges sur les tokens d'espacement</td><td>R3 P0-2 · D5</td><td class="num">~1 j</td></tr>
+<tr><td><b>Table d'affectation typo complète (A1 figé)</b> : labels et <code>th</code> en body sans uppercase 11.5px/600/.08em, mono = valeurs du jeu uniquement (tabular-nums, alignés à droite), display ≥ 16 px jamais interactif, small-caps synthétiques interdites &lt; 16 px</td><td>A1 · D7 · R1 ch. 1</td><td class="num">~1 j</td></tr>
+<tr><td><b>Encodage du requis (A2 figé)</b> : ●●●● → micro-barre + libellé texte (« 4/4 subs · 2 sets »), tooltip natif, jamais de légende permanente</td><td>A2 · R3/R4</td><td class="num">~0,5 j</td></tr>
+<tr><td><b>✓/◆ codifiés (A5) + migration SVG</b> : ✓ = gestes, ◆ = marque/jalons/onglet actif, une seule taille de puce, suppression des ◆ décoratifs ; tous les glyphes UI sur le système <code>ICON</code> existant</td><td>A5 · R4 P2</td><td class="num">~0,5 j</td></tr>
+<tr><td><b>Picker d'accents recomposé (A4)</b> : or · sarcelle · acier · mauve gris · cuivre, dérivés de <code>--c</code> ; interdits de charte appliqués (jamais destructif, jamais verdict)</td><td>A4 · R1 arb. g</td><td class="num">~0,5 j</td></tr>
+<tr><td><b>Motion tokens (D13)</b> : <code>--dur-1:120ms</code>, <code>--dur-2:200ms</code>, <code>--ease-out</code>, transitions énumérées, flash 600 ms « contenu arrivé », reduced-motion doublé d'états statiques</td><td>D13 · R2</td><td class="num">~0,5 j</td></tr>
+</table></div>
+<div class="tbl-wrap"><table>
+<tr><th style="width:150px">Dépendances</th><td>Chantier 1 (le flash et les micro-états s'appuient sur le patch-in-place). Décision client n°2 (palette d'accents) à obtenir avant de recomposer le picker.</td></tr>
+<tr><th>Risques</th><td>La réécriture des tokens traverse tout le fichier : avancer famille par famille, vérifier les deux thèmes à chaque passe. Le mode clair parchemin est le juge de paix — s'il ne convainc pas, la clause Cinzel (D14) se déclenche <b>ici</b>, pas plus tard.</td></tr>
+<tr><th>Critère de sortie</th><td>Zéro texte &lt; 4,5:1 dans les deux thèmes ; zéro hex de famille hors tokens ; zéro display &lt; 16 px ; zéro small-caps synthétique. <b>Puis re-montrer le mode clair au client → décision Cinzel</b> (la seule bascule typo encore possible, ~1 ligne + ~60 Ko).</td></tr>
+<tr><th>Ce que l'utilisateur voit</th><td>La hiérarchie s'inverse dans le bon sens : les sections redeviennent plus visibles que leur chrome, les labels parlent d'une seule voix, le requis se lit sans décoder, le mode clair devient présentable. Le « mix bizarre » du verbatim client s'éteint.</td></tr>
+</table></div>
+
+<h2>Chantier 3 — le cœur <span class="kicker">~7 j</span></h2>
+<div class="tbl-wrap"><table>
+<tr><th>Contenu</th><th>Source</th><th class="num">Effort</th></tr>
+<tr><td><b>La carte d'item vivante</b> — composant canonique n°1 : glyphe de slot, main stat en gros corps mono, subs en colonne, filet coloré au tier ; états = verdicts (liseré or « ✓ Gardée par G5 » / désaturation + ⚒ « Recyclée »), subs gagnants surlignés (teinte utilitaire). Trois usages à terme : Session, Simulation, share card</td><td>R2 (convergence ×3) · D2</td><td class="num">~2 j</td></tr>
+<tr><td><b>Fondations de lisibilité du verdict</b> : verdicts et états sains formulés en positif, lecture ordinale des %, micro-labels d'état au clic-cycle (un style codifié, éphémère), phrase de règle générée en langage naturel (éditeur + carte dépliée), warning « injouable » qui bloque « Créer la règle » avec raison</td><td>R3 P0-1 · D16</td><td class="num">~1,5 j</td></tr>
+<tr><td><b>La scène du verdict = la vue Simulation</b> : première visite = simulation échantillon auto-lancée sur le ruleset démo, rendue en scène composée (brand + ◆, UNE phrase de verdict en display, 2-3 cartes d'item, un CTA, « Partager ce résultat ») ; bandeau-oracle en encart éditorial (◆ vert / rouge) ; règle gagnante en pill cliquable ; « ↳ Créer une règle qui garde cette pièce » ; stat-cards cliquables</td><td>R3 P0-3 · D3 · A6</td><td class="num">~2,5 j</td></tr>
+<tr><td><b>Atterrissage contextuel + slot unique</b> : visites suivantes = reprise de saisie si en cours, bandeau patch le cas échéant — un seul bandeau d'ouverture à la fois, priorité import &gt; patch &gt; verdict ; badge patch + diff (« 2 nouveaux sets, non couverts par tes règles »)</td><td>R3 P1 · D3</td><td class="num">~0,5 j</td></tr>
+<tr><td><b>Rulerefs cliquables et adressables</b> : <code>.ruleref</code> pill sur chaque verdict/table/carte, « il suffisait d'une : G5 », mécanisme <code>data-goto</code> + <code>.flash</code> = le futur routeur commun des rulerefs et de la palette</td><td>R3 P1 · R4</td><td class="num">~0,5 j</td></tr>
+</table></div>
+<div class="tbl-wrap"><table>
+<tr><th style="width:150px">Dépendances</th><td>Chantiers 1 (focus, dialog, undo — la scène est un écran composé qui en hérite) et 2 (matières, encart éditorial, carte au liseré). La capture in-game (dette ①) doit être payée pour figer les teintes de tiers de la carte d'item.</td></tr>
+<tr><th>Risques</th><td>Le seul chantier au chiffrage non vérifié contre le code (la méthode du cycle 4 reste à appliquer : chiffrer contre le fichier, pas contre une app idéale). Garde-fou anti-surcharge : un hero, pas un dashboard — UNE phrase, 2-3 cartes, UN CTA.</td></tr>
+<tr><th>Critère de sortie</th><td>Un premier visiteur (profil neuf) atteint la scène, comprend le verdict et clique le CTA sans aide ; le composant carte d'item est réutilisé tel quel dans au moins 2 contextes ; aucun panneau de verdict « à côté » ne subsiste — le verdict est un état de la carte.</td></tr>
+<tr><th>Ce que l'utilisateur voit</th><td>Le premier écran de l'app démontre la valeur au lieu de demander une configuration ; les pièces deviennent des cartes qui portent leur propre verdict ; chaque mention de règle mène à la règle.</td></tr>
+</table></div>
+
+<h2>Chantier 4 — le squelette <span class="kicker">~9 j</span></h2>
+<div class="tbl-wrap"><table>
+<tr><th>Contenu</th><th>Source</th><th class="num">Effort</th></tr>
+<tr><td><b>Nav 5 destinations (A3)</b> : Règles · Simulation · Session · Saisie en jeu · Référence ; tab bar basse ≤ 920 px, réglages en sheet « ⋯ », focus modes masquant la tab bar ; cibles 40 px, safe-areas</td><td>A3 · R2 · R1 arb. e</td><td class="num">~2 j</td></tr>
+<tr><td><b>Sélecteur global « Jeu de règles » (D1)</b> + lexique P0 : « onglet » disparaît (→ jeu de règles), pool → liste, gauche/droite → slots ; renommage des modes du Testeur</td><td>D1 · R1 ch. 2</td><td class="num">~1 j</td></tr>
+<tr><td><b>Mort du mode Couverture (D8)</b> : la couverture devient un attribut de la carte de règle (« 36 profils · 2,14 % · ok », mono, largeur réservée) + stat-cards globales en tête de Règles + <b>jauge stricte/permissive</b> dans le diagnostic (remplace le « ok » texte) ; alertes en tête, chevauchements en barres miroir</td><td>D8 · R2 · R1 F7</td><td class="num">~1,5 j</td></tr>
+<tr><td><b>Recopie téléprompteur (D4)</b> sur le socle <code>&lt;dialog&gt;</code> : une règle plein écran, mono dominant, Entrée = coché → suivante, Backspace = décocher-revenir, clé copiable (<code>c</code>) + mode d'emploi, jauge 0/18, reprise (« il te reste 7 règles ») ; <b>déclinaison touch dès la v1</b> (boutons ✓/retour 44 px en zone pouce) ; à 18/18 : dorure + « ◆ Jeu complet » ; point d'entrée = le bloc « Saisie en jeu 0/18 » devenu cliquable</td><td>D4 · R4 lot 5 · R1 F1 · R3 P0-5</td><td class="num">~2,5 j</td></tr>
+<tr><td><b>Session — vérifier une pièce</b> (mobile-first) : carte d'item sticky qui se construit tap après tap, verdict = état de la carte, auto-reset ; <b>session de farm</b> = seconde instance du composant focus mode (wake lock, croisière 4-5 taps, slot/set pré-sélectionnés)</td><td>R2 · R1 F2 · D2</td><td class="num">~1,5 j</td></tr>
+<tr><td><b>Créer-depuis-pièce</b> : « ↳ Créer une règle qui garde cette pièce » sur toute pièce vérifiée, dialogue pré-rempli, garde-fou anti-sur-ajustement (« élargis les sets/subs ») — jamais sur un ✓</td><td>R1 F3 · R3 P0-6 · D9</td><td class="num">~0,5 j</td></tr>
+</table></div>
+<div class="tbl-wrap"><table>
+<tr><th style="width:150px">Dépendances</th><td>Chantier 3 (Simulation = la scène ; la carte d'item équipe Session). Décisions client n°1 (tab bar — toute la nav mobile en dépend) et n°3 (renommage « Jeu de règles ») à verrouiller <b>avant d'ouvrir</b> ce chantier. La dette ② (observation joueurs) éclaire les priorités internes.</td></tr>
+<tr><th>Risques</th><td>Le plus gros chantier : le découper en deux livraisons (nav + Règles unifiée, puis téléprompteur + Session/farm) pour ne jamais rester 2 semaines sans livrer. L'ordre de saisie reste Slot → Main → Subs → Set (D15) — ne pas « profiter » du chantier pour le changer.</td></tr>
+<tr><th>Critère de sortie</th><td>Recopie des 18 règles sans jamais chercher sa règle (chronométrée) ; farm ≤ 4 taps médians ; la Couverture n'est plus un point d'atterrissage ; « onglet » absent de toute l'UI ; le tout vérifié à 375 px, pouce seul.</td></tr>
+<tr><th>Ce que l'utilisateur voit</th><td>La recopie — rare mais lourde (18 règles d'un coup) — a enfin son écran (téléprompteur plein écran, reprise, état doré à 18/18) ; la nav correspond au cycle vécu ; sur mobile, tout est sous le pouce ; le farm devient une boucle de quelques taps.</td></tr>
+</table></div>
+
+<h2>Chantier 5 — l'expert <span class="kicker">~5 j</span></h2>
+<div class="tbl-wrap"><table>
+<tr><th>Contenu</th><th>Source</th><th class="num">Effort</th></tr>
+<tr><td><b>Palette Ctrl+K + panneau <code>?</code> livrés ensemble (A7)</b> : navigation + commandes couvertes à 100 % par l'undo (aucune mutation hors filet), raccourcis affichés à droite (« la palette EST le tutoriel »), mention « Ctrl+K » dans le header ; le <code>?</code> = raccourcis, légende des encodages, syntaxe de recherche ; fuzzy via <code>data-goto</code>+flash</td><td>A7 · R4 P1-1</td><td class="num">~2 j</td></tr>
+<tr><td><b>Recherche globale</b> : <code>/</code> étendu aux 4 vues, préfixes <code>set: sub: req: role:</code>, chips de syntaxe suggérées, <code>g r/t/s/f</code> et <code>1..9</code></td><td>D12 · R4 P1-3</td><td class="num">~1 j</td></tr>
+<tr><td><b>Édition à l'échelle, explicite</b> : Shift-clic / <code>x</code> sélectionne → barre d'action contextuelle (ajouter/retirer set, rôle, ±requis, dupliquer, supprimer) ; « remplacer set A → B » en entrée de palette ; alt-clic vertical : <b>gelé P2</b></td><td>D12 · R4 P1-2</td><td class="num">~1 j</td></tr>
+<tr><td><b>Ligne repliée enrichie</b> (density compact : sets abrégés + chips cliquables-cyclables, ~30 lignes) + <b>comparaison d'onglets par delta</b> (second select « comparer à », colonnes delta — pas de split-screen)</td><td>R4 P1-4/P1-5</td><td class="num">~0,5 j</td></tr>
+<tr><td><b>État système lisible + petites features</b> : save-line remontée (contraste + header mobile) et cliquable = export complet, nudge toast max 1/sem ; notes par règle (¶ seulement si note) ; sandbox de désactivation (⊘ au survol, bandeau « SIMULATION » inratable, état volatil) ; état d'attente seulement &gt; ~150 ms mesurés</td><td>D16 · R1 F8/F9/F10 · R4 P1-7</td><td class="num">~0,5 j</td></tr>
+</table></div>
+<div class="tbl-wrap"><table>
+<tr><th style="width:150px">Dépendances</th><td>Chantier 1 <b>strictement</b> (A7 : focus + <code>&lt;dialog&gt;</code> + undo — le conditionnement est technique, pas politique) ; chantier 4 (la palette indexe les 5 destinations et les jeux de règles).</td></tr>
+<tr><th>Risques</th><td>Le périmètre de la palette est borné par la couverture de l'undo : toute commande de mutation qui entre dans la palette doit d'abord prouver son Ctrl+Z. La sandbox doit rester visiblement volatile (reset à chaque sortie de vue) — un état simulé pris pour réel est un bug de confiance.</td></tr>
+<tr><th>Critère de sortie</th><td>Toute capacité de l'app est atteignable via la palette OU documentée dans le <code>?</code> ; chaque raccourci du <code>?</code> fonctionne ; une édition sur 12 règles sélectionnées s'annule d'un seul Ctrl+Z.</td></tr>
+<tr><th>Ce que l'utilisateur voit</th><td>Ctrl+K affiché dans le header — et derrière, tout l'app au clavier ; la sélection multiple remplace 12 éditions par une ; la recherche traverse les 4 vues ; l'état de sauvegarde se comprend d'un coup d'œil.</td></tr>
+</table></div>
+
+<h2>Chantier 6 — l'acquisition <span class="kicker">~6 j</span></h2>
+<div class="tbl-wrap"><table>
+<tr><th>Contenu</th><th>Source</th><th class="num">Effort</th></tr>
+<tr><td><b>Templates Early/Mid/End (D9)</b> : empty state « Mes règles » avec templates en premier (l'onglet Démo <b>devient</b> le template Early) + « Dupliquer la démo », l'éditeur direct toujours visible — jamais de gate ; le « + » d'onglet ouvre le menu Vide · Early · Mid · End · Importer. <b>Coût principal : éditorial</b> (le contenu des templates est le seul « script » d'onboarding à écrire)</td><td>D9 · R1 F4 · R3 P0-6</td><td class="num">~1,5 j</td></tr>
+<tr><td><b>Onboarding = scène + 2 toasts (D9)</b> : automatique à 0 règle, enchaîne template → couverture → recopie ; pas d'overlay tutorial. <b>Tooltips jargon</b> sur les ~6 termes qui bloquent la première règle (main, sub, ★, requis, tier, set), soulignés pointillés dans les textes d'aide uniquement, adossés au Lexique</td><td>D9 · R1 F5/F6 · R3 P1</td><td class="num">~1 j</td></tr>
+<tr><td><b>Share card PNG (D10)</b> — l'actif d'acquisition n°1, la surface d'ambition visuelle maximale : nom du ruleset, ex-libris d'auteur, nb règles, % gardé en display <b>doré</b>, phrase générée, clé mono, lien d'import — fond socle, liseré zénithal ; générée depuis l'écran de résultat (menu du bouton Partager : Lien / Image PNG)</td><td>D10 · R1 F11 · R3 P0-4</td><td class="num">~1,5 j</td></tr>
+<tr><td><b>Landing d'import</b> : à l'arrivée via lien, aperçu (« Ruleset de Khalgar — 12 règles, garde 1,8 % ») avec « Adopter » / « Juste regarder » — fin de l'import muet ; crédit d'auteur dans le lien/JSON ; « Contribuer mes taux » (issue GitHub + « copier le rapport » format Discord)</td><td>R3 P0-4/P1</td><td class="num">~1 j</td></tr>
+<tr><td><b>Cérémonies (D13, P2)</b> : View Transitions / <code>@starting-style</code> sur les seuls événements rares (import, suppression d'onglet, 18/18) — la navigation n'est jamais animée</td><td>R4 P2 · D13</td><td class="num">~0,5 j</td></tr>
+<tr><td><b>PWA en tout dernier (D17)</b> : proposée au 2ᵉ retour, après une session de farm ou une recopie terminée ; « Installer l'app » conditionnel replié dans Apparence. Seul vrai risque de régression globale (service worker) : elle <b>ferme</b> la roadmap, rien ne se livre après elle</td><td>D17 · R1 F12</td><td class="num">~0,5 j + veille</td></tr>
+</table></div>
+<div class="tbl-wrap"><table>
+<tr><th style="width:150px">Dépendances</th><td>Chantier 3 (l'onboarding s'ouvre sur la scène du verdict ; la share card se compose depuis l'écran de résultat avec la carte d'item et les matières) ; chantier 4 (le toast d'étape n°2 mène à la recopie ; la PWA gagne son sens avec le farm offline).</td></tr>
+<tr><th>Risques</th><td>Le service worker : périmètre minimal, stratégie de cache prudente, plan de rollback (kill-switch) écrit avant d'activer. La share card est du pixel-work : la maquette M7 (1200×630) doit être validée avant d'écrire le canvas.</td></tr>
+<tr><th>Critère de sortie</th><td>Première règle en &lt; 5 min au premier contact (profil neuf, chronométré) ; la share card s'embarque proprement dans Discord (aperçu testé) ; un import via lien montre la landing d'aperçu ; la PWA s'installe et l'app fonctionne offline sans régression des invariants.</td></tr>
+<tr><th>Ce que l'utilisateur voit</th><td>Un nouveau venu part d'un template au lieu d'une page blanche ; le résultat se partage en une image qui fait envie sur Discord ; le lien reçu s'ouvre sur un aperçu au lieu d'un import muet ; l'app s'installe.</td></tr>
+</table></div>
+
+<h2>Les invariants de fin de chantier — la discipline</h2>
+<p>Après <b>chaque</b> chantier (y compris le chantier 0), avant de considérer le lot livré :</p>
+<div class="tbl-wrap"><table>
+<tr><th>Invariant</th><th>Vérification</th></tr>
+<tr><td><b>Couverture 172 410</b></td><td>Le calcul de couverture du ruleset de référence rend exactement 172 410 profils — le test de non-régression du moteur de calcul.</td></tr>
+<tr><td><b>FR/EN</b></td><td>Les deux langues complètes, aucune clé orpheline, aucun texte codé en dur dans un seul calque.</td></tr>
+<tr><td><b>Imports</b></td><td>Les liens et JSON existants (formats figés) s'importent toujours — la communauté a des liens en circulation.</td></tr>
+<tr><td><b>375 px</b></td><td>Chaque vue touchée re-vérifiée à 375 px, pouce seul.</td></tr>
+<tr><td><b>+ à partir du chantier 1</b></td><td>Focus jamais perdu (parcours clavier) ; Ctrl+Z couvre toute nouvelle mutation introduite par le chantier.</td></tr>
+<tr><td><b>+ à partir du chantier 2</b></td><td>Zéro texte &lt; 4,5:1 dans les deux thèmes ; zéro hex hors tokens ; un concept = un encodage, vérifié inter-vues.</td></tr>
+</table></div>
+
+<h2>Les deux dettes de terrain — en parallèle, pendant le chantier 1</h2>
+<div class="panel bad"><h4>Vingt-deux regards experts, zéro donnée utilisateur — la dette n°1 du corpus</h4>
+<p><b>① Capture de l'écran d'équipement réel de WoR</b> (pendante depuis le cycle 2). Fige les couleurs de tiers
+et l'ordre de lecture in-game → débloque définitivement les teintes de la carte d'item (chantier 3) et clôt D15
+(l'ordre de saisie ne se rejoue que si le jeu contredit). <b>À payer avant la fin du chantier 2</b> — après,
+elle bloque le cœur.</p>
+<p><b>② Cinq sessions d'observation de vrais joueurs Discord</b> (reconduite 3 fois). Éclaire l'aval d'A6 —
+qui perd-on le plus, le novice du lien ou l'expert à 4 onglets ? — et arme les critères de sortie mesurables
+des chantiers 3 et 6 (temps au premier aha, taux d'adoption d'un template, chrono de recopie). Instrumentation
+minimale : les liens Discord différenciés. <b>À planifier dès la semaine 1</b> (le recrutement prend du temps),
+à exploiter avant d'ouvrir les chantiers 4-6.</p></div>
+
+<h2>Le tableau de correspondance — rien ne tombe entre les mailles</h2>
+<p>Chaque décision majeure du corpus, tracée vers son chantier. Colonnes source : R1 = audit, R2/R3/R4 = cycles,
+A/D = arbitrages et décisions de la synthèse finale.</p>
+
+<h3>Les 7 arbitrages A1-A7</h3>
+<div class="tbl-wrap"><table>
+<tr><th>Arbitrage</th><th>Décision</th><th style="width:110px">Chantier</th></tr>
+<tr><td><b>A1</b> Typo des labels</td><td>Sans uppercase 11.5px, mono = valeurs du jeu, small-caps synthétiques interdites</td><td class="num">2</td></tr>
+<tr><td><b>A2</b> Encodage du requis</td><td>Micro-barre + libellé texte, ◆ exclu, jamais de légende permanente</td><td class="num">0 (tooltips) + 2</td></tr>
+<tr><td><b>A3</b> Navigation</td><td>5 destinations, tab bar basse mobile, sheet « ⋯ »</td><td class="num">4</td></tr>
+<tr><td><b>A4</b> Picker d'accents</td><td>Recomposé hors teintes de tiers, dérivé par <code>color-mix()</code></td><td class="num">2</td></tr>
+<tr><td><b>A5</b> ✓ vs ◆</td><td>✓ = gestes, ◆ = monde ; migration SVG <code>ICON</code></td><td class="num">2</td></tr>
+<tr><td><b>A6</b> Priorité chantier 1</td><td>Le moteur d'abord, la pile ensuite, la scène après la peau</td><td class="num">1 → 2 → 3 (l'ordre même)</td></tr>
+<tr><td><b>A7</b> Palette Ctrl+K</td><td>P1, strictement après focus + dialog + undo, livrée avec le <code>?</code></td><td class="num">5</td></tr>
+</table></div>
+
+<h3>Les décisions structurantes D1-D17</h3>
+<div class="tbl-wrap"><table>
+<tr><th>Décision</th><th style="width:130px">Chantier</th></tr>
+<tr><td><b>D1</b> Sélecteur global « Jeu de règles »</td><td class="num">4</td></tr>
+<tr><td><b>D2</b> Carte d'item vivante = composant canonique</td><td class="num">3 (construit) · 4, 6 (réutilisé)</td></tr>
+<tr><td><b>D3</b> La scène du verdict EST Simulation + atterrissage contextuel</td><td class="num">3</td></tr>
+<tr><td><b>D4</b> Recopie téléprompteur + reprise + spec touch</td><td class="num">4</td></tr>
+<tr><td><b>D5</b> Hiérarchie 5 niveaux + 3 matières + élévation</td><td class="num">1 (élévation/--faint) + 2 (le reste)</td></tr>
+<tr><td><b>D6</b> DA « grimoire d'armurerie », la dose exacte</td><td class="num">2 (matières) + 6 (share card)</td></tr>
+<tr><td><b>D7</b> Mono = valeurs du jeu, glyphes de slots</td><td class="num">2 (règle) + 3 (glyphes sur la carte)</td></tr>
+<tr><td><b>D8</b> Mode Couverture tué comme vue</td><td class="num">4</td></tr>
+<tr><td><b>D9</b> Templates &amp; onboarding, jamais de gate</td><td class="num">6 (+ créer-depuis-pièce en 4)</td></tr>
+<tr><td><b>D10</b> Share card PNG + landing d'import</td><td class="num">6</td></tr>
+<tr><td><b>D11</b> Pile de commandes</td><td class="num">1</td></tr>
+<tr><td><b>D12</b> Édition à l'échelle explicite + recherche <code>/</code></td><td class="num">5 (alt-clic : gelé P2, hors roadmap)</td></tr>
+<tr><td><b>D13</b> Motion : 2 durées, 1 easing, nav jamais animée</td><td class="num">2 (tokens) + 6 (cérémonies)</td></tr>
+<tr><td><b>D14</b> Cinzel écarté, clause dormante</td><td class="num">checkpoint fin de 2</td></tr>
+<tr><td><b>D15</b> Ordre de saisie conservé</td><td class="num">invariant (clos par la dette ①)</td></tr>
+<tr><td><b>D16</b> Gouvernance des erreurs &amp; du système</td><td class="num">3 (verdicts, injouable, phrase) + 5 (save-line, attente 150 ms)</td></tr>
+<tr><td><b>D17</b> PWA en tout dernier, au 2ᵉ retour</td><td class="num">6 (ferme la roadmap)</td></tr>
+</table></div>
+
+<h3>Les 12 features du backlog produit (R1, fiches 1-12)</h3>
+<div class="tbl-wrap"><table>
+<tr><th>Feature</th><th style="width:110px">Chantier</th><th>Feature</th><th style="width:110px">Chantier</th></tr>
+<tr><td><b>1</b> Recopie guidée</td><td class="num">4</td><td><b>7</b> Jauge stricte/permissive</td><td class="num">4</td></tr>
+<tr><td><b>2</b> Session de farm</td><td class="num">4</td><td><b>8</b> Sandbox de désactivation</td><td class="num">5</td></tr>
+<tr><td><b>3</b> Créer-depuis-pièce</td><td class="num">4</td><td><b>9</b> Notes par règle</td><td class="num">5</td></tr>
+<tr><td><b>4</b> Templates early/mid/end</td><td class="num">6</td><td><b>10</b> Export / save-line parlante</td><td class="num">5</td></tr>
+<tr><td><b>5</b> Onboarding 5 min</td><td class="num">6</td><td><b>11</b> Share card PNG</td><td class="num">6</td></tr>
+<tr><td><b>6</b> Tooltips jargon</td><td class="num">6</td><td><b>12</b> PWA</td><td class="num">6 (dernier)</td></tr>
+</table></div>
+
+<h3>Les fixes-clés des 4 cycles</h3>
+<div class="tbl-wrap"><table>
+<tr><th>Fix / brique</th><th>Source</th><th style="width:110px">Chantier</th></tr>
+<tr><td>Échelle --head/--label/--deco + palette light + tokens tints + --well/--raised</td><td>R1 ch. 1</td><td class="num">2</td></tr>
+<tr><td>Grille de distinction (stepper ①✓+rail, seg pilule, disclosure unifié, dé-inline)</td><td>R1 ch. 2</td><td class="num">2</td></tr>
+<tr><td>Or nav → pattern rail ; .rc-id garde sa couleur ; rulerefs muted/hover</td><td>R1 arb. d</td><td class="num">2</td></tr>
+<tr><td>Verdicts vert/rouge + redondances daltonisme ; verdict sticky + auto-reset</td><td>R1 ch. 2</td><td class="num">3 (verdicts) + 4 (Session)</td></tr>
+<tr><td>Barres miroir des chevauchements, échantillon agrégats + cap 60, « 3 chips + n »</td><td>R1 ch. 2</td><td class="num">4</td></tr>
+<tr><td>Presets 1-tap sur l'échantillon (« Session · 400 pièces · Raid 1 niv. 21 »)</td><td>R3 P1</td><td class="num">4</td></tr>
+<tr><td>color-scheme, scroll instant, tooltips dots</td><td>R4 lot 1</td><td class="num">0 (ou 1)</td></tr>
+<tr><td>Focus patch-in-place, roving tabindex, utilitaire <code>&lt;dialog&gt;</code></td><td>R4 lot 2</td><td class="num">1</td></tr>
+<tr><td>Pile de commandes (Ctrl+Z global, toast = tête de pile)</td><td>R4 lot 3</td><td class="num">1</td></tr>
+<tr><td>tabPicker unique (H4)</td><td>R4 lot 4</td><td class="num">1</td></tr>
+<tr><td>--faint AA + grammaire d'élévation 2 niveaux</td><td>R4 lot 6</td><td class="num">1</td></tr>
+<tr><td><code>color-mix()</code> par famille</td><td>R4 P1-6</td><td class="num">2</td></tr>
+<tr><td>Ligne repliée enrichie, comparaison delta, recherche préfixée, <code>g</code>-nav</td><td>R4 P1-3/4/5</td><td class="num">5</td></tr>
+<tr><td>Micro-gestes P2 (double-clic créer-depuis-pièce, bordures 125/150 %, print view, 7ch)</td><td>R4 P2</td><td class="num">au fil de l'eau, 4-6</td></tr>
+<tr><td>Fondations de lisibilité du verdict (positif, micro-labels, phrase générée)</td><td>R3 P0-1</td><td class="num">3</td></tr>
+<tr><td>3 matières + pas de 8 (sans vignettage ni grain — refusés)</td><td>R3 P0-2</td><td class="num">2</td></tr>
+<tr><td>Badge patch + diff, slot unique des bandeaux</td><td>R3 P1</td><td class="num">3</td></tr>
+<tr><td>Contribution Discord + crédit d'auteur (ex-libris)</td><td>R3 P1</td><td class="num">6</td></tr>
+<tr><td>Sidebar : utilitaires rétrogradés, brand aérée + filet or</td><td>R3 P2</td><td class="num">2</td></tr>
+</table></div>
+
+<h2>Les décisions client sur le chemin critique</h2>
+<div class="tbl-wrap"><table>
+<tr><th>Décision</th><th>À obtenir avant</th><th>Ce qu'elle bloque</th></tr>
+<tr><td><b>2</b> · Palette d'accents recomposée (le rouge disparaît)</td><td class="num">chantier 2</td><td>Le picker recomposé</td></tr>
+<tr><td><b>4</b> · Clause Cinzel (accord de principe, ~60 Ko)</td><td class="num">fin du chantier 2</td><td>Rien — mais le checkpoint mode clair tombe là</td></tr>
+<tr><td><b>1</b> · Tab bar basse à 5 entrées en mobile</td><td class="num">chantier 4</td><td>Toute la nav mobile</td></tr>
+<tr><td><b>3</b> · « Onglet » → « Jeu de règles » partout</td><td class="num">chantier 4</td><td>Le lexique P0 et le sélecteur global</td></tr>
+<tr><td><b>5</b> · Les deux dettes de terrain</td><td class="num">semaine 1 (lancement)</td><td>① les teintes de la carte d'item (ch. 3) ; ② les critères mesurés des ch. 3-6</td></tr>
+</table></div>
+
+<div class="quote" style="font-size:16px">Quarante jours, six chantiers, et une règle qui les traverse tous :
+chaque lot rend quelque chose de visible à l'utilisateur, chaque lot laisse l'app dans un état livrable, et rien
+ne se construit sur ce qui n'existe pas encore — le moteur porte la peau, la peau porte le cœur, le cœur porte
+le squelette, et l'acquisition ne promet que ce que tout le reste tient déjà.
+<span class="who">— delivery, rapport final</span></div>
+
+<div class="panel reco"><h4>Amendements client intégrés</h4>
+<p>Cinq corrections post-livraison (C1-C5, détaillées dans la <a href="01-synthese.html">synthèse</a>) sont
+répercutées ici : la recopie est un événement rare et non un rituel (C1 — priorité du téléprompteur inchangée,
+justification corrigée) ; zéro valeur de roll (C2) ; comptage en pièces par session (C3) ; le champ
+<b>description</b> règle + ensemble s'ajoute au chantier 5 avec les notes qu'il remplace (C4) ; la share card
+affiche la description de l'ensemble (C5 — chantier 6).</p></div>
+
+<div class="foot">
+  <a href="04-maquettes.html">← Maquettes &amp; wireframes</a>
+  <a href="index.html">↑ Vue d'ensemble</a>
+</div>
+</main>
+</div>
+</body>
+</html>

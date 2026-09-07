@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Synthèse &amp; arbitrages · Rapport Final — WoR Gear Builder</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="shell">
+<nav class="toc">
+  <div class="brand"><span class="d">◆</span> Rapport Final</div>
+  <div class="sub">Synthèse des 4 design reviews · sept. 2026</div>
+  <a href="index.html">Vue d'ensemble</a>
+  <div class="grp">Le rapport</div>
+  <a href="01-synthese.html" class="on">Synthèse &amp; arbitrages</a>
+  <a href="02-design-system.html">Design system</a>
+  <a href="03-charte-graphique.html">Charte graphique v3</a>
+  <a href="04-maquettes.html">Maquettes &amp; wireframes</a>
+  <a href="05-roadmap.html">Roadmap</a>
+  <div class="grp">Les 4 rapports</div>
+  <a href="../design-review/index.html">Rapport 1 · audit</a>
+  <a href="../design-review-2/index.html">Rapport 2 · cycle</a>
+  <a href="../design-review-3/index.html">Rapport 3 · cycle</a>
+  <a href="../design-review-4/index.html">Rapport 4 · cycle</a>
+</nav>
+<main>
+
+<span class="kicker">Direction de design · la synthèse-arbitrage finale</span>
+<h1>Synthèse &amp; arbitrages</h1>
+<p class="lede">Tout ce que quatre rapports ont laissé ouvert est tranché ici : la doctrine finale en 8
+principes, les 7 arbitrages légués (A1-A7) avec pour chacun l'avant, la décision ferme et le pourquoi, les
+décisions structurantes figées, le corpus consolidé des décisions majeures, le périmètre refusé définitif — et
+les 5 décisions, les vraies, qui restent au client. Le détail opérationnel vit dans
+<code>materials/arbitrages-finaux.md</code>, le document de travail de l'équipe d'exécution.</p>
+
+<h2>La doctrine finale — 8 principes</h2>
+<ol>
+<li><b>Le précieux est rare</b> — l'apparat (Palatino small-caps, or, ◆) vit au sommet et nulle part ailleurs ;
+jamais de display sous 16 px ni sur un interactif ; l'or a trois allumages (marque, sélection, accomplissement)
+et n'est généreux que deux fois : le 18/18 et la share card ;</li>
+<li><b>La forme dit le rôle — un composant par fonction</b> — un rayon, une couleur, une fonte, un mot, un
+glyphe = un seul sens, partout ; un seul sélecteur d'onglets, une seule grammaire de label, un seul système
+d'aide, un seul bandeau d'ouverture à la fois (priorité import &gt; patch &gt; verdict) ;</li>
+<li><b>L'information vit sur l'objet qu'elle décrit</b> — et le feedback est un état de cet objet : la
+couverture sur la carte de règle, le verdict sur la carte d'item — jamais un panneau qui surgit à côté ;</li>
+<li><b>La preuve avant la configuration — mais compréhensible d'abord</b> — la scène du verdict accueille, et
+tout chantier s'ordonne par dépendance fonctionnelle : le moteur avant la scène, la lisibilité avant
+l'atterrissage ;</li>
+<li><b>Réversible plutôt que confirmé</b> — toute mutation passe par la pile de commandes, Ctrl+Z global,
+toast = tête de pile ; jamais de confirmation sur un geste fréquent ;</li>
+<li><b>Invisible au repos, jamais inapprenable</b> — les accélérateurs experts n'ajoutent rien au repos, mais
+chaque capacité a un chemin visible : le panneau <code>?</code> et la palette qui affiche ses raccourcis ;</li>
+<li><b>Plancher AA absolu, et l'exécution s'audite dans le rendu</b> — aucun texte &lt; 4,5:1 dans aucun thème ;
+color-scheme déclaré, small-caps synthétiques interdites, focus préservé, contrastes non-texte
+discriminables ;</li>
+<li><b>Le chrome se finance, la navigation n'est jamais animée</b> — toute feature réutilise un point d'entrée
+existant ; cérémonies réservées aux événements rares, toujours doublées d'un état statique
+(reduced-motion ≠ reduced-feedback).</li>
+</ol>
+
+<h2>Les 7 arbitrages légués — tous tranchés</h2>
+<div class="tbl-wrap"><table>
+<tr><th style="width:150px">Arbitrage</th><th style="width:230px">Avant (l'historique)</th><th>Décision ferme &amp; pourquoi</th></tr>
+<tr><td><b>A1 · Typo des labels</b><br><span class="prio p0">figé</span></td>
+<td>4 renversements en 4 cycles : R1 sans → R2 mono → R3 sans → C4 mono ; small-caps simulées jugées
+défaillantes &lt; 15 px (mesuré, C4).</td>
+<td><b>Sans uppercase 11.5px/600/.08em pour tous les labels d'interface et th.</b> Le mono est strictement
+réservé aux valeurs du jeu, le display aux titres ≥ 16 px, les small-caps synthétiques interdites. On tranche
+par la doctrine, pas par le goût : « mono = valeur du jeu » est le canal sémantique le plus précieux de l'app —
+des labels en mono le détruiraient. Tokenisé (swap = 1 ligne si un test utilisateur futur contredit), mais la
+charte v3 l'écrit comme définitif.</td></tr>
+<tr><td><b>A2 · Encodage du requis</b><br><span class="prio p0">figé</span></td>
+<td>Texte « 4 subs · 4 sets » (R2) vs ◆ plein/creux (R3-visual) vs micro-barres (R3-cognitif) ; H6 sev 3 (C4) ;
+doctrine anti-légende du power-user.</td>
+<td><b>Micro-barre + libellé texte (« 4/4 subs · 2 sets »), auto-porteurs, tooltip natif toléré.</b> Le ◆ est
+exclu : aucune info portée uniquement par un glyphe de marque (colline cognitive), plein/creux indiscriminable
+à 10 px. Jamais de légende permanente — la légende complète vit dans le panneau <code>?</code>.</td></tr>
+<tr><td><b>A3 · Destinations de nav</b><br><span class="prio p0">figé</span></td>
+<td>R1 : « 4 entrées, contractuel » ; R2 : 5 destinations en dissolvant des vues ; R3 : la scène du verdict sans
+adresse ; C4 : muet, mais la palette change l'équation.</td>
+<td><b>5 destinations : Règles · Simulation · Session · Saisie en jeu · Référence.</b> Le chrome net est
+<i>réduit</i> (Couverture et modes du Testeur dissous) : on compte le chrome, pas les entrées. Les deux
+destinations gagnées correspondent au cycle vécu du joueur (vérifier, recopier) — trois profils ont condamné
+indépendamment le pied de sidebar, personne n'a défendu le statu quo. Mobile : tab bar basse à 5 entrées,
+réglages en sheet « ⋯ », focus modes qui la masquent.</td></tr>
+<tr><td><b>A4 · Picker d'accents</b><br><span class="prio p0">figé</span></td>
+<td>Conservé + décalé rose (R1) vs supprimé / easter egg (R2) vs recomposé hors teintes de tier (R3) ;
+color-mix() rend le coût nul (C4).</td>
+<td><b>Conservé, recomposé : or (défaut) · sarcelle · acier · mauve gris · cuivre — le rouge disparaît.</b>
+On ne retire pas une option choisie par des utilisateurs, mais la donnée GUI-6 (4 accents sur 5 percutaient les
+tiers) impose la recomposition : hors teintes de tiers <i>par construction</i>, dérivés via color-mix().
+Deux interdits de charte : jamais sur un contrôle destructif, jamais sur un verdict.</td></tr>
+<tr><td><b>A5 · ✓ vs ◆</b><br><span class="prio p0">figé</span></td>
+<td>Proposé deux fois (game-UI R2, visual R3), battu deux fois de l'intérieur (IX, cognitif) — « aucun nouveau
+débat recevable » (C4).</td>
+<td><b>Le ✓ confirme les gestes ; le ◆ décore le monde</b> — trois usages codifiés : marque, jalons/pips de
+jauges, marqueur d'onglet actif. Une seule taille de puce, suppression des ◆ décoratifs. Tous les glyphes UI
+migrent sur le système SVG <code>ICON</code>. Entrée de charte, débat clos.</td></tr>
+<tr><td><b>A6 · Priorité chantier 1</b><br><span class="prio p0">figé</span></td>
+<td>Le seul vrai conflit inter-cycles : la scène du verdict (R3, l'activation) vs la pile de commandes + les
+fondations du rendu (C4, le moteur).</td>
+<td><b>Le moteur d'abord.</b> Chantier 1 = lots 1-2 du C4 (~4 j : color-scheme, scroll instant, focus,
+&lt;dialog&gt;) puis pile de commandes (~2 j) et sélecteur d'onglet unique (~1 j). La scène du verdict est le
+chantier 3, après la peau. C'est la logique de dépendance du R3 retournée sur lui-même : construire la scène sur
+un rendu qui perd le focus, c'est « afficher plus vite un résultat toujours illisible » au niveau du code. Les
+lots moteur servent le novice ET l'expert, sont chiffrés et vérifiés contre le code — budget solo : le certain
+multiplicateur avant le composé.</td></tr>
+<tr><td><b>A7 · Palette Ctrl+K</b><br><span class="prio p1">figé</span></td>
+<td>P0 du power-user, rétrogradée au débat C4 (« cathédrale sur du sable ») ; trois curseurs légués : moment,
+affichage, périmètre.</td>
+<td><b>P1, strictement après focus + &lt;dialog&gt; + undo.</b> Périmètre initial : navigation + commandes
+couvertes à 100 % par l'undo — aucune mutation hors filet. Mention « Ctrl+K » visible dans le header ; livrée
+avec le panneau <code>?</code> (raccourcis, légende des encodages, syntaxe) : « la palette EST le tutoriel ».
+Le conditionnement est technique, pas politique — dès le moteur livré, elle suit.</td></tr>
+</table></div>
+
+<h2>Les décisions structurantes — figées</h2>
+<div class="tbl-wrap"><table>
+<tr><th style="width:210px">Sujet</th><th>Décision</th></tr>
+<tr><td><b>Sélecteur global « Jeu de règles »</b></td>
+<td>Adopté — « Onglet » disparaît du lexique. Une ligne compacte sous le titre en mobile, dans le rail en
+desktop. La nav dit « où je vais », le sélecteur dit « sur quoi tout ça porte ».</td></tr>
+<tr><td><b>La carte d'item vivante</b><br><span class="v-ok">composant canonique n°1</span></td>
+<td>Glyphe de slot, main stat en gros corps mono, subs en colonne, filet coloré au tier. Trois usages : bandeau
+sticky de Session (se construit tap après tap), grille de Simulation, source de la share card. Le verdict est un
+état de l'objet : liseré or « ✓ Gardée par G5 » / désaturation + ⚒ « Recyclée ». Convergence ×3 indépendante
+(cycle 2), adoptée par les cycles 3 et 4.</td></tr>
+<tr><td><b>La scène du verdict</b><br><span class="v-ok">= la vue Simulation</span></td>
+<td>Première visite : simulation échantillon auto-lancée sur le ruleset démo, scène composée — UNE phrase de
+verdict en display, 2-3 cartes d'item, un CTA. Subs gagnants surlignés (teinte utilitaire, pas d'or), règle
+gagnante en pill cliquable, « ↳ Créer une règle qui garde cette pièce », bandeau-oracle en encart éditorial
+(◆ vert / rouge), stat-cards cliquables, « Partager ce résultat ». Visites suivantes : atterrissage contextuel
+(reprise de saisie, bandeau patch — slot unique). La scène <b>est</b> Simulation : pas d'écran d'accueil
+au-dessus de la nav.</td></tr>
+<tr><td><b>Recopie téléprompteur</b><br><span class="v-ok">le point le plus validé (7 regards)</span></td>
+<td>Destination « Saisie en jeu ». Une règle plein écran sur socle <code>&lt;dialog&gt;</code>, mono dominant
+(le seul écran où il règne), Entrée = coché → suivante, Backspace = décocher-revenir, clé copiable + « où la
+coller », jauge 0/18, reprise (« il te reste 7 règles »). <b>Spec touch incluse dès la v1</b> : boutons ✓/retour
+en zone pouce 44 px — trois cycles ont oublié l'écran où elle sert le plus, pas nous. À 18/18 : dorure +
+« ◆ Jeu complet », le seul état lumineux de l'app.</td></tr>
+<tr><td><b>Tab bar mobile</b></td>
+<td>Oui — 5 entrées ≤ 920 px, remplace le burger ; tiroir → sheet « ⋯ » de réglages ; les focus modes
+(téléprompteur, farm) la masquent. Décision client n°1 à confirmer, mais la recommandation est ferme.</td></tr>
+<tr><td><b>Hiérarchie de luminance à 5 niveaux</b></td>
+<td><code>--ink-hi</code> / <code>--ink</code> / <code>--head</code> #c4bcd0 / <code>--label</code> #a59dae /
+<code>--deco</code> (ex---faint, jamais de texte) ; textes d'état 11 px remontés AA (~#8a8298). Plus les
+3 matières (socle assombri / carte au liseré zénithal / encart éditorial = slot unique de la pédagogie in-situ),
+la grammaire d'élévation à 2 niveaux, le pas vertical de 8. Zéro texte &lt; 4,5:1, deux thèmes.</td></tr>
+<tr><td><b>DA « grimoire d'armurerie » — la dose exacte</b></td>
+<td><b>Retenu</b> : liseré zénithal, 3 matières, dorure à 3 allumages, mode clair parchemin assumé (AA d'abord),
+brand aérée + filet or, ex-libris sur la share card. <b>Refusé</b> : vignettage, grain, brume, halo excessif,
+◆ en checkbox, count-up généralisé, dégradés or hors 18/18 + share card, particules/FOMO/faux sons. L'ambition
+visuelle maximale se concentre sur la share card — la seule surface vue par des non-utilisateurs.</td></tr>
+<tr><td><b>Mono = valeurs du jeu</b></td>
+<td>Figé (corollaire d'A1) : stats, IDs, clé in-game, chiffres tabulaires alignés à droite. Les sigles mono des
+11 stats restent la langue de la communauté — pas d'iconification des stats ; 5 glyphes SVG de slots au
+lexique.</td></tr>
+<tr><td><b>Le mode Couverture</b><br><span class="v-bad">tué comme vue</span></td>
+<td>Fusionné trois fois : attribut de la carte de règle (« 36 profils · 2,14 % · ok », largeur réservée, mise à
+jour au commit du geste) + stat-cards en tête de Règles + étape 2 experte des presets d'échantillon
+(« Session · 400 pièces · Raid 1 niv. 21 »). Plus jamais un point d'atterrissage.</td></tr>
+<tr><td><b>Templates &amp; onboarding</b></td>
+<td>Empty state : templates <b>Early / Mid / End</b> en premier (Démo devient Early) + « Dupliquer la démo »,
+l'éditeur direct toujours visible — <b>jamais de gate</b>. Onboarding = la scène du verdict + 2 toasts.
+« Créer une règle qui garde cette pièce » sur toute pièce vérifiée, champs pré-remplis de valeurs qu'on vient
+de voir. Convergence ×4.</td></tr>
+<tr><td><b>Share card PNG</b><br><span class="v-ok">actif d'acquisition n°1</span></td>
+<td>Artefact composé de premier ordre — pas un export de carte figée : nom du ruleset, crédit d'auteur en
+ex-libris, nb règles, % gardé en display <b>doré</b>, phrase de règle générée, clé in-game en mono, lien
+d'import en pied. À l'arrivée via lien : landing d'aperçu (« Ruleset de Khalgar — 12 règles, garde 1,8 % »)
+avec « Adopter » / « Juste regarder » — fin de l'import muet.</td></tr>
+<tr><td><b>Pile de commandes</b></td>
+<td>Chaque mutation = une commande (point de passage <code>scheduleSave</code> existant), pile de snapshots
+(cap 50), Ctrl+Z/Ctrl+Shift+Z globaux, toast = tête de pile, patch-in-place du DOM (le focus survit). ~80
+lignes, ~2 j — le multiplicateur du corpus : solde H3, H5, et rend toute édition en masse constructible.</td></tr>
+<tr><td><b>Édition à l'échelle</b></td>
+<td>Explicite, pas invisible : shift-clic / <code>x</code> → barre d'action contextuelle (sets, rôle, ±requis,
+dupliquer, supprimer). L'alt-clic « édition verticale » est gelé (P2). Recherche <code>/</code> étendue aux
+4 vues + préfixes <code>set: sub: req: role:</code> avec chips de syntaxe suggérées.</td></tr>
+<tr><td><b>Motion</b></td>
+<td>Tokens <code>--dur-1:120ms</code> / <code>--dur-2:200ms</code> / <code>--ease-out</code>, transitions
+énumérées (jamais <code>all</code>), flash 600 ms = signature unique « contenu arrivé », <code>:active</code>
+global (scale .97). <b>La navigation n'est jamais animée</b> ; cérémonies réservées aux événements rares
+(import, suppression d'onglet, 18/18) et doublées d'un état statique.</td></tr>
+<tr><td><b>Cinzel</b></td>
+<td>Écarté. Le Palatino discipliné est la direction ; la clause de bascule du R1 reste dormante (seulement si le
+client redit « Times » après le chantier peau). Aucune webfont d'ici là ; direction tout-sans définitivement
+enterrée.</td></tr>
+<tr><td><b>Ordre de saisie</b></td>
+<td>Conservé : Slot → Main → Subs → Set. On ne change pas une gestuelle installée sur une hypothèse divergente ;
+ne sera rejoué que si la vérification in-game contredit — charge de la preuve inversée.</td></tr>
+<tr><td><b>PWA</b></td>
+<td>En tout dernier de la roadmap, proposée au 2ᵉ retour après une session de farm ou une recopie terminée —
+un service rendu, pas un prompt. Seul vrai risque de régression globale : il ferme le plan.</td></tr>
+</table></div>
+
+<h2>Le corpus consolidé — les 15 décisions majeures, toutes sources confondues</h2>
+<div class="tbl-wrap"><table>
+<tr><th style="width:44px">#</th><th>Décision</th><th style="width:170px">Sources convergentes</th><th style="width:80px">Statut</th></tr>
+<tr><td>1</td><td>Échelle de luminance 5 niveaux + plancher AA absolu (deux thèmes)</td><td>R1 · R3 · R4 (mesuré ×2)</td><td><span class="v-ok">figé</span></td></tr>
+<tr><td>2</td><td>Display ≥ 16 px jamais interactif · labels sans uppercase · mono = valeurs du jeu (A1)</td><td>R1 · R3 + données C4</td><td><span class="v-ok">figé</span></td></tr>
+<tr><td>3</td><td>Le moteur d'abord : color-scheme, scroll instant, focus/patch-in-place, &lt;dialog&gt; (A6)</td><td>R4 + logique de dépendance R3</td><td><span class="v-ok">figé</span></td></tr>
+<tr><td>4</td><td>Pile de commandes : Ctrl+Z global, toast = tête de pile, réversible &gt; confirmé</td><td>R4 (fusion ×3)</td><td><span class="v-ok">figé</span></td></tr>
+<tr><td>5</td><td>Carte d'item vivante = composant canonique (Session · Simulation · share card)</td><td>R2 (×3) · R3 · R4</td><td><span class="v-ok">figé</span></td></tr>
+<tr><td>6</td><td>La scène du verdict = la vue Simulation, atterrissage de première visite</td><td>R3 (×3) · fait nouveau acté</td><td><span class="v-ok">figé</span></td></tr>
+<tr><td>7</td><td>Recopie téléprompteur + reprise, spec touch v1, destination « Saisie en jeu »</td><td>R2 (×3) · R3 (×3) · R4 (chiffré)</td><td><span class="v-ok">figé</span></td></tr>
+<tr><td>8</td><td>Nav 5 destinations + tab bar basse mobile + sheet « ⋯ » (A3)</td><td>R2 · R1-e · R3 (ancienneté)</td><td><span class="v-ok">figé</span></td></tr>
+<tr><td>9</td><td>Couverture tuée comme vue : attribut de règle + stat-cards + presets</td><td>R2 (×3) · R3</td><td><span class="v-ok">figé</span></td></tr>
+<tr><td>10</td><td>Encodages auto-porteurs : micro-barre + libellé (A2), micro-labels au point d'action, panneau <code>?</code></td><td>R2 · R3 · R4 (H6 sev 3)</td><td><span class="v-ok">figé</span></td></tr>
+<tr><td>11</td><td>✓ confirme / ◆ décore, trois usages, système SVG ICON (A5)</td><td>R2 · R3 · R4 — ×2 contesté, ×2 battu</td><td><span class="v-ok">figé</span></td></tr>
+<tr><td>12</td><td>Share card = artefact composé + landing d'import « Adopter / Juste regarder »</td><td>R2 (avancée) · R3 (promue)</td><td><span class="v-ok">figé</span></td></tr>
+<tr><td>13</td><td>Templates Early/Mid/End proéminents, jamais de gate, créer-depuis-pièce</td><td>R1 · R2 · R3 · R4 (×4)</td><td><span class="v-ok">figé</span></td></tr>
+<tr><td>14</td><td>DA grimoire dosée : 3 matières, dorure 3 allumages, refus du décorum (D6)</td><td>R3 (négocié) · R1 North Star</td><td><span class="v-ok">figé</span></td></tr>
+<tr><td>15</td><td>Palette Ctrl+K + panneau <code>?</code> en P1 conditionné, sélecteur d'onglet unique en P0 (A7, H4)</td><td>R4 (fusions ×2)</td><td><span class="v-ok">figé</span></td></tr>
+</table></div>
+
+<h2>Le périmètre refusé — consolidé, définitif</h2>
+<ul>
+<li><b>Typo</b> : direction tout-sans ; Cinzel avant discipline ; toute webfont immédiate ; small-caps synthétiques sous 16 px ;</li>
+<li><b>Décorum</b> : vignettage, grain feTurbulence, brume, halo excessif ; ◆ en checkbox ; count-up généralisé ; dégradés or hors 18/18 + share card ; particules, étoiles, FOMO, faux sons ;</li>
+<li><b>Pédagogie</b> : légende permanente et chrome pédagogique permanent ; tooltips dans les chips et tables (textes d'aide uniquement) ; templates en gate ;</li>
+<li><b>Interaction</b> : confirmations sur les gestes fréquents (la réversibilité les remplace) ; alt-clic « édition verticale » avant pile + affordance (gelé) ; navigation animée, View Transitions hors événements rares ;</li>
+<li><b>Structure</b> : matrice n×n des chevauchements ; split-screen de comparaison ; 6ᵉ entrée de nav, bannières, chrome permanent ; badge « 48 » en nav ;</li>
+<li><b>Technique</b> : virtualisation / framework pour les 2 000 cartes (cap 60 + agrégats) ; subgrid et container queries sur cette base ; thème clair séparé ;</li>
+<li><b>Lexique</b> : renommer « gardée / recyclée » (canon figé).</li>
+</ul>
+
+<h2>Les 5 décisions qui restent au client</h2>
+<ol>
+<li><b>Tab bar basse à 5 entrées en mobile</b> (remplace le burger, réglages en sheet « ⋯ ») — oui/non ; toute la nav mobile en dépend ;</li>
+<li><b>La palette d'accents recomposée</b> (or · sarcelle · acier · mauve gris · cuivre — le rouge disparaît des options) — des utilisateurs avaient choisi l'ancien rouge ;</li>
+<li><b>« Onglet » → « Jeu de règles » partout</b> — renommage visible par toute la communauté ;</li>
+<li><b>La clause Cinzel dormante</b> — accord de principe (~60 Ko) si le mode clair post-chantier peau ne convainc toujours pas ;</li>
+<li><b>Les deux dettes de terrain</b>, à payer pendant le chantier moteur : ouvrir l'écran d'équipement réel de
+WoR (fige les teintes de tiers de la carte d'item, clôt l'ordre de saisie) et observer 5 vrais joueurs du
+Discord — vingt-deux regards experts, zéro donnée utilisateur : plus aucun ajustement structurel ne devrait se
+prendre sans elles.</li>
+</ol>
+
+<div class="quote" style="font-size:16px">Quatre rapports, un seul plan : un moteur réparé avant toute scène,
+une erreur toujours réversible en un geste, une capacité toujours apprenable par un chemin visible — et une
+identité qui tient en trois signes rares : le Palatino au sommet, l'or qui s'allume trois fois, le ◆ qui décore
+le monde sans jamais confirmer un geste. Plus rien n'est à trancher ; tout est à construire.
+<span class="who">— direction de design, clôture du rapport final</span></div>
+
+<h2>Amendements du client — post-livraison, intégrés</h2>
+<p class="lede">À la lecture du rapport, le client a corrigé cinq hypothèses. Elles priment sur tout ce qui précède
+et ont été répercutées dans les maquettes, le design system et la roadmap.</p>
+<div class="tbl-wrap"><table>
+<tr><th>#</th><th>Correction</th><th>Impact</th></tr>
+<tr><td>C1</td><td><b>La recopie in-game est rare</b> — un ensemble de règles ne bouge pas pendant des semaines, voire des mois. Toute justification « rituel/boucle hebdomadaire » est fausse.</td><td>Le téléprompteur reste pleinement justifié (18 règles à retaper d'un coup = l'événement le plus pénible de l'app) mais c'est un <b>événement occasionnel</b>, pas une routine — le discours de la roadmap est corrigé, la priorité du chantier 4 est inchangée.</td></tr>
+<tr><td>C2</td><td><b>Aucune valeur de roll dans l'application</b> — on ne « roll » pas les jets : seule compte l'information de <i>quelle</i> stat est présente (main, subs), jamais sa valeur chiffrée.</td><td>Maquette « scène du verdict » corrigée (les +11,2 % etc. supprimés des cartes d'item) ; interdit ajouté au design system — les cartes d'item n'affichent que les noms de stats.</td></tr>
+<tr><td>C3</td><td><b>Le farm se compte en pièces par session</b>, jamais en semaines.</td><td>Presets de simulation reformulés (« Session · 400 pièces · Raid 1 niv. 21 », « Session · 2 000 pièces · Raid 3 ») — l'unité « semaine » est bannie du produit.</td></tr>
+<tr><td>C4</td><td><b>Champ description optionnel</b> sur chaque règle ET sur l'ensemble de règles (petit texte libre).</td><td>Fusionne et étend la feature « notes par règle » du backlog : un seul champ « description », porté par l'export/partage.</td></tr>
+<tr><td>C5</td><td><b>La share card affiche la description de l'ensemble</b> quand elle existe, à la place (ou en plus) de la phrase générée.</td><td>Maquette share-card corrigée : la description de l'auteur est le texte principal, la phrase générée devient le repli sans description.</td></tr>
+</table></div>
+
+<div class="foot">
+  <a href="index.html">↑ Vue d'ensemble</a>
+  <a href="02-design-system.html">Design system →</a>
+</div>
+</main>
+</div>
+</body>
+</html>

@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rapport Final — WoR Gear Builder</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="shell">
+<nav class="toc">
+  <div class="brand"><span class="d">◆</span> Rapport Final</div>
+  <div class="sub">Synthèse des 4 design reviews · sept. 2026</div>
+  <a href="index.html" class="on">Vue d'ensemble</a>
+  <div class="grp">Le rapport</div>
+  <a href="01-synthese.html">Synthèse &amp; arbitrages</a>
+  <a href="02-design-system.html">Design system</a>
+  <a href="03-charte-graphique.html">Charte graphique v3</a>
+  <a href="04-maquettes.html">Maquettes &amp; wireframes</a>
+  <a href="05-roadmap.html">Roadmap</a>
+  <div class="grp">Les 4 rapports</div>
+  <a href="../design-review/index.html">Rapport 1 · audit</a>
+  <a href="../design-review-2/index.html">Rapport 2 · cycle</a>
+  <a href="../design-review-3/index.html">Rapport 3 · cycle</a>
+  <a href="../design-review-4/index.html">Rapport 4 · cycle</a>
+</nav>
+<main>
+
+<span class="kicker">Rapport final · 4 design reviews · 22 regards · synthèse-arbitrage</span>
+<h1><span style="color:var(--acc)">◆</span> WoR Gear Builder — Rapport Final</h1>
+<p class="lede">Quatre rapports, vingt-deux regards, une méthode : un audit fondateur à dix spécialistes, puis
+trois cycles de brainstorm contradictoire — à chaque cycle, trois profils neufs analysent l'app <b>à froid</b>,
+sans rien lire des travaux antérieurs, débattent entre eux, puis un modérateur confronte leur cycle au rapport
+précédent. Ce rapport final ferme la série : il tranche <b>tous</b> les arbitrages que quatre cycles ont
+instruits, consolide la doctrine, et alimente les quatre livrables d'exécution — design system, charte v3,
+maquettes, roadmap.</p>
+
+<h2>Le verdict final en une phrase</h2>
+<div class="quote" style="font-size:16px">Le produit est bon et son plan est complet : le cycle 1 a rendu à
+chaque forme un rôle, le 2 à chaque vue un moment du jeu, le 3 à l'app son premier moment de preuve, le 4 un
+moteur qui tient — il ne reste qu'à construire, dans l'ordre des dépendances : <b>le moteur, puis la peau, puis
+la scène</b> — en retirant, requalifiant et réaffectant, jamais en surchargeant.
+<span class="who">— direction de design, rapport final</span></div>
+
+<h2>Le processus — quatre rapports, quatre étages</h2>
+<div class="tbl-wrap"><table>
+<tr><th style="width:130px">Rapport</th><th>Regards</th><th>Ce qu'il a trouvé</th><th style="width:120px">Son étage</th></tr>
+<tr><td><b>1 · Audit</b></td><td>10 spécialistes (UI, UX, couleur, typo, DS, mobile, dataviz, contenu, produit, DC)</td>
+<td>La cause racine unique : la refonte a unifié les <b>apparences</b> sans unifier les <b>rôles</b>. North Star
+« grimoire d'expert », 11 arbitrages, roadmap en 5 chantiers.</td><td>La <b>peau</b></td></tr>
+<tr><td><b>2 · Cycle</b></td><td>Architecte d'information · interaction/motion · game-UI</td>
+<td>L'app est découpée par outil, le joueur vit un cycle. La <b>carte d'item vivante</b> (convergence ×3),
+Saisie en jeu et Session promues destinations, la couverture rapatriée sur la règle.</td><td>Le <b>squelette</b></td></tr>
+<tr><td><b>3 · Cycle</b></td><td>Accessibilité cognitive · visual/brand · growth</td>
+<td>Il manquait un premier moment : la <b>scène du verdict</b> (la preuve avant la configuration), la DA
+concentrée sur la share card, le séquencement par dépendance fonctionnelle.</td><td>Le <b>cœur</b></td></tr>
+<tr><td><b>4 · Cycle</b></td><td>Design engineer · avocat du power-user · critique heuristique (Nielsen)</td>
+<td>Le théâtre n'avait pas de plancher : focus détruit au rendu, dark mode trahi, undo absent. La <b>pile de
+commandes</b> (fusion signature), les premiers chiffrages, 7 arbitrages légués.</td><td>Les <b>mains</b></td></tr>
+</table></div>
+
+<h2>Le corpus en chiffres</h2>
+<div class="stats">
+  <div class="stat"><div class="n">22</div><div class="l">regards experts en 4 rapports</div></div>
+  <div class="stat"><div class="n">129</div><div class="l">constats à froid des 3 cycles (42+43+44)</div></div>
+  <div class="stat"><div class="n">26</div><div class="l">contestations argumentées en débat</div></div>
+  <div class="stat"><div class="n">14</div><div class="l">fusions créatives inter-profils</div></div>
+  <div class="stat"><div class="n">21</div><div class="l">révisions assumées par leurs auteurs</div></div>
+  <div class="stat"><div class="n">7<b>+10</b></div><div class="l">arbitrages A1-A7 + décisions structurantes — tous tranchés ici</div></div>
+  <div class="stat"><div class="n">2,6<b>/4</b></div><div class="l">note Nielsen de l'app (cycle 4) — au-dessus de la médiane</div></div>
+  <div class="stat"><div class="n">0</div><div class="l">donnée utilisateur — la dette n°1 léguée à l'exécution</div></div>
+</div>
+
+<h2>Les convergences inter-cycles — ce que ≥ 3 regards indépendants ont trouvé</h2>
+<p>Les cycles étaient étanches : chaque redécouverte à froid d'une même conclusion est une validation
+indépendante. Voici les points les plus corroborés du corpus — le socle non négociable du plan.</p>
+
+<div class="panel good"><h4>① La recopie in-game n'a pas de mode dédié — 7 regards, 3 cycles consécutifs</h4>
+<p>Le rituel hebdomadaire du joueur (recopier 18 règles écran contre écran) vit dans un pied de sidebar.
+Convergence ×3 au cycle 2 (destination + quest log), ×3 au cycle 3 (téléprompteur : une règle à la fois, plein
+écran), rechiffrée au cycle 4 (18 clics + scroll ; flux Entrée ; socle <code>&lt;dialog&gt;</code>, ~60 lignes).
+<b>Le point le plus validé du corpus</b> — tranché : destination « Saisie en jeu », téléprompteur avec reprise,
+spec touch incluse dès la v1.</p></div>
+
+<div class="panel good"><h4>② Les encodages muets — hint (R2), micro-labels (R3), H6 sev 3 (R4)</h4>
+<p>Le tri-état des chips par nuances d'opacité et les dots de requis sans légende : trois redécouvertes
+indépendantes du même défaut (« l'app se lit comme un code à déchiffrer »), plus une pièce neuve au cycle 4 —
+l'opacité 28 % se confond avec du désactivé, ce qui disqualifie l'encodage même légendé. Tranché : micro-barre +
+libellé texte, micro-labels au point d'action, légende dans le panneau <code>?</code> — jamais permanente.</p></div>
+
+<div class="panel good"><h4>③ Le plancher AA — posé au R1, reconduit au R3, mesuré au R4</h4>
+<p><code>--faint</code> à 2,9:1 sur tout ce qui nomme (R1), reconduit comme critère de toute retouche (R3),
+re-mesuré à ≈3,5:1 sur les textes de 11 px et étendu au non-texte (hairlines sous le seuil de discrimination)
+au R4. Tranché : échelle de luminance à 5 niveaux, zéro texte &lt; 4,5:1 dans les deux thèmes, --faint requalifié
+décor.</p></div>
+
+<div class="panel good"><h4>④ L'empty state actif et les templates — 4 cycles consécutifs</h4>
+<p>Chantier 5 du R1, GUI-14 du R2, P0-6 du R3 (« jamais de gate »), H10 sev 2 du R4. Personne ne conteste, chacun
+ajoute une couche. Tranché : templates Early/Mid/End proéminents (Démo devient Early), éditeur toujours visible,
+créer-depuis-pièce sur toute pièce vérifiée.</p></div>
+
+<div class="panel good"><h4>⑤ Le ✓ confirme, le ◆ décore — deux contestations internes, un seul verdict</h4>
+<p>Le remplacement du ✓ par le ◆ a été proposé deux fois (game-UI au cycle 2, visual au cycle 3) et battu deux
+fois de l'intérieur (interaction, cognitif) avec le même argument : le ✓ est à lecture universelle instantanée.
+Le cycle 4 fige le rendu (système SVG <code>ICON</code>). Entrée de charte, débat clos.</p></div>
+
+<div class="panel good"><h4>⑥ La carte d'item vivante — convergence ×3 du cycle 2, adoptée par les cycles 3 et 4</h4>
+<p>Trois profils y arrivent par trois chemins (composant game-UI, représentation canonique IA, feedback de
+construction IX) ; le cycle 3 en fait le matériau de la scène du verdict ; le cycle 4 lui donne son moteur
+(patch-in-place, focus préservé). Tranché : composant canonique n°1 du design system, trois usages (Session,
+Simulation, share card).</p></div>
+
+<h2>Ce que ce rapport tranche</h2>
+<p>Les sept arbitrages légués par le cycle 4 (A1-A7) plus les décisions structurantes accumulées — typo des
+labels figée, encodage du requis, nav à 5 destinations, picker d'accents recomposé, ✓/◆ en charte, le moteur
+avant la scène, la palette conditionnée — sont tous tranchés dans la
+<a href="01-synthese.html"><b>Synthèse &amp; arbitrages</b></a>, avec pour chacun l'avant, la décision et le
+pourquoi. Il ne reste au client que <b>5 décisions</b> (dont 2 dettes de terrain), listées en fin de synthèse.</p>
+
+<h2>Les pages du rapport</h2>
+<div class="cards">
+  <a class="card" href="01-synthese.html"><span class="no">01</span><h4>Synthèse &amp; arbitrages</h4>
+    <p>La doctrine finale en 8 principes, le tableau de TOUS les arbitrages tranchés (avant → décision →
+    pourquoi), le corpus consolidé, le périmètre refusé, les 5 décisions client restantes.</p>
+    <div class="tags"><span class="prio p0">à lire en premier</span></div></a>
+  <a class="card" href="02-design-system.html"><span class="no">02</span><h4>Design system</h4>
+    <p>Les tokens consolidés (5 niveaux, matières, motion), les composants canoniques — carte d'item en tête —
+    la pile de commandes, les règles de gouvernance.</p></a>
+  <a class="card" href="03-charte-graphique.html"><span class="no">03</span><h4>Charte graphique v3</h4>
+    <p>La DA « grimoire d'armurerie » à sa dose exacte : trois matières, dorure à trois allumages, ◆ codifié,
+    typographie figée, la liste de refus définitive.</p></a>
+  <a class="card" href="04-maquettes.html"><span class="no">04</span><h4>Maquettes &amp; wireframes</h4>
+    <p>Les 10 écrans prioritaires : scène du verdict, carte d'item, téléprompteur, Session, share card, nav
+    mobile, palette — desktop et 375 px.</p></a>
+  <a class="card" href="05-roadmap.html"><span class="no">05</span><h4>Roadmap</h4>
+    <p>Le plan d'exécution par dépendance fonctionnelle : le moteur (~1 sem, chiffré), la peau, le cœur, le
+    squelette, l'acquisition — avec critères de sortie.</p></a>
+</div>
+
+<h2>Méthode du rapport final</h2>
+<div class="panel"><h4>Une synthèse-arbitrage, pas un cinquième cycle</h4>
+<p>Ce rapport n'apporte aucun constat nouveau : il lit les quatre rapports en corpus, pèse les convergences
+indépendantes (le signal le plus fiable d'un processus à cycles étanches), départage les contradictions par la
+doctrine et par les données — jamais par le goût — et fige le tout dans
+<code>materials/arbitrages-finaux.md</code>, le document de travail des quatre livrables d'exécution. Les
+contraintes client (sobriété, or et ◆ identitaires, single-file vanilla, budget solo) ont statut de règles,
+pas d'opinions.</p></div>
+
+<div class="foot">
+  <span>Rapport Final · WoR Gear Builder · septembre 2026</span>
+  <a href="01-synthese.html">Lire la synthèse →</a>
+</div>
+</main>
+</div>
+</body>
+</html>

@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Conclusions &amp; recommandations · Design Review 2 — WoR Gear Builder</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="shell">
+<nav class="toc">
+  <div class="brand"><span class="d">◆</span> Design Review 2</div>
+  <div class="sub">Cycle brainstorm &amp; challenge · sept. 2026</div>
+  <a href="index.html">Synthèse du cycle</a>
+  <div class="grp">Le cycle</div>
+  <a href="01-analyses.html">Les 3 analyses à froid</a>
+  <a href="02-debat.html">Le débat</a>
+  <a href="03-challenge.html">Challenge du rapport 1</a>
+  <a href="04-conclusions.html" class="on">Conclusions &amp; recommandations</a>
+  <div class="grp">Référence</div>
+  <a href="../design-review/index.html">← Rapport 1</a>
+</nav>
+<main>
+
+<span class="kicker">Consolidation · nouvelles entrées au corpus · arbitrages à rouvrir · cycle 3</span>
+<h1>Conclusions &amp; recommandations</h1>
+<p class="lede">Ce que le cycle 2 verse au corpus commun : les nouvelles recommandations consolidées après débat
+(chacune avec son origine et ses appuis), les points du rapport 1 à réviser à la lumière du challenge, et les
+questions que le cycle 3 devra trancher. Les entrées ci-dessous intègrent les amendements du débat — c'est la
+version <b>négociée</b>, pas la version phase 1.</p>
+
+<h2>Les nouvelles entrées au corpus</h2>
+
+<h3>P0 — fondations (avant tout autre chantier du cycle 2)</h3>
+<div class="tbl-wrap"><table>
+<tr><th style="width:56px">Prio</th><th>Recommandation consolidée</th><th style="width:150px">Origine</th><th style="width:170px">Confirmée / amendée par</th></tr>
+<tr><td><span class="prio p0">P0</span></td>
+<td><b>Vérifier les couleurs de tiers contre l'écran d'équipement in-game, puis figer.</b> Miroir 1:1 des
+frames/lueurs du jeu ; si le jeu dit autre chose que vert pour T∞, on s'aligne ; sinon on documente dans
+Référence. Bloquant : carte d'item, chips ◆ et jauges se bâtissent sur cet encodage.</td>
+<td>Game-UI (GUI-1)</td><td>IA (révision : entre dans sa Référence) — colline GUI</td></tr>
+<tr><td><span class="prio p0">P0</span></td>
+<td><b>La carte d'item vivante.</b> Composant canonique de la pièce : glyphe de slot, main stat en gros corps
+mono, subs en colonne, filet coloré au tier. Se construit tap après tap dans un bandeau sticky (Session), rend
+la grille de Simulation, s'exporte en share card. Le verdict est un état de l'objet : liseré or « ✓ Gardée par
+G5 » / désaturation + ⚒ « Recyclée », cross-fade 140&nbsp;ms + tint 400&nbsp;ms.</td>
+<td>Game-UI (GUI-9)</td><td>Convergence ×3 à froid ; promue P1→P0 par son auteur au débat ; comportement IX-8,
+structure IA</td></tr>
+<tr><td><span class="prio p0">P0</span></td>
+<td><b>« Saisie en jeu » devient une destination + quest log.</b> Sortie du pied de sidebar, clé in-game
+rapatriée ; règles à l'état « gravée » (fond <code>--acc-dim</code>, ✓ or, ID plein — pas de texte barré),
+jalons ◆ par groupe, chaîne causale tap → ✓ → état → jalon (+80&nbsp;ms), tapis roulant vers la règle suivante,
+unique célébration à 18/18. <i>Rouvre l'arbitrage « nav à 4 entrées » du rapport 1.</i></td>
+<td>IA (IA-3)</td><td>GUI (ralliement explicite), IX (chorégraphie + retrait de son pill flottant)</td></tr>
+<tr><td><span class="prio p0">P0</span></td>
+<td><b>« Session » : la vérification de pièce extraite du Testeur, mobile-first.</b> Conçue pour une main et un
+pouce : cibles 44&nbsp;px, focus qui avance d'étape en étape, verdict = la carte d'item sticky. Atterrissage mobile
+par défaut ; absorbera le mode farm et « créer une règle depuis cette pièce ».</td>
+<td>IA (IA-5, IA-13)</td><td>IX (« la proposition la plus importante des trois analyses »), GUI (carte d'item
+transplantée)</td></tr>
+<tr><td><span class="prio p0">P0</span></td>
+<td><b>La couverture devient un attribut de la carte de règle</b> — « 36 profils · 2,14&nbsp;% · ok » sur la
+row-head, stat-cards globales en tête de Règles ; le mode Couverture du Testeur disparaît. Amendement IX intégré :
+largeur réservée (mono, min-width fixe), mise à jour au commit du geste, tint sur la seule carte éditée.</td>
+<td>IA (IA-1)</td><td>GUI (« le power rating des gachas »), IX (amende le « live », signe la fusion)</td></tr>
+<tr><td><span class="prio p0">P0</span></td>
+<td><b>Réparer les quatre gestes muets.</b> Coche : pop du ✓ + état accompli (sans barré) ; accordéons en
+<code>grid-template-rows: 0fr→1fr</code> (fin des sauts de 260&nbsp;px) ; « Générer » : bouton busy + bandeau
+résultat d'abord (sur l'architecture IA-8 — plus de déversement de 2000 cartes) ; réordonnancement utilisable au
+touch (poignée 44&nbsp;px / boutons ↑↓) + FLIP au drop.</td>
+<td>Interaction (IX-1/2/3/4)</td><td>GUI (amende IX-1b), IA (amende IX-3 : hiérarchie d'abord)</td></tr>
+<tr><td><span class="prio p0">P0</span></td>
+<td><b>Reduced-motion ≠ reduced-feedback.</b> Remplacer le kill-switch global : chaque animation porteuse de
+sens double d'un état statique équivalent. Règle de charte co-signée statique + motion.</td>
+<td>Interaction (IX-11)</td><td>GUI (annexée à son pacte de sobriété) — colline IX</td></tr>
+</table></div>
+
+<h3>P1 — grammaire, feedback, structure</h3>
+<div class="tbl-wrap"><table>
+<tr><th style="width:56px">Prio</th><th>Recommandation consolidée</th><th style="width:150px">Origine</th><th style="width:170px">Confirmée / amendée par</th></tr>
+<tr><td><span class="prio p1">P1</span></td>
+<td><b>5 glyphes SVG de slots</b> (épée, plastron, brassard, amulette, anneau), style des icônes de nav, devant
+chaque occurrence — sans iconifier les 11 stats (les sigles mono sont la langue de la communauté). Chaque glyphe
+entre au lexique.</td>
+<td>Game-UI (GUI-2)</td><td>IA (appui + intégration lexique)</td></tr>
+<tr><td><span class="prio p1">P1</span></td>
+<td><b><code>:active</code> global</b> (scale .97, 60&nbsp;ms, retour 120&nbsp;ms) sur btn, fchip, chip.pick, seg,
+tab-btn ; variante <code>brightness(.92)</code> sous reduced-motion. « La moitié du game-feel, zéro pixel de
+décor. »</td>
+<td>Interaction (IX-6)</td><td>GUI (appui sans réserve)</td></tr>
+<tr><td><span class="prio p1">P1</span></td>
+<td><b>Tokens de mouvement dans la charte</b> : <code>--dur-1:120ms</code>, <code>--dur-2:200ms</code>,
+<code>--ease-out</code>, transitions énumérées, jamais <code>all</code> ; flash (600&nbsp;ms) = signature unique
+« contenu arrivé » (import, duplication, création).</td>
+<td>Interaction (IX-7, IX-9)</td><td>GUI (intégrés à sa liste de refus — charte commune)</td></tr>
+<tr><td><span class="prio p1">P1</span></td>
+<td><b>Un seul éditeur de règle</b> : suppression de la modale, « + Nouvelle règle » insère une carte vide
+dépliée en tête de liste — la liste s'ouvre en 0fr→1fr, flash sur la carte posée. Réutilisé par
+« créer-règle-depuis-pièce ».</td>
+<td>IA (IA-9)</td><td>IX (mécanisme d'insertion + « spatialement honnête »)</td></tr>
+<tr><td><span class="prio p1">P1</span></td>
+<td><b>Deux registres typographiques</b> : serif small-caps réservé aux objets du monde (vues, règles, sets),
+labels d'interface en mono uppercase letterspacé. <b>Prérequis</b> du groupement par archétype (IA-7), qui suit.</td>
+<td>Game-UI (GUI-5)</td><td>IA (révision : en fait la fondation de sa réorganisation) ; converge avec le
+rapport 1</td></tr>
+<tr><td><span class="prio p1">P1</span></td>
+<td><b>Verdict gardée/recyclée cérémonialisé</b> : liseré or 3&nbsp;px + « ✓ Gardée par G5 » / désaturation + ⚒ —
+porté par la carte d'item, plus jamais par 8 pixels de point coloré.</td>
+<td>Game-UI (GUI-3)</td><td>IX (cross-fade + tint), IA (dans Session)</td></tr>
+<tr><td><span class="prio p1">P1</span></td>
+<td><b>Les encodages muets deviennent explicites</b> : ●●●● → <code>4 subs · 4 sets</code> ; chips de set
+préfixées ◆ coloré au tier (+ <code>title</code>, daltonisme couvert par les badges) ; espace du ★ des subs
+réservé (fin du shift de rangée) + hint transitoire du clic-cycle.</td>
+<td>Game-UI (GUI-7, GUI-8) + Interaction (IX-5)</td><td>IA (« un encodage privé promu langage public » — même
+grief que "Onglet")</td></tr>
+<tr><td><span class="prio p1">P1</span></td>
+<td><b>Simulation s'ouvre sur le dernier résultat en cache</b> (stat-cards instantanées, grille ensuite) ;
+génération à froid uniquement sans cache, avec état busy. Défauts sensés pré-remplis — « pré-calculé dans le dos
+de la transition, jamais ».</td>
+<td>IA (IA-14)</td><td>Amendé et signé par IX (contestation intégrée)</td></tr>
+<tr><td><span class="prio p1">P1</span></td>
+<td><b>Verdict sticky + scroll par vue</b> : bandeau bas de viewport mobile (absorbé par la carte d'item en
+Session) ; scroll mémorisé par vue, entrée en fade discret 140&nbsp;ms.</td>
+<td>Interaction (IX-8, IX-10)</td><td>IA (l'adresse : Session), GUI (le cadre : la carte)</td></tr>
+</table></div>
+
+<h3>P2 — finitions gouvernées</h3>
+<div class="tbl-wrap"><table>
+<tr><th style="width:56px">Prio</th><th>Recommandation consolidée</th><th style="width:150px">Origine</th><th style="width:170px">Confirmée / amendée par</th></tr>
+<tr><td><span class="prio p2">P2</span></td>
+<td><b>Bloc « Mes données »</b> unique en sidebar : Importer / Exporter / Partager / statut de sauvegarde — fin
+du murmure « ● enregistré (local) ».</td>
+<td>IA (IA-12)</td><td>—</td></tr>
+<tr><td><span class="prio p2">P2</span></td>
+<td><b>Jauges neutres en or/accent</b> (couverture, progression) ; vert/rouge réservés aux verdicts textuels.
+Résout la collision jauge verte / T∞ vert.</td>
+<td>Game-UI (GUI-12)</td><td>Cohérent avec GUI-1 (tiers figés d'abord)</td></tr>
+<tr><td><span class="prio p2">P2</span></td>
+<td><b>Liste de refus étendue statique + motion</b> : pas de dégradés or, particules, étoiles, FOMO, faux sons —
+ni de count-up généralisé ; ornement statique et typographique, le seul mouvement est le feedback d'action.</td>
+<td>Game-UI (GUI-13) × Interaction (IX-7)</td><td>Co-signée au débat (« doctrine commune »)</td></tr>
+<tr><td><span class="prio p2">P2</span></td>
+<td><b>Steppers : cibles 36&nbsp;px mobile, pulse de valeur, message « injouable » à hauteur réservée</b> — plus
+rien ne pousse les boutons qu'on va taper.</td>
+<td>Interaction (IX-12)</td><td>Colline IX (espace réservé partout)</td></tr>
+<tr><td><span class="prio p2">P2</span></td>
+<td><b>◆ systématisé — sauf sur les coches.</b> Jalons de progression, marqueur d'onglet actif, pip de tier :
+oui. Remplacer le ✓ : non (contestation IX retenue — le ◆ décore le monde, il ne confirme pas les gestes).</td>
+<td>Game-UI (GUI-11)</td><td>Amendé par IX (le ✓ reste)</td></tr>
+<tr><td><span class="prio p2">P2</span></td>
+<td><b>Référence recentrée sur les faits</b> : doctrine et budgets rapatriés en notes-par-règle ; le lexique
+devient la source unique des tooltips (termes + glyphes de slots).</td>
+<td>IA (IA-10, IA-11)</td><td>GUI-1 y ajoute la doc des couleurs de tiers</td></tr>
+<tr><td><span class="prio p2">P2</span></td>
+<td><b>Templates dans l'empty state</b> (« Early game · large », « End game · strict », « Farm GR1 ») — converge
+avec le chantier 5 du rapport 1, formulation communauté en plus.</td>
+<td>Game-UI (GUI-14)</td><td>Rapport 1 (chantier 5, décision n°9)</td></tr>
+</table></div>
+
+<h2>Les points du rapport 1 à réviser</h2>
+<div class="tbl-wrap"><table>
+<tr><th>Point du rapport 1</th><th>Révision recommandée</th><th style="width:110px">Nature</th></tr>
+<tr><td><b>« La nav reste à 4 entrées »</b> (North Star n°4, périmètre refusé)</td>
+<td>Rouvrir. Le cycle 2 propose 5 destinations <i>en dissolvant des vues ailleurs</i> (Couverture fusionnée,
+Testeur réduit à Simulation) : le chrome net reste comparable. Décision à prendre sur le cycle d'usage, pas sur
+le comptage.</td><td><span class="v-bad">contredit</span></td></tr>
+<tr><td><b>Arbitrage g — accent configurable conservé</b></td>
+<td>Rejouer avec la donnée GUI-6 : 4 accents sur 5 percutent l'encodage des tiers. Options : picker supprimé,
+easter egg, ou palette d'accents recomposée hors des teintes de tiers.</td><td><span class="v-bad">contredit</span></td></tr>
+<tr><td><b>Décision client n°5 — renommer les modes du Testeur</b></td>
+<td>Suspendre : caduque si la restructuration (IA-1 + IA-5) est retenue — il ne reste qu'une vue Simulation.
+Trancher la structure d'abord, nommer ensuite.</td><td><span class="v-mid">caduc ?</span></td></tr>
+<tr><td><b>Décision client n°6 — ordre de saisie Slot → Set → Main → Subs</b></td>
+<td>Vérifier contre l'écran réel du jeu : le game-UI designer du cycle 2 a spontanément conservé l'ordre actuel
+(Slot → Main → Subs → Set). Ne pas changer une gestuelle sur une hypothèse divergente.</td><td><span class="v-mid">à vérifier</span></td></tr>
+<tr><td><b>Chantier 3 — table des 48 sets améliorée</b></td>
+<td>Suspendre le polish tant que la nature de la vue n'est pas tranchée (codex unique GUI vs découpe faits/audit
+IA). Consensus déjà acquis : le badge « 48 » en nav disparaît.</td><td><span class="v-mid">suspendu</span></td></tr>
+<tr><td><b>Chantier 5 — share card PNG en vague 3</b></td>
+<td>Avancer : sous-produit gratuit de la carte d'item P0 (la carte figée s'exporte). Son coût résiduel est
+l'export PNG, plus le composant.</td><td><span class="v-mid">à avancer</span></td></tr>
+<tr><td><b>Arbitrages b/c — stepper reformé ①✓ + rail</b></td>
+<td>Re-spécifier après la décision Session : si la saisie devient un flux 3-taps répété, le stepper cérémonial
+(rapport 1 comme diamants GUI-10) cède la place à la carte d'item qui se construit.</td><td><span class="v-mid">à rejouer</span></td></tr>
+<tr><td><b>Périmètre refusé — « virtualisation pour les 2000 cartes »</b></td>
+<td>Maintenu — et renforcé : le cycle 2 (IA-8 amendé IX-3) confirme cap + agrégats, en y ajoutant l'état busy et
+le bandeau-résultat-d'abord que le rapport 1 n'avait pas spécifiés.</td><td><span class="v-ok">confirmé +</span></td></tr>
+</table></div>
+
+<h2>Les questions ouvertes pour le cycle 3</h2>
+<div class="cards">
+  <div class="card"><span class="no">Q1</span><h4>Que dit réellement l'écran d'équipement de WoR ?</h4>
+  <p>Vérification factuelle bloquante (colline GUI) : couleurs de tiers, ordre de lecture d'une pièce, lueurs.
+  Tant qu'elle n'est pas faite, la carte d'item, les chips ◆ et la décision n°6 du rapport 1 reposent sur des
+  hypothèses.</p></div>
+  <div class="card"><span class="no">Q2</span><h4>Nav : 5 destinations, mais quel chrome mobile ?</h4>
+  <p>Comment concilier les 5 destinations du cycle 2, la tab bar basse du rapport 1 (arbitrage e) et le principe
+  « le chrome se finance » ? Piste : tab bar contextuelle (Session/Saisie en avant sur mobile) — à maquetter.</p></div>
+  <div class="card"><span class="no">Q3</span><h4>Sets : codex ou découpe ?</h4>
+  <p>La contestation non résolue du débat. Codex unique avec tri « angles morts » (GUI) contre séparation
+  faits/audit (IA). Un prototype des deux lectures suffirait à trancher.</p></div>
+  <div class="card"><span class="no">Q4</span><h4>Où passe la frontière du game-feel ?</h4>
+  <p>Le count-up (« première fois » IX vs « jamais » GUI) est minuscule mais doctrinal : jusqu'où l'app a-t-elle
+  le droit de « respirer » avant de trahir le pacte de sobriété ? La charte motion commune doit trancher ce cas
+  d'école.</p></div>
+  <div class="card"><span class="no">Q5</span><h4>Qui teste, enfin ?</h4>
+  <p>Deux cycles, treize regards experts, zéro donnée utilisateur. Les hypothèses les plus lourdes (atterrissage
+  mobile sur Session, groupement par archétype, quest log) méritent 5 sessions d'observation avec de vrais
+  joueurs de WoR avant d'engager les chantiers structurels.</p></div>
+  <div class="card"><span class="no">Q6</span><h4>Que coûte le squelette ?</h4>
+  <p>Le cycle 2 ne chiffre rien (challenge, section ④). Le cycle 3 doit produire l'équivalent de la roadmap du
+  rapport 1 pour les chantiers structurels : Session, Saisie en jeu, carte d'item, fusion Couverture — efforts,
+  ordre, critères de sortie.</p></div>
+</div>
+
+<h2>Le mot de la fin</h2>
+<div class="quote" style="font-size:16px">Le cycle 1 a rendu à chaque forme un rôle ; le cycle 2 rend à chaque
+vue un moment du jeu. Ses trois legs — la carte d'item vivante, la saisie en jeu promue destination, la
+couverture rapatriée sur la règle — partagent un même principe : <b>l'information vit sur l'objet qu'elle
+décrit, et le feedback est un état de cet objet</b>. Le cycle 3 n'aura plus à débattre de directions : il devra
+vérifier (le jeu, les joueurs), chiffrer (le squelette), et trancher les cinq différends qui restent.
+<span class="who">— modération du cycle 2</span></div>
+
+<div class="foot">
+  <a href="03-challenge.html">← Challenge du rapport 1</a>
+  <a href="index.html">↑ Synthèse du cycle</a>
+</div>
+</main>
+</div>
+</body>
+</html>

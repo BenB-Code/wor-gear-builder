@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Maquette · Session de farm · Mobile 375</title>
+<style>
+:root{
+  --bg:#14121a;--panel:#1d1a24;--panel2:#262230;--border:#35303f;--border-soft:#2a2632;--hairline:rgba(255,255,255,.05);
+  --zenith:rgba(255,255,255,.08);
+  --ink:#d9d2c4;--ink-hi:#ece7db;--head:#c4bcd0;--label:#a59dae;--deco:#6f6880;--state:#8a8298;
+  --t3:#e0635a;--t2:#e2b04a;--t1:#a678e8;--t0:#5f9fd6;--t4:#4ef08a;
+  --off:#cf6054;--deff:#5f9fd6;--util:#6fbf8f;
+  --acc:#e2b04a;--acc-bd:rgba(226,176,74,.5);--acc-dim:rgba(226,176,74,.14);
+  --display:"Palatino Linotype","Iowan Old Style",Palatino,"Book Antiqua",Georgia,serif;
+  --body:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --mono:ui-monospace,"SF Mono","Cascadia Code",Menlo,Consolas,monospace;
+  --r-s:6px;--r-m:10px;--r-l:16px;--r-pill:999px;
+  --dur-1:120ms;--dur-2:200ms;--ease-out:cubic-bezier(.2,.7,.3,1);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0d0c12;color:var(--ink);font-family:var(--body);min-height:100vh;
+  display:flex;flex-direction:column;align-items:center;padding:26px 12px 64px}
+
+/* Bandeau de la maquette */
+.banner{font-size:11.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--deco);margin-bottom:18px}
+.banner a{color:var(--acc);text-decoration:none;font-weight:600}
+.banner a:hover{text-decoration:underline}
+.banner .sep{margin:0 8px;color:#3a3444}
+
+/* Cadre téléphone sobre */
+.phone{width:375px;flex:0 0 auto;background:#08070b;border:1px solid #2c2836;border-radius:36px;
+  padding:10px;box-shadow:0 30px 70px rgba(0,0,0,.6),0 2px 8px rgba(0,0,0,.5)}
+.screen{background:var(--bg);border-radius:27px;overflow:hidden;display:flex;flex-direction:column;min-height:790px;position:relative}
+
+/* Micro status bar (contexte, non fonctionnel) */
+.status{display:flex;justify-content:space-between;align-items:center;padding:8px 20px 0;
+  font-family:var(--mono);font-size:11px;color:var(--deco)}
+
+/* ── Barre de session (44px) — mode focus : pas de tab bar ── */
+.sess-bar{display:flex;align-items:center;gap:10px;min-height:44px;padding:4px 8px 4px 4px;margin-top:2px}
+.sess-quit{appearance:none;background:none;border:none;min-width:44px;min-height:44px;color:var(--label);
+  font-family:var(--body);font-size:13px;font-weight:600;cursor:pointer;border-radius:var(--r-m)}
+.sess-quit:active{transform:scale(.97)}
+.sess-title{font-size:11.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--label)}
+.sess-title b{color:var(--head);font-weight:600}
+.sess-count{margin-left:auto;font-family:var(--mono);font-size:11px;color:var(--state);padding-right:10px;text-align:right;line-height:1.5}
+.sess-count .g{color:var(--util)} .sess-count .r{color:var(--off)}
+
+/* ── ZONE VERDICT — haut d'écran, lecture seule, lisible en jeu ── */
+.verdict{background:var(--off);color:#220c09;min-height:172px;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:6px;padding:18px 20px 14px;text-align:center;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.22)}
+.verdict .word{font-family:var(--display);font-variant:small-caps;letter-spacing:.06em;
+  font-size:42px;font-weight:700;line-height:1;display:flex;align-items:center;gap:12px}
+.verdict .word .ico{font-size:26px;font-family:var(--body)}
+.verdict .why{font-size:14px;font-weight:600;line-height:1.35;max-width:300px}
+.verdict .why b{font-family:var(--mono);font-weight:700}
+/* Auto-reset : timer annulable, état visible */
+.reset{display:flex;align-items:center;gap:8px;margin-top:8px;padding:8px 14px;border-radius:var(--r-pill);
+  background:rgba(0,0,0,.22);font-size:12px;font-weight:600;color:#3a1410}
+.reset .pips{display:flex;gap:4px}
+.reset .pip{width:7px;height:7px;border-radius:50%;background:rgba(0,0,0,.5)}
+.reset .pip.done{background:rgba(0,0,0,.18)}
+.reset .cancel{text-decoration:underline;cursor:pointer}
+
+/* ── ZONE SAISIE — les 2/3 bas, tout se tape ici ── */
+.entry{flex:1;display:flex;flex-direction:column;gap:14px;padding:16px 14px calc(16px + 14px)}
+.zone-lab{display:flex;align-items:baseline;gap:8px;font-size:11.5px;font-weight:600;
+  letter-spacing:.08em;text-transform:uppercase;color:var(--label)}
+.zone-lab .memo{font-size:10.5px;font-weight:600;letter-spacing:.06em;color:var(--deco);text-transform:none}
+.zone-lab .count{margin-left:auto;font-family:var(--mono);font-size:12px;letter-spacing:0;text-transform:none;color:var(--head)}
+
+/* Chips tactiles ≥48px */
+.chip{appearance:none;min-height:48px;display:inline-flex;align-items:center;justify-content:center;gap:6px;
+  background:var(--panel);border:1px solid var(--border);border-radius:var(--r-m);
+  color:var(--ink);font-family:var(--mono);font-size:13px;padding:0 10px;cursor:pointer;
+  transition:background var(--dur-1) var(--ease-out),border-color var(--dur-1) var(--ease-out)}
+.chip:active{transform:scale(.97)}
+.chip.on{background:var(--acc-dim);border-color:var(--acc-bd);color:var(--acc);font-weight:700}
+.chip.dim{opacity:.38;pointer-events:none}
+.chip.body{font-family:var(--body);font-size:13.5px;font-weight:600}
+.chip .tier{font-family:var(--mono);font-size:10px;font-weight:700;padding:1px 6px;border-radius:var(--r-pill)}
+.chip .tier.t3{background:rgba(224,99,90,.16);color:#ef948c}
+.chip .tier.t2{background:rgba(226,176,74,.16);color:var(--t2)}
+
+/* Sets récents du raid : 3 + « tous » */
+.sets-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.sets-row .chip{justify-content:space-between;padding:0 12px;text-align:left}
+.sets-row .more{color:var(--label);font-family:var(--body);font-size:13px;font-weight:600;justify-content:center}
+
+/* Slot·Main fusionnés : slot mémorisé + mains légales */
+.slotmain{display:flex;align-items:center;gap:8px}
+.slot-pick{appearance:none;min-height:48px;display:inline-flex;align-items:center;gap:8px;
+  background:var(--panel2);border:1px solid var(--border);border-radius:var(--r-m);
+  color:var(--ink);font-family:var(--body);font-size:13.5px;font-weight:600;padding:0 12px;cursor:pointer}
+.slot-pick svg{width:18px;height:18px;stroke:var(--label);fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.slot-pick .chev{color:var(--deco);font-size:11px}
+.mains{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}
+.subs{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}
+.mains .chip,.subs .chip{padding:0 2px;font-size:12px}
+
+.entry-note{font-size:11px;color:var(--deco);text-align:center;line-height:1.5;margin-top:auto}
+
+/* Barre home indicator */
+.home{height:22px;display:flex;align-items:flex-end;justify-content:center;padding-bottom:8px}
+.home i{display:block;width:118px;height:4px;border-radius:var(--r-pill);background:#3a3444}
+
+/* Légende sous le cadre */
+.caption{width:375px;margin-top:16px;font-size:12px;line-height:1.6;color:var(--deco)}
+.caption b{color:var(--label);font-weight:600}
+</style>
+</head>
+<body>
+
+<div class="banner">Maquette <span class="sep">·</span> Session de farm <span class="sep">·</span> rapport final <span class="sep">·</span> <a href="../04-maquettes.html">04 · maquettes</a></div>
+
+<div class="phone"><div class="screen">
+
+  <div class="status"><span>21:47</span><span>▰▰▰ 62 %</span></div>
+
+  <!-- Barre de session — mode focus, la tab bar est masquée -->
+  <div class="sess-bar">
+    <button class="sess-quit">✕ Fin</button>
+    <span class="sess-title">Session · <b>End Game | Strict</b></span>
+    <span class="sess-count">12 vues<br><span class="g">✓ 2 gardées</span> · <span class="r">⚒ 10 recyclées</span></span>
+  </div>
+
+  <!-- ZONE VERDICT : lecture seule, en haut, coup d'œil depuis le jeu -->
+  <section class="verdict" aria-live="polite">
+    <div class="word"><span class="ico">⚒</span>Recycler</div>
+    <div class="why">exclue après 2 subs — aucune règle ne veut <b>CC</b> sur Salut</div>
+    <div class="reset">
+      <span class="pips"><span class="pip done"></span><span class="pip done"></span><span class="pip"></span></span>
+      auto-reset 1,5 s — <span class="cancel">toucher pour garder la saisie</span>
+    </div>
+  </section>
+
+  <!-- ZONE SAISIE : tout ce qui se tape vit dans les 2/3 bas -->
+  <div class="entry">
+
+    <div>
+      <div class="zone-lab">Set <span class="memo">— récents du raid d'abord</span></div>
+      <div class="sets-row" style="margin-top:8px">
+        <button class="chip body">Tourbillon <span class="tier t3">T3</span></button>
+        <button class="chip body on">Salut <span class="tier t2">T2</span></button>
+        <button class="chip body">Seigneur de guerre <span class="tier t2">T2</span></button>
+        <button class="chip more">tous les sets ▾</button>
+      </div>
+    </div>
+
+    <div>
+      <div class="zone-lab">Slot · Main <span class="memo">— mémorisés du drop précédent</span></div>
+      <div class="slotmain" style="margin-top:8px">
+        <button class="slot-pick">
+          <svg viewBox="0 0 24 24"><path d="M4 20l3-3M5 16l3 3M7 17L17 7l2-4-4 2L5 15z"/></svg>
+          Arme <span class="chev">▾</span>
+        </button>
+      </div>
+      <div class="mains" style="margin-top:8px">
+        <button class="chip on">ATK</button>
+        <button class="chip">HP</button>
+        <button class="chip">DEF</button>
+        <button class="chip">ATK%</button>
+        <button class="chip">HP%</button>
+        <button class="chip">AS</button>
+      </div>
+    </div>
+
+    <div>
+      <div class="zone-lab">Subs <span class="count">2/4 — verdict tombé</span></div>
+      <div class="subs" style="margin-top:8px">
+        <button class="chip dim">ATK</button>
+        <button class="chip">DEF</button>
+        <button class="chip">HP</button>
+        <button class="chip">ATK%</button>
+        <button class="chip">DEF%</button>
+        <button class="chip">HP%</button>
+        <button class="chip on">CC</button>
+        <button class="chip">CD</button>
+        <button class="chip">RR</button>
+        <button class="chip on">HE</button>
+        <button class="chip">AS</button>
+        <button class="chip dim">—</button>
+      </div>
+    </div>
+
+    <p class="entry-note">La saisie s'arrête au verdict, pas à la complétude.<br>
+    Au reset : subs vidées, <b>set et slot conservés</b>.</p>
+  </div>
+
+  <div class="home"><i></i></div>
+</div></div>
+
+<p class="caption"><b>Mode focus plein écran</b> (tab bar masquée). Le verdict — lecture seule — occupe le haut ;
+tout ce qui se tape vit en zone de pouce, chips de 48 px. Le main saisi (ATK) est exclu de la grille de subs.
+Médiane visée : 2-4 taps par drop, zéro scroll, wake lock actif.</p>
+
+</body>
+</html>

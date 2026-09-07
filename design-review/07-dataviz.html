@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Data-visualisation · Design Review — WoR Gear Builder</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="shell">
+<nav class="toc">
+  <div class="brand"><span class="d">◆</span> Design Review</div>
+  <div class="sub">WoR Gear Builder · sept. 2026</div>
+  <a href="index.html">Synthèse exécutive</a>
+  <div class="grp">Fondations</div>
+  <a href="04-typographie.html">Typographie</a>
+  <a href="03-couleur-accessibilite.html">Couleur &amp; accessibilité</a>
+  <a href="05-design-system.html">Design system &amp; tokens</a>
+  <div class="grp">Interface</div>
+  <a href="01-ui-composants.html">Composants UI</a>
+  <a href="07-dataviz.html" class="on">Data-visualisation</a>
+  <a href="06-mobile.html">Mobile</a>
+  <div class="grp">Produit</div>
+  <a href="02-ux-parcours.html">UX &amp; parcours</a>
+  <a href="08-contenu.html">Contenu &amp; microcopy</a>
+  <a href="09-integration-features.html">Intégration des features</a>
+  <div class="grp">Direction</div>
+  <a href="10-synthese.html">Synthèse &amp; roadmap</a>
+</nav>
+<main>
+
+<span class="kicker">Audit spécialiste · data-visualisation</span>
+<h1>Data-viz — l'œil doit scanner, pas lire</h1>
+<p class="lede">L'app encode presque tout en <b>texte</b> : chiffres bruts, pourcentages en chaîne, phrases complètes.
+Les rares encodages visuels (barres, points, badges) ne sont pas réutilisés là où le même concept réapparaît.
+Résultat : l'œil ne peut jamais <i>scanner</i> — il doit <i>lire</i>. C'est une grande part de l'impression
+de « chargé ».</p>
+
+<h2>Trois causes racines</h2>
+<ul>
+<li><b>Un taux = 4 encodages différents</b> selon la vue (% dans le chiffre, % inline faint, % en prose, barre) ;</li>
+<li><b>Aucune table n'est triable ni ne porte de barre</b>, alors que ce sont des tables de comparaison de grandeurs — le cas d'usage n°1 des barres in-cell ;</li>
+<li><b>Les nombres ne sont ni alignés à droite ni en chiffres tabulaires</b> — comparer 36 / 14 / 300 / 1 767 en colonne alignée à gauche est <b>le défaut le plus rentable à corriger de tout l'audit</b> (3 lignes de CSS).</li>
+</ul>
+
+<h2><span class="prio p0">P0</span> Table « Ce que chaque règle attrape »</h2>
+<p>Chiffres à gauche en police proportionnelle, pas de tri, un « % de ses sets » de 0,53 à 2,86 % sans support visuel,
+et la colonne Lecture qui répète « ok » 18 fois en vert — l'état nominal doit être le plus discret, pas le plus bavard.</p>
+<pre class="wire">RÈGLE                      PIÈCES ↓        % DE SES SETS              LECTURE
+─────────────────────────────────────────────────────────────────────────────
+G1  Tank                        36   ▓▓▓▓▓▓▓░░░░░░░░░░  2,14 %       ·
+D2  Support                    180   ▓▓░░░░░░░░░░░░░░░  0,53 %       ·
+D4  Heal                         0   ░░░░░░░░░░░░░░░░░  0,00 %       ⚠ ne garde rien
+G7  Dps ATK                     54   ▓▓▓▓▓▓▓░░░░░░░░░░  2,14 %       ◐ doublon → G8, D1</pre>
+<ul>
+<li>Nombres : <code>text-align:right</code> + <code>tabular-nums</code> ;</li>
+<li>Barre in-cell = le composant <code>.covbar</code> réutilisé tel quel, échelle max-colonne ;</li>
+<li>Lecture en 3 glyphes : <code>·</code> neutre faint / <code>◐</code> ambre + refs des partenaires de doublon inline / <code>⚠</code> rouge — scannable en périphérie ;</li>
+<li>En-têtes triables (Pièces, %), tri par défaut = ordre des règles, tri secondaire stable par id.</li>
+</ul>
+
+<h2><span class="prio p0">P0</span> Chevauchements : des phrases → des barres miroir</h2>
+<p>Une phrase de trois nombres par paire (« 28 pièces gardées par les deux règles à la fois — soit 19 % de tout
+ce que garde D7 et 41 %… ») : illisible au-delà de 5 paires. La donnée est symétrique — <b>le même</b> chevauchement
+pèse différemment chez A et chez B — l'encodage juste est la <b>barre bidirectionnelle</b> :</p>
+<pre class="wire">% DE A          RÈGLE A         PARTAGÉ   RÈGLE B          % DE B
+──────────────────────────────────────────────────────────────────
+░░░░▓▓ 19 %     D7 · Dps ATK      28      D3 · Tank        41 % ▓▓▓▓░░
+░░░░░▓  8 %     G1 · Tank         12      G4 · Heal HP     33 % ▓▓▓░░░</pre>
+<ul>
+<li>Échelle <b>absolue 0-100 %</b> (100 % = règle entièrement doublonnée = le seuil d'alerte du moteur) ; colorer &gt; 80 % en rouge ;</li>
+<li>Une paire très asymétrique saute aux yeux — « qui est englobé par qui » devient visuel ;</li>
+<li>La phrase pédagogique complète descend en tooltip/ligne dépliable : la prose devient la profondeur, pas la surface. La mini-matrice n×n a été évaluée et écartée (18×18 creuse, mauvaise question).</li>
+</ul>
+
+<h2><span class="prio p0">P0</span> Échantillon : agrégats d'abord, cartes en drill-down</h2>
+<p>2 000 cartes de pièces = aucune vue d'ensemble ; le scroll est le seul mode d'exploration alors que la tâche
+réelle est « chercher un pattern ». Inverser la pyramide :</p>
+<pre class="wire">┌─ RÉSULTAT ────────────────────────────────────────────────────┐
+│ 48 / 2 000 gardées  ▓░░░░░░░░  2,4 %    [barre par tier]      │
+├─ PAR RÈGLE (qui a gardé quoi) ────────────────────────────────┤
+│ G7 · Dps ATK    14  ▓▓▓▓▓▓▓░░░░░░               [voir]        │
+│ G6 · Support     9  ▓▓▓▓▓░░░░░░░░               [voir]        │
+│ (6 règles muettes sur cet échantillon — repliées)             │
+├─ PAR SET (top recyclés) ──────────────────────────────────────┤
+│ Tourbillon      0/412 gardées   ░░░░░░ 0 %      [voir]        │
+└───────────────────────────────────────────────────────────────┘
+[voir] = filtre la grille de cartes sur ce sous-ensemble</pre>
+<ul>
+<li><b>Group-by</b> dans la grille : aucun · règle · set · tier · slot, sections avec en-têtes compteurs ;</li>
+<li><b>Cap d'affichage ~60 cartes</b> + « Afficher plus » (2 000 cartes × chips est aussi un coût DOM) ;</li>
+<li>Le tableau « par règle » = le même composant que la table de couverture — deux vues, un seul encodage.</li>
+</ul>
+
+<h2><span class="prio p1">P1</span> Cartes de chiffres : hiérarchiser les échelles</h2>
+<p>Les 4 cartes actuelles juxtaposent des échelles incommensurables (l'univers 172 410, un sous-ensemble 1 767,
+un sous-sous-ensemble 86, un compte d'alertes 0) comme si elles étaient comparables. Et « 86 » n'a de sens que
+rapporté aux gardés (≈ 4,9 %) — jamais donné.</p>
+<pre class="wire">┌──────────────────────────────┐ ┌───────────────────┐ ┌──────────────────┐
+│ PROFILS GARDÉS               │ │ MULTI-RÈGLES      │ │ RÈGLES MUETTES   │
+│ 1 767 / 172 410              │ │ 86 · 4,9 %        │ │ ✓ aucune         │
+│ ▓░░░░░░░░░░░░░░░░░  1,02 %   │ │ des gardés        │ │ (ou « 2 ⚠ »)     │
+└──────────────────────────────┘ └───────────────────┘ └──────────────────┘</pre>
+<p>La carte d'alerte devient <b>silencieuse quand tout va bien</b> (✓ vert) et bruyante seulement à &gt; 0.
+La jauge réutilise exactement <code>.covbar</code>. La barre quasi vide à 1,02 % est assumée : elle dit
+« très sélectif », ce qui est le message métier (« c'est voulu, pas cassé »).</p>
+
+<h2><span class="prio p1">P1</span> Répartition par tier → barre empilée 100 %</h2>
+<p>« T∞ 342 · 17,1 % — T2 344 · 17,2 % — T1 1 314 · 65,7 % » est une <b>distribution de parts d'un tout</b> :
+l'encodage canonique est la barre empilée, gratuite en cohérence puisque les couleurs de tiers existent déjà.</p>
+<pre class="wire">PAR TIER   ▓▓▓▓▓▓▒▒▒▒▒▒░░░░░░░░░░░░░░░░░░░░░░░░   (8 px de haut)
+           T∞ 342 · 17,1 %   T2 344 · 17,2 %   T1 1 314 · 65,7 %</pre>
+<p>Bonus : clic sur un segment = filtrer les cartes sur ce tier.</p>
+
+<h2><span class="prio p1">P1</span> Table des 48 sets</h2>
+<ul>
+<li><b>Hiérarchie des colonnes inversée par l'espace</b> : Bonus et Source (prose de <i>référence</i>, lue une fois)
+mangent la largeur ; Couverture (colonne de <i>travail</i>, scannée à chaque itération) wrap sur 3 lignes de chips.
+Réordonner : Set · Tier · <b>Couverture</b> · Transfo, Bonus/Source en sous-ligne dépliable ;</li>
+<li><b>Dompter les refs</b> : au plus 3 chips + <code>+4</code> (au-delà de 3, l'info utile n'est plus <i>lesquelles</i>
+mais <i>combien</i>) — variante : compteur badge <code>⟨5⟩ G1 G2 G6 +2</code>, comparable en colonne ;</li>
+<li><b>Group-by tier</b> avec sous-en-têtes collants (« T∞ (3) · T3 (16)… ») en mode Tous — la colonne Tier disparaît alors ;</li>
+<li>Ligne de synthèse en tête : « 41/48 couverts · 7 recyclés · 12 transformables ».</li>
+</ul>
+
+<h2><span class="prio p0">P0</span> La charte d'encodage inter-vues</h2>
+<p>Relevé : <b>quatre</b> rendus du « taux », <b>trois</b> de la « référence de règle », <b>deux</b> du « set » selon
+la vue. C'est la source principale de l'impression d'incohérence côté données. Charte à figer :</p>
+<div class="tbl-wrap"><table>
+<tr><th>Concept</th><th>Encodage unique, partout</th></tr>
+<tr><td>Taux / part</td><td><code>[barre 6px unie] + % mono tabular</code> aligné droite min-width 52px (= covbar). Un % nu n'est admis qu'en prose de la Référence</td></tr>
+<tr><td>Référence de règle</td><td>toujours <code>.ruleref</code> cliquable avec <b>id · nom</b> (le nom en title est trop caché) — y compris les verdicts des cartes de pièces</td></tr>
+<tr><td>Tier</td><td>toujours <code>.tier-badge</code> coloré — y compris les pilules filtre de Sets &amp; transfo (aujourd'hui neutres !) et les segments de la barre empilée</td></tr>
+<tr><td>Set</td><td>toujours <code>.chip.set</code> coloré par tier — y compris la colonne Set de la table des 48</td></tr>
+<tr><td>Nombres</td><td><code>tabular-nums</code> global + <code>td.num{text-align:right}</code> sur toute colonne quantitative</td></tr>
+</table></div>
+
+<h2>Finitions <span class="prio p2">P2</span></h2>
+<ul>
+<li>Points de requis ●●●○ : rendre le point vide réellement visible (couleur pleine <code>--border</code>, pas une opacité) + micro-préfixe <code>REQ</code> pour lever l'ambiguïté avec « 4 sets » juste à côté ;</li>
+<li>covbar : couleur unie au lieu du gradient (la teinte qui varie le long de la barre n'encode rien et fait paraître deux barres de longueurs différentes de « qualités » différentes) ; largeur de libellé 140px en classe, pas en style inline ; toggle de tri par valeur ;</li>
+<li>Cartes de pièces : liseré gauche 2px couleur verdict (plus balayable que la pastille 8px), verdict multi-règles en rulerefs inline pour garder des hauteurs de cartes uniformes.</li>
+</ul>
+
+<div class="foot">
+  <a href="06-mobile.html">Mobile →</a>
+  <a href="index.html">↑ Synthèse exécutive</a>
+</div>
+</main>
+</div>
+</body>
+</html>

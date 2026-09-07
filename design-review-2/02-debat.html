@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Le débat · Design Review 2 — WoR Gear Builder</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="shell">
+<nav class="toc">
+  <div class="brand"><span class="d">◆</span> Design Review 2</div>
+  <div class="sub">Cycle brainstorm &amp; challenge · sept. 2026</div>
+  <a href="index.html">Synthèse du cycle</a>
+  <div class="grp">Le cycle</div>
+  <a href="01-analyses.html">Les 3 analyses à froid</a>
+  <a href="02-debat.html" class="on">Le débat</a>
+  <a href="03-challenge.html">Challenge du rapport 1</a>
+  <a href="04-conclusions.html">Conclusions &amp; recommandations</a>
+  <div class="grp">Référence</div>
+  <a href="../design-review/index.html">← Rapport 1</a>
+</nav>
+<main>
+
+<span class="kicker">Phase 2 · lecture croisée, réactions structurées, positions assumées</span>
+<h1>Le débat</h1>
+<p class="lede">Chaque designer a lu les deux autres analyses et produit une réaction en cinq temps :
+j'appuie / je conteste / je fusionne / je révise / ma colline. Voici le débat reconstitué par thème —
+qui soutient qui, qui attaque qui et avec quel argument, ce qui a fusionné, ce que chacun a concédé.
+Les références (IA-1, IX-3, GUI-9…) renvoient aux <a href="01-analyses.html">42 constats de la phase 1</a>.</p>
+
+<h2>Les appuis — quand un angle prouve l'autre</h2>
+<p>Le débat s'ouvre sur un fait remarquable : chacun trouve chez les deux autres <b>la démonstration de sa
+propre thèse à une autre échelle</b>.</p>
+
+<div class="panel good"><h4>L'architecte appuie l'interaction designer : « la preuve par le geste »</h4>
+<p>Pour l'architecte, IX-1 (coche muette sur mobile) et IX-8 (verdict sous la ligne de flottaison) démontrent
+« au niveau micro ce que je dis au niveau macro : la coche et le verdict de pièce sont LA boucle, et l'app les
+traite en périphérie ». Mais il appuie en corrigeant l'adresse : le compteur flottant « 12/18 » d'IX-1 ne doit
+pas rester « un pill transitoire orphelin — un pill qui apparaît 1,2&nbsp;s puis meurt sans être cliquable est un
+<b>cul-de-sac informationnel</b> » ; cliquable, il devient l'entrée mobile de la vue « Saisie en jeu » (IA-3).
+Même greffe sur le bandeau sticky d'IX-8 : « il vit dans ma vue Session, pas dans un mode du Testeur ».</p></div>
+
+<div class="panel good"><h4>L'interaction designer appuie l'architecte : « la proposition la plus importante des trois analyses réunies »</h4>
+<p>C'est le superlatif du cycle, et il vise IA-5/IA-13 (extraire « Session », atterrissage mobile par défaut) :
+« mes constats n°1 (coche sans feedback), n°4 (drag mort au touch) et n°8 (verdict sous la ligne de flottaison)
+sont tous des <b>symptômes du même mal : l'usage réel est mobile-en-jeu et l'app est architecturée bureau</b> ».
+Il y verse aussitôt sa spécialité : Session conçue « pour une main et un pouce » — verdict sticky transplanté,
+cibles 44&nbsp;px, focus qui avance automatiquement d'étape en étape, et « la seule transition d'entrée habitée de
+l'app (rise 6&nbsp;px + fade 160&nbsp;ms), parce qu'on y <i>entre en action</i> ». Il signe aussi IA-9 (éditeur unique
+inséré dans la liste) : « la modale est une rupture de contexte ; l'insertion en place est <b>spatialement
+honnête</b> — on crée la règle là où elle vivra ».</p></div>
+
+<div class="panel good"><h4>Le game-UI designer appuie les deux : « le power rating » et « la doctrine commune »</h4>
+<p>Sur IA-1 (couverture affichée sur la carte de règle), il apporte le code visuel qui manquait à l'argument :
+« c'est le <b>power rating</b> affiché sur l'item dans tous les gachas — une valeur de synthèse toujours visible
+sur la fiche, jamais dans un écran de calcul à part ». Sur IX-6 (<code>:active</code> partout) et IX-11
+(reduced-motion ≠ reduced-feedback), il va plus loin que l'appui : il les <b>annexe à son pacte de sobriété</b> —
+« un jeu répond sous le doigt, c'est la moitié du game-feel, et ça ne coûte pas un pixel de décor » ; le principe
+d'IX-11 « est la formulation motion de ma règle P0-4 : la satisfaction vient de l'état qui change, pas du
+mouvement. On tient là une <b>doctrine commune</b>. »</p></div>
+
+<h2>Les contestations — neuf attaques, toutes argumentées</h2>
+
+<h3>L'architecte contre les deux autres : « vous polissez des écrans que je dissous »</h3>
+<div class="panel bad"><h4>IA conteste IX-3 (générer 2000 pièces par tranches rAF) — « on anime un symptôme »</h4>
+<p>« 2000 cartes rendues d'un bloc n'est pas un problème de chargement, c'est un problème de <b>hiérarchie</b>
+(IA-8 : le verdict d'abord, les pièces repliées/paginées). Si l'écran s'ouvre sur les stat-cards de résultat et
+50 pièces paginées, le rendu par tranches, le skeleton et le fade deviennent sans objet. Je refuse qu'on budgète
+du motion design pour fluidifier l'affichage d'une information qu'on n'aurait pas dû déverser. <b>D'abord
+l'architecture, ensuite — s'il reste un gel — sa spec.</b> »</p></div>
+<div class="panel bad"><h4>IA conteste GUI-4 et IX-14 (quest log + célébration sur la barre de sidebar) — « vous décorez un emplacement que je condamne »</h4>
+<p>Les deux autres investissent la barre « Saisie en jeu » : jalons ◆, état « gravé », toast et bordure or à
+18/18. Réplique : « cette barre est rangée <b>entre Mode clair et Densité</b> — polir cet emplacement, c'est le
+légitimer. La cérémonie du 18/18 doit se produire dans la vue Saisie en jeu, là où l'utilisateur regarde pendant
+qu'il recopie — pas dans une sidebar cachée derrière un burger sur mobile, <b>ce que l'interaction designer dit
+lui-même en IX-1</b>. » L'attaque retourne l'argument de l'adversaire contre sa propre proposition.</p></div>
+<div class="panel bad"><h4>IA conteste GUI-10 (stepper en diamants I→IV) — « on muraille un écran voué à déménager »</h4>
+<p>« Un stepper cérémonial I→IV, c'est la grammaire d'un acte <b>unique et solennel</b> ; le farm est un acte
+<b>rapide et répété</b> — la dixième pièce de la session n'a pas besoin de chiffres romains, elle a besoin de
+vitesse. Correction locale, oui, mais sur la mauvaise fondation. »</p></div>
+
+<h3>L'interaction designer contre les deux autres : « la continuité du geste d'abord »</h3>
+<div class="panel bad"><h4>IX conteste IA-1 (couverture « en permanence » sur chaque carte) — oui à la fusion, non au « live »</h4>
+<p>« Un nombre recalculé à chaque modification crée le pire bruit de mouvement possible : j'édite un stepper et
+<i>dix cartes</i> changent leurs chiffres sous mes yeux, avec reflow si "36 profils" devient "2&nbsp;014 profils".
+C'est l'anti-thèse de la continuité. » Contre-proposition acceptée en fusion : largeur réservée (mono,
+<code>min-width</code> fixe), mise à jour <b>au commit du geste</b> (relâchement, blur — jamais au keystroke),
+tint 400&nbsp;ms sur la seule carte éditée. « La donnée vit sur la carte ; le mouvement, lui, reste là où est
+le doigt. »</p></div>
+<div class="panel bad"><h4>IX conteste IA-14 (Testeur pré-généré à l'ouverture) — « pas au prix de la transition »</h4>
+<p>« Déclencher la génération de 2000 cartes au moment du changement de vue empile le coût de rendu le plus lourd
+de l'app sur le geste qui doit être le plus fluide de tous. Un freeze à l'entrée d'une vue se lit comme
+"l'app rame", pas comme "ça calcule". » Amendement : à l'entrée, montrer <b>le dernier résultat en cache</b>
+instantanément ; ne générer à froid qu'en l'absence de cache, avec l'état busy complet. « Pré-rempli, oui ;
+pré-calculé dans le dos de la transition, jamais. »</p></div>
+<div class="panel bad"><h4>IX conteste GUI-11 (◆ à la place du ✓ des coches) — « c'est mon geste n°1, on n'y touche pas »</h4>
+<p>« Remplacer le ✓ par un ◆, c'est sacrifier l'affordance la plus universelle de l'interface sur l'action la
+plus fréquente de l'app, au profit d'un glyphe qui portera déjà <b>quatre autres sens</b> (marque, pip de tier,
+jalon, puce). L'ambiguïté ◆-tier / ◆-coché est un coût de lecture réel pour un gain d'identité nul. Le ✓ reste ;
+le ◆ décore le monde, il ne confirme pas les gestes. <b>Un ornement qui envahit le vocabulaire de feedback cesse
+d'être une signature, il devient un accent qui bégaie.</b> »</p></div>
+
+<h3>Le game-UI designer contre les deux autres : « ni to-do list web, ni landing page SaaS »</h3>
+<div class="panel bad"><h4>GUI conteste IX-1(b) (règle cochée atténuée + nom barré) — « une victoire, pas une corvée purgée »</h4>
+<p>« Le texte barré, c'est la to-do list web ; l'opacité, c'est mon propre grief contre les cartes recyclées.
+Dans un jeu, une quête accomplie ne se raye pas : elle passe à un état <b>accompli</b> — fond
+<code>--acc-dim</code>, ✓ or, ID G1 plein. » Il garde le pop du ✓ et le compteur flottant (« excellents »),
+refuse le barré.</p></div>
+<div class="panel bad"><h4>GUI conteste IX-13 (count-up des gros chiffres) — « le code des landing pages SaaS »</h4>
+<p>« C'est précisément le "site web" qu'on veut fuir. L'interaction designer le sent lui-même ("l'outil reste un
+instrument, pas un slot machine") mais garde l'anim au premier calcul : je tranche plus dur — <b>jamais</b>. Le
+moment de résultat, c'est l'arrivée du bandeau verdict (IX-3, très juste) ; les valeurs, elles, tombent sèches
+comme un jet de dés. » Il sauve en revanche le tint d'alerte quand « 0 règle ne garde rien » devient &gt; 0 :
+« du feedback d'alerte, pas du décor ».</p></div>
+<div class="panel bad"><h4>GUI conteste IA-6 (découdre « Sets &amp; transfo ») — « je conteste la découpe, pas le diagnostic »</h4>
+<p>« Dans un gacha, la page Sets est le <b>codex</b> : un set = une fiche unique (bonus, source de farm, transfo
+— et pourquoi pas sa couverture). Éclater cette entité sur deux vues trahit le modèle mental du joueur, qui pense
+"la page du set Crinière d'or", comme le wiki in-game. » Contre-proposition : une vue Sets unique façon codex,
+où « angles morts » est un <b>tri/filtre par défaut</b> — l'audit devient une lecture du codex, pas une vue de
+plus. Accord sur un point : tuer le badge « 48 » en nav.</p></div>
+
+<h2>Les fusions créatives — ce que le débat a produit que la phase 1 n'avait pas</h2>
+
+<div class="panel reco"><h4>① La « carte d'item vivante » — la convergence à trois, scellée au débat</h4>
+<p>Le fait le plus rare du cycle : les trois y arrivent <b>indépendamment en phase 1</b>, puis la co-signent en
+phase 2, chacun y versant sa part. Le game-UI designer apporte le composant (GUI-9 : glyphe de slot, main stat
+en gros corps mono, subs en colonne, filet coloré au tier — « l'item affiché ressemble à l'item in-game ») ;
+l'architecte y voit « <b>la meilleure idée des deux analyses</b> » et la promeut au rang de structure : « la
+pièce n'a aujourd'hui aucune représentation canonique — chips dans l'échantillon, formulaire dans Pièce manuelle,
+rien dans les règles. Un objet de domaine = une représentation = partout la même. C'est de l'architecture
+d'information pure, faite en CSS » ; l'interaction designer en fait le <b>feedback de construction</b> : dans
+Session, la carte se bâtit tap après tap dans le bandeau sticky (slot → glyphe en fade, main stat qui se pose,
+subs en <code>0fr→1fr</code>), et « au dernier tap, la carte <b>est déjà là</b> — le verdict n'est plus un
+panneau qui surgit mais un changement d'état de l'objet qu'on regarde depuis le début ». Le game-UI designer
+verrouille : « le verdict est un état de l'objet, pas un message à côté de l'objet » — le cadre se teinte
+(liseré or « ✓ Gardée par G5 » / désaturation + ⚒ « Recyclée »). Trois usages, un composant : Session,
+Simulation, et — gratuitement — la share card du backlog.</p></div>
+
+<div class="panel reco"><h4>② Le quest log « Saisie en jeu » = IA-3 × GUI P0-4 × IX-14</h4>
+<p>« L'architecte lui donne une adresse, le game-UI designer lui donne un langage d'état, je lui donne sa
+chorégraphie » (IX). L'adresse : cinquième destination de nav, clé in-game rapatriée. Le langage : règle
+« gravée » (fond <code>--acc-dim</code>, ✓ or, ID plein), jalons ◆ par groupe, fin sobre. La chorégraphie : tap →
+pop du ✓ (180&nbsp;ms) → glissement vers l'état gravé (200&nbsp;ms) → <b>80&nbsp;ms plus tard seulement</b>, le jalon ◆
+s'allume — « ce décalage crée une chaîne causale lisible : <i>mon geste → la règle → la progression</i>.
+Simultané, ce serait trois choses qui clignotent ; enchaîné, c'est une phrase. » À 18/18 : l'unique célébration
+de l'app — bordure or 400&nbsp;ms, une fois, jamais rejouée.</p></div>
+
+<div class="panel reco"><h4>③ La carte de règle porte tout son cycle de vie (IA-1 × GUI-4)</h4>
+<p>Fusion de l'architecte : la row-head affiche la couverture (« 36 profils · 2,14&nbsp;% · ok » — santé) ET l'état
+gravé/non gravé (recopie). « Une seule ligne d'objet répond aux deux questions du joueur — "ma règle
+marche-t-elle&nbsp;?" et "l'ai-je saisie en jeu&nbsp;?" — sans changer de vue. La liste des règles devient le tableau de
+bord que le Testeur et la barre sidebar essayaient d'être chacun de leur côté. »</p></div>
+
+<div class="panel reco"><h4>④ Le tapis roulant de recopie (IX sur IA-3 + GUI P0-4)</h4>
+<p>Ajout propre au débat, revendiqué par l'interaction designer : dans la vue Saisie en jeu, après chaque coche,
+la <b>prochaine règle à saisir</b> est auto-mise en évidence (scroll doux + liseré or) — « cocher → la suivante
+se présente. C'est le pattern "recopie guidée" du backlog obtenu presque gratuitement par l'assemblage de nos
+trois analyses. »</p></div>
+
+<div class="panel reco"><h4>⑤ L'éditeur qui naît dans la liste (IX sur IA-9)</h4>
+<p>L'architecte supprime la modale ; l'interaction designer donne au remplacement son mécanisme : l'insertion de
+la carte vide utilise le même <code>grid-template-rows: 0fr→1fr</code> que les accordéons — « la liste
+<b>s'ouvre</b> pour accueillir la carte au lieu de sauter » — puis flash court 600&nbsp;ms. « Le pattern
+"flash = contenu arrivé" gagne son troisième cas d'usage (import, duplication, création) : la signature se
+consolide. »</p></div>
+
+<h2>Les révisions — huit concessions, toutes assumées</h2>
+<div class="tbl-wrap"><table>
+<tr><th style="width:120px">Qui révise</th><th>Quoi</th><th>Sous la pression de qui</th></tr>
+<tr><td><b>Architecte</b></td><td>IA-8 était sous-spécifié : « j'ai écrit "pièces repliées ou paginées" sans traiter
+le coût de rendu ni l'état pending ». Intègre le bouton aria-busy et le bandeau-résultat-d'abord — ne cède que sur
+le rendu par tranches des 2000, « qui ne doit plus exister ».</td><td>IX-3</td></tr>
+<tr><td><b>Architecte</b></td><td>Réintègre la fidélité au jeu qu'il avait ignorée : la vérification des couleurs de
+tiers contre l'écran d'équipement in-game entre dans sa Référence courte. « Un outil de recopie dont l'encodage
+couleur ne miroite pas le jeu sabote sa propre raison d'être — c'est un argument d'architecture, et il m'avait
+échappé. »</td><td>GUI-1</td></tr>
+<tr><td><b>Architecte</b></td><td>Le groupement par archétype (IA-7) doit <b>attendre</b> la typo à deux registres :
+« regrouper par Tank/Heal/DPS dans une hiérarchie typographique plate produirait des titres de groupes invisibles ;
+sa séparation serif-monde / mono-interface est un prérequis de ma réorganisation, pas une finition. »</td><td>GUI-5</td></tr>
+<tr><td><b>Interaction</b></td><td>Retire son compteur flottant « 12/18 » dans sa forme générale : « il était un
+pansement sur l'absence de destination Saisie en jeu. Moins de feedback, mieux placé : je m'applique ma propre
+thèse. » Reste un simple pulse du badge de nav pour la coche opportuniste.</td><td>IA-3</td></tr>
+<tr><td><b>Interaction</b></td><td>Restreint encore le count-up : plus que sur « la toute première génération d'une
+session ». « J'avais gardé un réflexe de "moment de résultat" ; leurs deux analyses montrent que la solidité du
+patron porte plus de sens que l'animation du nombre. » (Le game-UI designer exigera « jamais » — l'écart survit
+au débat.)</td><td>IA-8 + GUI-13</td></tr>
+<tr><td><b>Game-UI</b></td><td><b>La carte d'item monte de P1 à P0</b> : « je l'avais rangée en grammaire &amp;
+hiérarchie ; l'architecte démontre qu'elle est le composant central de trois destinations et l'interaction designer
+lui donne son comportement. Ce n'est pas une finition, c'est une fondation. »</td><td>IA + IX</td></tr>
+<tr><td><b>Game-UI</b></td><td>Le pacte de sobriété s'étend au mouvement : la liste de refus (GUI-13), purement
+statique, intègre les tokens d'IX-7 — 2 durées, 1 easing, flash = « contenu arrivé », jamais <code>all</code>.
+« Une charte unique statique + motion, co-signée. »</td><td>IX-7</td></tr>
+<tr><td><b>Game-UI</b></td><td>« Mon P0-4 était mal situé. J'avais <b>raison sur l'état ("gravée") et tort sur le
+lieu</b> (pied de sidebar) : je suis IA-3, l'état vit dans la destination Saisie en jeu. »</td><td>IA-3</td></tr>
+</table></div>
+
+<h2>Les collines à défendre</h2>
+<p>En clôture, chacun a nommé la position sur laquelle il ne transigera pas — trois lignes rouges qui balisent
+le cycle 3.</p>
+
+<div class="cards">
+  <div class="card"><span class="no">IA</span><h4>La saisie en jeu est une destination de navigation</h4>
+  <p>« Pas une barre de sidebar améliorée, si joliment animée soit-elle. C'est le but final de l'app, son seul
+  collectible, le seul moment où l'outil et le jeu se touchent. Tant qu'elle vit entre Mode clair et Densité,
+  chaque amélioration de feedback ne fait que mieux décorer une erreur de rangement. Je peux céder sur les noms,
+  sur le stepper, sur le count-up — pas sur ça. »</p></div>
+  <div class="card"><span class="no">IX</span><h4>Aucun feedback ne déplace la mise en page, aucun ne meurt sous reduced-motion</h4>
+  <p>« Espace réservé partout où un contenu peut apparaître, transitions de hauteur en 0fr→1fr jamais en display,
+  et chaque animation porteuse de sens doublée d'un état statique. On peut renommer les vues, fusionner la
+  couverture, repeindre les tiers — je signerai tout. Mais une interface qui bouge sous le doigt au moment où il
+  agit, ou qui devient muette pour ceux qui désactivent le mouvement, je la bloque, quel que soit l'auteur. »</p></div>
+  <div class="card"><span class="no">GUI</span><h4>L'app est un miroir du jeu, pas un jeu</h4>
+  <p>« Deux clauses non négociables : les couleurs de tiers sont un miroir 1:1 de l'écran d'équipement in-game —
+  vérifiées et figées <b>avant</b> tout autre chantier visuel, sinon on bâtit carte d'item, chips ◆ et jauges sur
+  un encodage faux ; et aucun code F2P importé — l'ornement est statique et typographique, le seul mouvement est
+  le feedback d'action. Je ne la négocie pas, même contre une "respiration" de 300&nbsp;ms. »</p></div>
+</div>
+
+<h2>Ce qui reste ouvert à l'issue du débat</h2>
+<div class="panel"><h4>Trois différends non résolus</h4>
+<p><b>Sets : codex unique ou découpe faits/audit</b> — GUI contre IA, aucun n'a bougé. <b>Le count-up : « première
+fois » ou « jamais »</b> — IX a reculé d'un cran, GUI exige zéro. <b>Le stepper de saisie</b> — GUI le numérote en
+diamants, IA le juge voué à disparaître dans le flux 3-taps de Session, IX le garde comme rythme du focus
+automatique. Ces trois points remontent en <a href="04-conclusions.html">questions ouvertes du cycle 3</a>.</p></div>
+
+<div class="foot">
+  <a href="01-analyses.html">← Les 3 analyses à froid</a>
+  <a href="03-challenge.html">Challenge du rapport 1 →</a>
+</div>
+</main>
+</div>
+</body>
+</html>

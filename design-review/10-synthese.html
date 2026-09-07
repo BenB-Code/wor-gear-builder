@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Synthèse &amp; roadmap · Design Review — WoR Gear Builder</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="shell">
+<nav class="toc">
+  <div class="brand"><span class="d">◆</span> Design Review</div>
+  <div class="sub">WoR Gear Builder · sept. 2026</div>
+  <a href="index.html">Synthèse exécutive</a>
+  <div class="grp">Fondations</div>
+  <a href="04-typographie.html">Typographie</a>
+  <a href="03-couleur-accessibilite.html">Couleur &amp; accessibilité</a>
+  <a href="05-design-system.html">Design system &amp; tokens</a>
+  <div class="grp">Interface</div>
+  <a href="01-ui-composants.html">Composants UI</a>
+  <a href="07-dataviz.html">Data-visualisation</a>
+  <a href="06-mobile.html">Mobile</a>
+  <div class="grp">Produit</div>
+  <a href="02-ux-parcours.html">UX &amp; parcours</a>
+  <a href="08-contenu.html">Contenu &amp; microcopy</a>
+  <a href="09-integration-features.html">Intégration des features</a>
+  <div class="grp">Direction</div>
+  <a href="10-synthese.html" class="on">Synthèse &amp; roadmap</a>
+</nav>
+<main>
+
+<span class="kicker">Direction de création · arbitrages &amp; plan</span>
+<h1>Synthèse — l'unification par le rôle</h1>
+<p class="lede">Neuf audits, un seul diagnostic. Voici le verdict du directeur de création, la North Star,
+les <b>arbitrages fermes</b> sur chaque point où les spécialistes se chevauchaient, la roadmap unifiée en
+5 chantiers, le périmètre refusé, et les 10 décisions qui appartiennent au client.</p>
+
+<h2>Le verdict</h2>
+<div class="panel"><p><b>Le produit est bon.</b> Le moteur est explicable, la pédagogie est au-dessus du standard
+du genre, la voix FR est juste, le mobile a des fondations saines. La refonte récente a réellement payé.</p>
+<p>Ce qu'elle a laissé, et que le client sent sans le nommer : <b>elle a unifié les apparences sans unifier les
+rôles</b>. C'est la cause racine unique, déclinée quatre fois. Une même peau habille quatre natures — étape de
+saisie, accordéon d'aide, switch, quasi-bouton : d'où le « mix bizarre ». Une même couleur (2,9:1) habille tout ce
+qui <i>nomme</i>, pendant que le contenu titre à 7-11:1 : d'où « les sections moins visibles que leur contenu ».
+Une même serif d'apparat descend jusqu'aux labels de 12 px où elle côtoie le sans et le mono à taille égale :
+d'où « Roboto et Times ». Un même concept se dit en trois mots, un même taux se dessine de quatre façons.</p>
+<p>Rien de tout cela n'exige d'ajouter un pixel. La quasi-totalité du plan se joue en <b>retirant, requalifiant et
+réaffectant</b> — exactement la contrainte du client. C'est un produit à 80 % dont les 20 % manquants sont
+concentrés, chiffrés au sélecteur près, et bon marché.</p></div>
+
+<h2>La North Star</h2>
+<div class="quote" style="font-size:16px">« Un grimoire d'expert : l'âme d'un codex médiéval-fantasy,
+la rigueur d'un instrument de données. » L'apparat — Palatino small-caps, or, ◆ — vit au sommet et nulle part
+ailleurs ; tout ce qui se manipule ou se compare est net, monolithique, scannable.
+<span class="who">— direction de création</span></div>
+<ol>
+<li><b>Le précieux est rare</b> — jamais de display sous 16 px ni sur un interactif ; l'or ne dit qu'« interaction/sélection » ;</li>
+<li><b>La forme dit le rôle</b> — un rayon, une bordure, un chevron, une couleur, une fonte, un mot = un seul sens, partout ;</li>
+<li><b>Plancher AA absolu</b> — aucun texte sous 4,5:1, dans aucun thème ; le confort nocturne se règle par le plafond, pas le plancher ;</li>
+<li><b>Le chrome se finance</b> — toute feature réutilise un point d'entrée existant ; la nav reste à 4 entrées.</li>
+</ol>
+
+<h2>Les arbitrages</h2>
+<div class="tbl-wrap"><table>
+<tr><th style="width:190px">Conflit</th><th>Décision ferme</th></tr>
+<tr><td><b>a · Couleur des labels</b><br><span class="v-mid">UI vs colorimétrie vs typo</span></td>
+<td><b>L'échelle colorimétrie gagne</b> : nouveaux tokens <code>--head</code> #c4bcd0 et <code>--label</code> #a59dae, <code>--faint</code> requalifié <code>--deco</code> (jamais de texte). Le patch « --muted » laissait un token porter deux rôles et ne réparait pas le mode clair (2,7:1). Seule solution mesurée, garantie AA dans les deux thèmes, qui pose une règle au lieu d'un correctif.</td></tr>
+<tr><td><b>b · Famille des labels</b></td>
+<td><b>Body uppercase 11.5px/600/.08em, sans exception</b> — y compris les « Slot/Main/Subs/Set » du stepper. Le small-caps simulé sous 16 px est objectivement défaillant. Le stepper garde son identité par la pastille numérotée et le rail or, pas par la fonte. Une exception recréerait la troisième voix qu'on vient d'éteindre.</td></tr>
+<tr><td><b>c · Segmented</b></td>
+<td><b>Pas de conflit — même chantier, ordre imposé</b> : ① tokens --well/--raised posés avec les tints famille (une seule passe), ② seg pilule creusée/pastille surélevée (répare l'élévation inversée en dark ET sort le seg des rectangles arrondis), ③ disclosure unifié + slot en chip.pick. Livrés ensemble = la plainte « mix step/bouton » éteinte d'un coup.</td></tr>
+<tr><td><b>d · Le .rc-id</b><br><span class="v-mid">neutraliser vs conserver</span></td>
+<td><b>Il garde sa couleur.</b> C'est le repère spatial central (verdicts, tables, recopie in-game). L'or se libère par les deux autres leviers : navigation → pattern rail (sans fond ni bord or), rulerefs de tables → muted au repos / or au hover. On désature l'or là où il est décor, pas là où il est repère.</td></tr>
+<tr><td><b>e · Navigation mobile</b><br><span class="v-mid">tab bar vs sélecteur global</span></td>
+<td><b>Les deux, empilés, rôles distincts.</b> Tab bar basse ≤920px = « où je vais » (pouce) ; sélecteur global « Jeu de règles » = « sur quoi tout ça porte » (une ligne compacte sous le titre en mobile, dans le rail en desktop). Le tiroir devient une sheet « ⋯ » de réglages ; les focus modes masquent la tab bar.</td></tr>
+<tr><td><b>f · Verdicts des cartes</b><br><span class="v-mid">listes vs inline</span></td>
+<td><b>Les listes gagnent</b> — la préférence explicite du client est un fait, pas une opinion à réarbitrer. Le problème de hauteur des cartes se dissout en amont : avec agrégats + group-by + cap 60 cartes, la grille devient un drill-down où on lit chaque carte. Seule concession : le verdict d'une carte <i>repliée</i> tient sur une ligne (état résumé).</td></tr>
+<tr><td><b>g · Accent rouge</b><br><span class="v-mid">retirer vs garder</span></td>
+<td><b>Conservé, décalé, encadré.</b> On ne retire pas une option choisie par des utilisateurs. Décalé vers #dd7f8f (écart net avec les rouges sémantiques) + deux interdits de charte : l'accent ne colore jamais un contrôle destructif ni un verdict. Les verdicts gagnent leurs redondances daltonisme de toute façon.</td></tr>
+<tr><td><b>h · Typographie A vs Cinzel</b></td>
+<td><b>A confirmée, ferme.</b> On ne remplace pas une fonte avant d'avoir corrigé son usage — sinon on achète le même bruit plus cher. Signal de bascule unique et daté : après le chantier 1, re-montrer au client le mode clair. <b>S'il dit encore « Times », on bascule vers Cinzel</b> — le swap coûte une ligne et ~60 Ko, 95 % du travail est partagé. Direction C (tout-sans) définitivement écartée.</td></tr>
+<tr><td><b>+ Colonne « Lecture »</b><br><span class="v-mid">3 propositions</span></td>
+<td><b>Trois couches du même composant</b> : glyphes ·/◐/⚠ + alertes en tête tout de suite ; la jauge stricte/permissive remplace le « ok » en vague features. Renommée « Diagnostic » (FR + EN).</td></tr>
+<tr><td><b>+ « Un seul chevron » vs 2 conventions</b></td>
+<td>La grille UI l'emporte sur le <i>glyphe</i> (⌄ = carte dépliable, › = texte dépliable — distinction utile) ; la règle DS l'emporte sur l'<i>implémentation</i> (une seule coquille, deux variantes). Charte amendée.</td></tr>
+<tr><td><b>+ Verdict sticky vs mode farm</b></td>
+<td>Séquence, pas doublon : sticky + auto-reset = correctif immédiat (et la réponse desktop) ; le mode farm 2-4 taps = la vraie réponse mobile, en vague features 2.</td></tr>
+</table></div>
+
+<h2>La roadmap unifiée — 5 chantiers</h2>
+<div class="tbl-wrap"><table>
+<tr><th>#</th><th>Chantier</th><th>Contenu</th><th class="num">Effort</th><th>Critère de sortie</th></tr>
+<tr><td><b>1</b></td><td><b>Fondations</b><br>tokens · contraste · voix</td>
+<td>Échelle 5 niveaux (--head/--label/--deco) + palette light corrigée + 24 tokens de tints + réécriture des ~39 duretés + --well/--raised + table d'affectation typo complète + tabular-nums/alignement droite + opacités cliquables ≥ .5</td>
+<td class="num">~4-5 j</td>
+<td>Zéro texte &lt; 4,5:1 dans les deux thèmes ; zéro hex de famille hors tokens ; zéro display &lt; 16 px. <b>Puis re-montrer le mode clair → décision Cinzel</b></td></tr>
+<tr><td><b>2</b></td><td><b>Distinction &amp; parcours</b><br>la plainte client éteinte</td>
+<td>Grille de distinction (stepper reformé ①✓+rail, seg pilule, disclosure unifié, aide=texte, dé-inline des 37 style=) ; or nav → rail ; verdicts vert/rouge + daltonisme ; verdict sticky + auto-reset + ordre Slot→Set→Main→Subs ; sélecteur global « Jeu de règles » ; vue Règles compactée (menu ⋯) ; dialogue (validation lazy, ordre inversé) ; panneau « recyclée mais couvertes » fusionné ; table Couverture (barres, tri, alertes en tête) + chevauchements en barres miroir + échantillon agrégats/cap 60 ; lexique P0 (pool→liste, gauche/droite→slots, onglet→jeu de règles) ; fusions stat-card et fchip ; cibles 40 px, safe-areas</td>
+<td class="num">~2,5-3 sem</td>
+<td>Les 3 verbatims client rejoués sur avant/après ; tous les P0 des 9 audits clos ; matrice + 6 règles collées dans la charte</td></tr>
+<tr><td><b>3</b></td><td><b>Features vague 1</b><br>+ finitions data-viz</td>
+<td>Jauge stricte/permissive → notes par règle → save-line/export global → tooltips jargon (sur lexique figé) ; barre empilée par tier, table des 48 sets (3 chips + n), cartes de chiffres hiérarchisées ; calques EN</td>
+<td class="num">~1,5 sem</td>
+<td>4 livraisons indépendantes ; un concept = un encodage, vérifié inter-vues</td></tr>
+<tr><td><b>4</b></td><td><b>Mobile profond</b><br>+ features vague 2</td>
+<td>Tab bar basse + tiroir→sheet ; composant focus mode → recopie guidée → session de farm (wake lock) → créer-depuis-pièce (garde-fou anti-sur-ajustement) → sandbox (bandeau inratable, état volatil)</td>
+<td class="num">~3 sem</td>
+<td>Farm chronométré ≤ 4 taps médians ; recopie des 18 règles sans jamais chercher sa règle</td></tr>
+<tr><td><b>5</b></td><td><b>Acquisition</b><br>features vague 3</td>
+<td>Templates early/mid/end (Démo devient Early) → onboarding = empty state + 2 toasts → share card PNG → PWA en tout dernier (seul risque de régression globale)</td>
+<td class="num">~2 sem</td>
+<td>Première règle en &lt; 5 min au premier contact ; invariants re-vérifiés (172 410, FR/EN, imports, 375 px)</td></tr>
+</table></div>
+<p>Tous les P0 des 9 audits vivent dans les chantiers 1 et 2.</p>
+
+<h2>Le périmètre refusé</h2>
+<ul>
+<li><b>Direction C (tout-sans)</b> — on ne soigne pas une identité en l'amputant ;</li>
+<li><b>Cinzel avant discipline</b> — aucune webfont tant que l'usage n'est pas corrigé ;</li>
+<li><b>Matrice n×n des chevauchements</b> — creuse à 18×18, mauvaise question ; les barres miroir suffisent ;</li>
+<li><b>5ᵉ entrée de nav, bannières, chrome permanent</b> — les 12 features tiennent en ~2 boutons et 1 glyphe, c'est contractuel ;</li>
+<li><b>Tooltips dans les chips et tables</b> — textes d'aide uniquement, sinon on pointille toute l'interface ;</li>
+<li><b>Virtualisation/framework pour les 2 000 cartes</b> — le cap à 60 + agrégats règle le coût ; on reste single-file vanilla ;</li>
+<li><b>Renommer « gardée/recyclée »</b> — le meilleur couple de l'app, canon figé ;</li>
+<li><b>Un thème clair séparé</b> — le clair se répare par les tokens, pas par une deuxième charte.</li>
+</ul>
+
+<h2>Les 10 décisions qui appartiennent au client</h2>
+<ol>
+<li><b>Tab bar basse mobile</b> (remplace le burger ; réglages en sheet « ⋯ ») — oui/non ;</li>
+<li><b>Accent rouge</b> : décalé rose froid + interdits, ou retiré des options ;</li>
+<li><b>Cinzel</b> : accord de principe sur la bascule si le mode clair post-chantier 1 ne convainc pas (~60 Ko acceptés ?) ;</li>
+<li><b>« Onglet » → « Jeu de règles »</b> partout ;</li>
+<li><b>Renommage des modes du Testeur</b> : Audit complet · Simulation de drops · Vérifier une pièce ;</li>
+<li><b>Ordre de saisie Slot → Set → Main → Subs</b> (aligné sur la lecture in-game — change la gestuelle actuelle) ;</li>
+<li><b>Actions d'onglet repliées derrière « ⋯ »</b> ;</li>
+<li><b>Rulerefs de tables plafonnés « 3 chips + n »</b> ;</li>
+<li><b>L'onglet Démo devient le template « Early »</b> ;</li>
+<li><b>PWA/service worker en toute fin</b> (bénéfice offline contre le seul vrai risque de régression).</li>
+</ol>
+
+<div class="quote">Neuf audits, un seul diagnostic — l'unification s'est faite par la peau au lieu du rôle.
+Les chantiers 1 et 2 ne dessinent presque rien de neuf : ils rendent à chaque forme, chaque couleur, chaque fonte
+et chaque mot un sens unique. C'est la définition même de la sobriété que le client réclame.
+<span class="who">— le mot de la fin du directeur</span></div>
+
+<div class="foot">
+  <a href="index.html">↑ Synthèse exécutive</a>
+</div>
+</main>
+</div>
+</body>
+</html>
