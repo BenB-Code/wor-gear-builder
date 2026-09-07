@@ -496,6 +496,11 @@
   .rule-phrase{border-left:2px solid var(--acc-bd);background:var(--acc-glow);border-radius:0 var(--r-s) var(--r-s) 0;
     padding:7px 11px;margin:10px 0 2px;color:var(--muted);font-size:var(--fs-2);line-height:1.55}
   .rule-phrase b{color:var(--ink);font-weight:600}
+  .rule-desc{color:var(--ink);font-size:var(--fs-2);font-style:italic;margin:10px 0 0;line-height:1.55;max-width:72ch}
+  .desc-input{flex:1;min-width:0}
+  .save-line[role="button"]{cursor:pointer}
+  .save-line[role="button"]:hover{color:var(--muted)}
+  .save-line[role="button"]:focus-visible{outline:2px solid var(--acc);outline-offset:2px;border-radius:var(--r-s)}
   /* ── La scène du verdict ── */
   .scene{margin:4px 0 22px;display:flex;flex-direction:column;gap:14px}
   .scene-phrase{font-family:var(--display);font-size:var(--fs-4);line-height:1.45;color:var(--ink-hi);text-wrap:balance;max-width:56ch}
@@ -750,7 +755,7 @@
       </div>
         </div>
       </details>
-      <div class="save-line" id="save-line"><span class="dot"></span><span id="save-status">local</span></div>
+      <div class="save-line" id="save-line" role="button" tabindex="0" data-i18n-title="tip_backup" title="cliquer = exporter une sauvegarde complète (JSON)"><span class="dot"></span><span id="save-status">local</span></div>
     </div>
   </aside>
   <main id="view" tabindex="-1"></main>
@@ -785,6 +790,7 @@
     <h3 id="dlg-title">Nouvelle règle</h3>
     <div class="ap-row">
       <label><span data-i18n="lab_name">Nom</span> <input type="text" id="ap-name" data-i18n-ph="ph_name" placeholder="ex. DPS scaler, Tank quad…" maxlength="60"></label>
+      <label style="flex:1 1 100%"><span data-i18n="lab_desc">Description (optionnelle)</span> <input type="text" id="ap-desc" data-i18n-ph="ph_desc" placeholder="le pourquoi de la règle, pour toi ou pour qui l'importera" maxlength="240"></label>
       <label><span data-i18n="lab_side">Ensemble</span> <select id="ap-section">
         <option value="left" data-i18n="side_left">Ensemble 2 pièces</option>
         <option value="right" data-i18n="side_right">Ensemble 3 pièces</option>
@@ -1139,6 +1145,10 @@ fr:{
   ic_onlyone:"il suffisait d'une seule",
   mk_btn:"Créer une règle qui garde cette pièce",
   mk_hint:"Pré-rempli avec cette pièce — élargis les sets et la liste de subs pour ne pas sur-ajuster la règle à un seul drop.",
+  lab_desc:"Description (optionnelle)", ph_desc:"le pourquoi de la règle, pour toi ou pour qui l'importera",
+  lbl_desc:"Description", ph_tabdesc:"décris ce jeu de règles (optionnel — visible à l'export et au partage)",
+  c_tabdesc:"description du jeu", tip_backup:"cliquer = exporter une sauvegarde complète (JSON)",
+  t_backup:"Sauvegarde complète exportée — un JSON qui réimporte tous les jeux de règles via « Importer ».",
   oracle_ok:(k,n,p)=>`Ton tri est sain — il garde ${k} pièce${k>1?"s":""} sur ${n} (${p})`,
   oracle_multi0:"rien n'est gardé deux fois par accident",
   oracle_multiN:m=>`${m} pièce${m>1?"s":""} gardée${m>1?"s":""} par ≥ 2 règles — surveille les chevauchements en tête de Règles`,
@@ -1326,6 +1336,10 @@ en:{
   ic_onlyone:"any one of them suffices",
   mk_btn:"Create a rule that keeps this piece",
   mk_hint:"Pre-filled with this piece — widen the sets and the sub list so the rule doesn't overfit a single drop.",
+  lab_desc:"Description (optional)", ph_desc:"why this rule exists — for you, or whoever imports it",
+  lbl_desc:"Description", ph_tabdesc:"describe this ruleset (optional — visible on export and share)",
+  c_tabdesc:"ruleset description", tip_backup:"click = export a full backup (JSON)",
+  t_backup:"Full backup exported — a JSON that re-imports every ruleset via “Import”.",
   oracle_ok:(k,n,p)=>`Your sorting is healthy — it keeps ${k} piece${k>1?"s":""} out of ${n} (${p})`,
   oracle_multi0:"nothing is kept twice by accident",
   oracle_multiN:m=>`${m} piece${m>1?"s":""} kept by ≥ 2 rules — watch the overlaps atop the Rules view`,
@@ -1416,7 +1430,7 @@ function sortStats(arr){ return ALLSTATS.filter(x=>arr.includes(x)); }
 const tierLabel = t => t===4 ? "∞" : t;
 function sortSets(arr){ return [...arr].sort((a,b)=>(SET_ORDER[a]??1e9)-(SET_ORDER[b]??1e9)); }
 function esc(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
-function newTab(name){ const nt = {id:"T"+(tabSeq++), name:name||t("tab_new", tabSeq), key:"", rules:[]}; TABS.push(nt); return nt; }
+function newTab(name){ const nt = {id:"T"+(tabSeq++), name:name||t("tab_new", tabSeq), key:"", desc:"", rules:[]}; TABS.push(nt); return nt; }
 function ensureTab(){ if(!TABS.length) newTab(t("tab_default")); if(!activeTab()) activeTabId = TABS[0].id; }
 function bumpSeqs(){
   for(const t of TABS){ const m = /^T(\d+)$/.exec(t.id); if(m) tabSeq = Math.max(tabSeq, +m[1]+1); }
@@ -1551,7 +1565,8 @@ function sanitizeRule(r){
     arch:Array.isArray(r.arch)?[...new Set(r.arch.filter(x=>typeof x==="string").map(x=>x.trim().slice(0,20)).filter(Boolean))]:[],
     pool,
     ess:Array.isArray(r.ess)?sortStats(r.ess.map(fixStat).filter(x=>pool.includes(x))):[],
-    req:Number.isInteger(r.req)?Math.min(4,Math.max(1,r.req)):1
+    req:Number.isInteger(r.req)?Math.min(4,Math.max(1,r.req)):1,
+    desc:typeof r.desc==="string"?r.desc.trim().slice(0,240):""
   };
 }
 // Renumérote chaque onglet : G1..Gn / D1..Dn dans l'ordre des règles (couvre les vieux ids R/P
@@ -1584,6 +1599,7 @@ async function restoreState(){
           id:typeof t.id==="string"?t.id:("T"+(tabSeq++)),
           name:String(t.name||"Onglet").slice(0,40),
           key:typeof t.key==="string"?t.key.slice(0,60):"",
+          desc:typeof t.desc==="string"?t.desc.slice(0,300):"",
           rules:Array.isArray(t.rules)?t.rules.map(sanitizeRule).filter(Boolean):[]
         }));
       }
@@ -1895,6 +1911,7 @@ function ruleRow(r){
         <span class="k">${t("k_subs")}</span><span>${chips}</span>
         <span class="k">${t("k_req")}</span><span><span class="stepper"><button type="button" class="st-minus" data-rule="${r.id}" aria-label="${t("aria_minus")}">−</button><span class="val">${r.req}</span><button type="button" class="st-plus" data-rule="${r.id}" aria-label="${t("aria_plus")}">+</button></span>${warn}</span>
       </div>
+      ${r.desc ? `<p class="rule-desc">${esc(r.desc)}</p>` : ""}
       ${r.pool.length ? `<p class="rule-phrase">${rulePhrase(r)}</p>` : ""}
       <div class="rb-actions">
         <button type="button" class="btn sm rc-dup" data-rule="${r.id}">${t("b_dup")}</button>
@@ -2029,6 +2046,10 @@ function tabBar(){
       <span class="lab">${t("lbl_gamekey")}</span>
       <input type="text" class="key-input" id="tab-key" maxlength="60" placeholder="${t("ph_gamekey")}" value="${esc((activeTab()||{}).key||"")}">
       <button type="button" class="btn sm" id="tab-key-copy">${t("b_copykey")}</button>
+    </div>
+    <div class="key-row" style="width:100%">
+      <span class="lab">${t("lbl_desc")}</span>
+      <input type="text" class="key-input desc-input" id="tab-desc" maxlength="300" placeholder="${t("ph_tabdesc")}" value="${esc((activeTab()||{}).desc||"")}">
     </div>
   </div>`;
 }
@@ -2655,6 +2676,7 @@ function tpRender(){
     }).join("");
     body = `<div class="tp-body">
       <div class="tp-rid"><span class="rc-id">${r.id}</span><span class="tp-name">${esc(r.name)}</span>${isEntered(r.id)?`<span class="tp-entered">✓ ${t("pr_entered")}</span>`:""}</div>
+      ${r.desc?`<p class="hint" style="margin:-6px 0 0">${esc(r.desc)}</p>`:""}
       <div><div class="tp-k">${t("k_sets")}</div><div class="tp-v">${sortSets(r.sets).map(setName).map(esc).join(" · ")}</div></div>
       <div><div class="tp-k">${t("k_mains")}</div><div class="tp-v">${r.mains.length?r.mains.map(a=>`${esc(statSig(a))} <span class="sig">(${a})</span>`).join(" · "):"—"}</div></div>
       <div><div class="tp-k">${t("k_subs")} — ${t("tp_star")}</div><div class="tp-subs">${subs}</div></div>
@@ -3302,8 +3324,8 @@ async function inflateText(b64){ const buf = await new Response(new Blob([bytesF
 const STAT_CODE = ["ATK","ATK%","CC","CD","HP","HP%","DEF","DEF%","RR","HE","AS"];
 const statMask = arr => arr.reduce((m,s)=>{ const i = STAT_CODE.indexOf(s); return i<0 ? m : m|(1<<i); }, 0);
 const statUnmask = m => STAT_CODE.filter((_,i)=>m&(1<<i));
-function packTab(tab){ return {v:2, n:tab.name, ...(tab.key?{k:tab.key}:{}), r:tab.rules.map(r=>[r.name, r.sets, statMask(r.mains), statMask(r.pool), statMask(r.ess), r.req, (r.arch&&r.arch.length)?r.arch:0])}; }
-function unpackTab(o){ return {name:o.n, key:typeof o.k==="string"?o.k:"", rules:(Array.isArray(o.r)?o.r:[]).map(x=>({name:x[0], sets:Array.isArray(x[1])?x[1]:[], mains:statUnmask(+x[2]||0), pool:statUnmask(+x[3]||0), ess:statUnmask(+x[4]||0), req:+x[5]||1, arch:Array.isArray(x[6])?x[6]:[]}))}; }
+function packTab(tab){ return {v:2, n:tab.name, ...(tab.key?{k:tab.key}:{}), ...(tab.desc?{d:tab.desc}:{}), r:tab.rules.map(r=>[r.name, r.sets, statMask(r.mains), statMask(r.pool), statMask(r.ess), r.req, (r.arch&&r.arch.length)?r.arch:0, r.desc||0])}; }
+function unpackTab(o){ return {name:o.n, key:typeof o.k==="string"?o.k:"", desc:typeof o.d==="string"?o.d:"", rules:(Array.isArray(o.r)?o.r:[]).map(x=>({name:x[0], sets:Array.isArray(x[1])?x[1]:[], mains:statUnmask(+x[2]||0), pool:statUnmask(+x[3]||0), ess:statUnmask(+x[4]||0), req:+x[5]||1, arch:Array.isArray(x[6])?x[6]:[], desc:typeof x[7]==="string"?x[7]:""}))}; }
 async function encodeShare(tab){
   try{ return "2." + await deflateText(JSON.stringify(packTab(tab))); }
   catch(_){ return b64uEncode(JSON.stringify(exportTabObj(tab))); } // navigateur sans CompressionStream : lien long v1
@@ -3314,10 +3336,34 @@ async function decodeShare(payload){
 }
 function exportTabObj(tab){
   return { format:"wor-tri-rules", version:1, exported:new Date().toISOString().slice(0,10),
-           tab:{ name:tab.name, ...(tab.key?{key:tab.key}:{}), rules:tab.rules.map(r=>{ const {id, ...rest} = r; return rest; }) } };
+           tab:{ name:tab.name, ...(tab.key?{key:tab.key}:{}), ...(tab.desc?{desc:tab.desc}:{}), rules:tab.rules.map(r=>{ const {id, ...rest} = r; return rest; }) } };
 }
 function importRulesText(text){
   let data; try{ data = JSON.parse(text); }catch(e){ return {ok:false, err:t("err_json")}; }
+  // sauvegarde complète (export de la save-line) : réimporte TOUS les jeux de règles, en ajout — jamais d'écrasement
+  if(data && data.v>=3 && Array.isArray(data.tabs) && !data.format){
+    bumpSeqs();
+    let first = null;
+    for(const tb0 of data.tabs){
+      if(!tb0 || !Array.isArray(tb0.rules) || !tb0.rules.length) continue;
+      const base0 = String(tb0.name||"Import").slice(0,40);
+      const name0 = TABS.some(x=>x.name===base0) ? (base0+t("import_sfx")).slice(0,40) : base0;
+      const nt0 = newTab(name0);
+      if(typeof tb0.key==="string") nt0.key = tb0.key.slice(0,60);
+      if(typeof tb0.desc==="string") nt0.desc = tb0.desc.slice(0,300);
+      for(const r of tb0.rules){
+        const rule = sanitizeRule({...(r && typeof r==="object" ? r : {}), id:"TMP"});
+        if(rule && rule.sets.length && rule.pool.length){ rule.id = nextRuleId(nt0, rule.section); nt0.rules.push(rule); }
+      }
+      if(!nt0.rules.length){ TABS.splice(TABS.indexOf(nt0),1); continue; }
+      if(!first) first = nt0;
+    }
+    if(!first){ ensureTab(); return {ok:false, err:t("err_norules")}; }
+    registerArchs();
+    activeTabId = first.id;
+
+    return {ok:true, tab:first};
+  }
   if(data && data.v===2 && Array.isArray(data.r)) data = unpackTab(data); // lien de partage compact
   const tb = (data && data.format==="wor-tri-rules" && data.tab) ? data.tab : data;
   if(!tb || !Array.isArray(tb.rules)) return {ok:false, err:t("err_struct")};
@@ -3326,6 +3372,7 @@ function importRulesText(text){
   bumpSeqs(); // id d'onglet garanti unique même si le compteur a dérivé
   const nt = newTab(name);
   if(typeof tb.key==="string") nt.key = tb.key.slice(0,60);
+  if(typeof tb.desc==="string") nt.desc = tb.desc.slice(0,300);
   for(const r of tb.rules){
     const rule = sanitizeRule({...(r && typeof r==="object" ? r : {}), id:"TMP"});
     if(rule && rule.sets.length && rule.pool.length){ rule.id = nextRuleId(nt, rule.section); nt.rules.push(rule); }
@@ -3436,6 +3483,7 @@ function openDlg(editId){
   AP.ess = new Set(r ? r.ess : []);
   AP.req = r ? r.req : 1;
   document.getElementById("ap-name").value = r ? r.name : "";
+  document.getElementById("ap-desc").value = r ? (r.desc||"") : "";
   document.getElementById("ap-section").value = AP.side;
   document.getElementById("ap-warn").textContent = "";
   const mh = document.getElementById("ap-mkhint");
@@ -3469,6 +3517,7 @@ function closeDlg(){
 }
 function saveRule(){
   const name = document.getElementById("ap-name").value.trim();
+  const desc = document.getElementById("ap-desc").value.trim().slice(0,240);
   const sets = sortSets([...AP.sets].filter(n=>SETSIDE[n]===AP.side));
   const legal = legalMainsForSide(AP.side);
   const mainsArr = sortStats([...AP.mains].filter(a=>legal.includes(a)));
@@ -3481,7 +3530,7 @@ function saveRule(){
   if(AP.req > AP.pool.size){ document.getElementById("ap-warn").textContent = t("warn_unplayable").replace("&gt;",">"); return; }
   const pool = sortStats([...AP.pool]);
   const ess = sortStats([...AP.ess].filter(a=>pool.includes(a)));
-  const fields = { name, section:AP.side, sets, mains:mainsArr,
+  const fields = { name, desc, section:AP.side, sets, mains:mainsArr,
                    arch:allArchs().filter(a=>AP.arch.has(a)), pool, ess, req:Math.min(4,Math.max(1,AP.req)) };
   if(AP.editing){
     const r = getRule(AP.editing);
@@ -3807,6 +3856,16 @@ document.addEventListener("click", e=>{
     else if(subs.length<4) subs.push(a);
   }); return; }
   if(el.closest("#fm-verd")){ if(FARM.timer){ clearTimeout(FARM.timer); FARM.timer = null; farmRender(); } return; }
+  if(el.closest("#save-line")){
+    const blob = new Blob([payload()], {type:"application/json"});
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "wor-tri-sauvegarde-" + new Date().toISOString().slice(0,10) + ".json";
+    a.click();
+    setTimeout(()=>URL.revokeObjectURL(a.href), 4000);
+    toast(t("t_backup"));
+    return;
+  }
   if(el.closest("#tp-open")){ openTp(); return; }
   if(el.closest("#tp-close") || el.closest("#tp-close2")){ closeTp(); return; }
   if(el.closest("#tp-next")){ tpNext(true); return; }
@@ -3976,6 +4035,7 @@ document.addEventListener("input", e=>{
   if(e.target.id === "rule-q"){ UI.q = e.target.value; updateRuleList(); }
   if(e.target.id === "sets-q"){ UI.setsQ = e.target.value; updateSetsTables(); }
   if(e.target.id === "tab-key"){ const tab = activeTab(); if(tab){ tab.key = e.target.value.slice(0,60); scheduleSave(); } }
+  if(e.target.id === "tab-desc"){ const tab = activeTab(); if(tab){ tab.desc = e.target.value.slice(0,300); scheduleSave(t("c_tabdesc")); } }
 });
 document.addEventListener("keydown", e=>{
   // Ctrl+Z global — sauf pendant la frappe (undo natif du champ) et dialogue ouvert
