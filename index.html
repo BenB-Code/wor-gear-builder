@@ -912,6 +912,9 @@ fr:{
   res_kept:(k,n)=>`${k} gardée(s) / ${n} — `,
   btn_gen:"Générer", empty_sample:"Choisis un scope puis génère un échantillon.",
   v_ok:names=>"✓ Gardée par "+names, v_ok_multi:"✓ Gardée par :", v_rej:"✗ Recyclée",
+  c_change:"modification", c_subs:id=>"subs de "+id, c_req:id=>"requis de "+id, c_dup:id=>"duplication de "+id,
+  c_del:id=>"suppression de "+id, c_move:id=>"déplacement de "+id, c_entered:id=>"coche « saisie » de "+id, c_rule:id=>"règle "+id,
+  t_undone:l=>"↶ Annulé : "+l, t_redone:l=>"↷ Rétabli : "+l, t_undo_empty:"Rien à annuler.", t_redo_empty:"Rien à rétablir.",
   xr_off:n=>`${n} règle(s) ne ciblent pas ce set`, xr_close:"aucune autre règle proche", xr_none:"aucune règle dans l'onglet",
   why_main:(m,l)=>`${m} en main — attendu : ${l}`, why_ess:l=>`★ manquante(s) sur la pièce : ${l}`,
   why_count:(k,r,have,miss)=>`${k}/${r} subs de la liste — la pièce a : ${have||"aucun"} · compteraient aussi : ${miss||"—"}`,
@@ -1054,6 +1057,9 @@ en:{
   res_kept:(k,n)=>`${k} kept / ${n} — `,
   btn_gen:"Generate", empty_sample:"Pick a scope, then generate a sample.",
   v_ok:names=>"✓ Kept by "+names, v_ok_multi:"✓ Kept by:", v_rej:"✗ Recycled",
+  c_change:"change", c_subs:id=>id+" subs", c_req:id=>id+" required count", c_dup:id=>id+" duplicated",
+  c_del:id=>id+" deleted", c_move:id=>id+" moved", c_entered:id=>id+" entered mark", c_rule:id=>"rule "+id,
+  t_undone:l=>"↶ Undone: "+l, t_redone:l=>"↷ Redone: "+l, t_undo_empty:"Nothing to undo.", t_redo_empty:"Nothing to redo.",
   xr_off:n=>`${n} rule(s) don't target this set`, xr_close:"no other close rule", xr_none:"no rule in this tab",
   why_main:(m,l)=>`${m} as main — expected: ${l}`, why_ess:l=>`★ missing on the piece: ${l}`,
   why_count:(k,r,have,miss)=>`${k}/${r} subs from the list — the piece has: ${have||"none"} · would also count: ${miss||"—"}`,
@@ -1197,7 +1203,56 @@ async function persist(){
   try{ await store.set(KEY, payload()); setSave(store.tag==="local" ? t("save_local") : t("save_cloud"),"ok"); }
   catch(e){ setSave(t("save_session"),"warn"); }
 }
-function scheduleSave(){ clearTimeout(saveTimer); saveTimer = setTimeout(persist, 600); }
+/* ── Pile de commandes : chaque scheduleSave = une étape annulable (Ctrl+Z / Ctrl+Shift+Z).
+   Le snapshot couvre les DONNÉES (tabs, coches, contraintes, rôles) — pas les préférences :
+   un save qui ne change pas les données (thème, aide…) est ignoré par comparaison. ── */
+let UNDO_STACK = [], REDO_STACK = [], PREV_STATE = null, SUPPRESS_CMD = false;
+const UNDO_CAP = 50;
+function snapState(){
+  return { tabs: structuredClone(TABS), active: activeTabId, entered: [...ENTERED],
+           tabSeq, constraints: structuredClone(CONSTRAINTS), xarch: [...EXTRA_ARCHS] };
+}
+function pushCmd(label){
+  if(SUPPRESS_CMD) return;
+  const now = snapState();
+  if(PREV_STATE === null){ PREV_STATE = now; return; }
+  if(JSON.stringify(PREV_STATE) === JSON.stringify(now)) return;
+  UNDO_STACK.push({ label: label || t("c_change"), state: PREV_STATE });
+  if(UNDO_STACK.length > UNDO_CAP) UNDO_STACK.shift();
+  REDO_STACK.length = 0;
+  PREV_STATE = now;
+}
+function applyState(s){
+  SUPPRESS_CMD = true;
+  TABS = structuredClone(s.tabs);
+  activeTabId = s.active;
+  ENTERED = new Set(s.entered);
+  tabSeq = s.tabSeq;
+  CONSTRAINTS = structuredClone(s.constraints);
+  EXTRA_ARCHS = [...s.xarch];
+  ensureTab(); bumpSeqs(); registerArchs();
+  const ids = new Set(allRules().map(r=>r.id));
+  UI.open = new Set([...UI.open].filter(id=>ids.has(id)));
+  PREV_STATE = snapState();
+  renderView(); refreshTabBar(); updateSidebar();
+  clearTimeout(saveTimer); saveTimer = setTimeout(persist, 600);
+  SUPPRESS_CMD = false;
+}
+function undoCmd(){
+  if(!UNDO_STACK.length){ toast(t("t_undo_empty")); return; }
+  const cmd = UNDO_STACK.pop();
+  REDO_STACK.push({ label: cmd.label, state: snapState() });
+  applyState(cmd.state);
+  toast(t("t_undone", cmd.label));
+}
+function redoCmd(){
+  if(!REDO_STACK.length){ toast(t("t_redo_empty")); return; }
+  const cmd = REDO_STACK.pop();
+  UNDO_STACK.push({ label: cmd.label, state: snapState() });
+  applyState(cmd.state);
+  toast(t("t_redone", cmd.label));
+}
+function scheduleSave(label){ pushCmd(label); clearTimeout(saveTimer); saveTimer = setTimeout(persist, 600); }
 function sanitizeRule(r){
   if(!r || typeof r.id!=="string") return null;
   const mains = Array.isArray(r.mains)?r.mains.map(fixStat).filter(x=>ALLSTATS.includes(x)):[];
@@ -1286,6 +1341,7 @@ async function restoreState(){
     ensureTab(); bumpSeqs(); registerArchs();
     setSave(t("save_restored"),"ok");
   }catch(e){ setSave(t("save_session"),"warn"); ensureTab(); }
+  PREV_STATE = snapState(); // point zéro de la pile : l'état restauré n'est pas annulable
   applyTheme();
   applyLang();
   renderView();
@@ -1484,7 +1540,7 @@ function bumpReq(r, delta){
     if(dots) dots.outerHTML = gauge(r.req);
   }
   updateRuleWarn(r);
-  scheduleSave();
+  scheduleSave(t("c_req", r.id));
 }
 function updateRuleWarn(r){
   const w = document.querySelector(`[data-warn="${r.id}"]`);
@@ -1704,7 +1760,7 @@ function duplicateRule(id){
   const idx = tab.rules.indexOf(r);
   tab.rules.splice(idx+1, 0, copy);
   UI.open.add(copy.id);
-  updateRuleList(); refreshTabBar(); updateSidebar(); scheduleSave();
+  updateRuleList(); refreshTabBar(); updateSidebar(); scheduleSave(t("c_dup", copy.id));
   toast(t("t_rule_dup", copy.id));
 }
 function rerenderRule(id){
@@ -2718,7 +2774,7 @@ function saveRule(){
     closeDlg();
     UI.open.add(id); UI.pending = id;
     if(UI.view!=="regles"){ goto("/regles/"+id); } else { renderView(); }
-    scheduleSave();
+    scheduleSave(t("c_rule", id));
     toast(t("t_rule_updated", id));
   } else {
     ensureTab();
@@ -2730,7 +2786,7 @@ function saveRule(){
     UI.fMain = new Set(); UI.fSubs = new Set();
     UI.open.add(id); UI.pending = id;
     if(UI.view!=="regles"){ goto("/regles/"+id); } else { renderView(); }
-    scheduleSave();
+    scheduleSave(t("c_rule", id));
     toast(t("t_rule_created", id));
   }
 }
@@ -3061,7 +3117,7 @@ document.addEventListener("click", e=>{
     tog.title = `${a} : ${inEss?t("st_ess"):(inPool?t("st_pool"):t("st_off"))}`;
     tog.textContent = inEss ? "★ "+a : a;
     updateRuleWarn(r);
-    scheduleSave(); return;
+    scheduleSave(t("c_subs", r.id)); return;
   }
   const minus = el.closest(".st-minus"), plus = el.closest(".st-plus");
   if(minus||plus){
@@ -3094,7 +3150,7 @@ document.addEventListener("click", e=>{
     const snap = tab.rules[idx];
     tab.rules.splice(idx,1);
     UI.open.delete(id);
-    updateRuleList(); refreshTabBar(); updateSidebar(); scheduleSave();
+    updateRuleList(); refreshTabBar(); updateSidebar(); scheduleSave(t("c_del", id));
     toast(t("t_rule_del", id), {action:{label:t("undo"), fn(){
       tab.rules.splice(Math.min(idx,tab.rules.length),0,snap);
       updateRuleList(); refreshTabBar(); updateSidebar(); scheduleSave();
@@ -3118,7 +3174,7 @@ document.addEventListener("change", e=>{
   if(chk){
     const id = chk.dataset.entered;
     chk.checked ? ENTERED.add(entKey(activeTabId, id)) : ENTERED.delete(entKey(activeTabId, id));
-    updateSidebar(); scheduleSave();
+    updateSidebar(); scheduleSave(t("c_entered", id));
     return;
   }
   if(e.target.id==="import-file"){
@@ -3146,6 +3202,16 @@ document.addEventListener("input", e=>{
   if(e.target.id === "tab-key"){ const tab = activeTab(); if(tab){ tab.key = e.target.value.slice(0,60); scheduleSave(); } }
 });
 document.addEventListener("keydown", e=>{
+  // Ctrl+Z global — sauf pendant la frappe (undo natif du champ) et dialogue ouvert
+  if((e.ctrlKey || e.metaKey) && !e.altKey && ["z","Z","y","Y"].includes(e.key)){
+    const typing = e.target.closest && e.target.closest("input,textarea,select,[contenteditable]");
+    const dlg = document.getElementById("dlg-overlay");
+    if(!typing && !(dlg && dlg.open)){
+      e.preventDefault();
+      (e.key.toLowerCase()==="y" || e.shiftKey) ? redoCmd() : undoCmd();
+      return;
+    }
+  }
   if(e.target && e.target.id==="arch-input"){
     if(e.key==="Enter"){ e.preventDefault(); commitRole(e.target.dataset.ctx, e.target.value); }
     else if(e.key==="Escape"){ const ctx=e.target.dataset.ctx; UI.addingRole=null; if(ctx==="dlg"){ renderAddPanel(); } else { renderView(); } }
@@ -3185,7 +3251,7 @@ document.addEventListener("keydown", e=>{
       const sib = rows[i + (up ? -1 : 1)];
       const sr = sib && getRule(sib.dataset.toggle);
       if(!r || !sr || sr.section !== r.section) return;
-      if(reorderRule(id, sr.id, up)) scheduleSave();
+      if(reorderRule(id, sr.id, up)) scheduleSave(t("c_move", id));
       updateRuleList(); refreshTabBar();
       const nh = document.getElementById("card-"+id)?.querySelector(".row-head");
       if(nh) nh.focus();
@@ -3260,7 +3326,7 @@ document.addEventListener("drop", e=>{
   const targetId = card.id.replace(/^card-/, "");
   const rect = card.getBoundingClientRect ? card.getBoundingClientRect() : null;
   const before = rect ? (e.clientY - rect.top) < rect.height/2 : true;
-  if(reorderRule(DRAG, targetId, before)) scheduleSave();
+  if(reorderRule(DRAG, targetId, before)) scheduleSave(t("c_move", DRAG));
   DRAG = null;
   updateRuleList(); refreshTabBar();
 });
