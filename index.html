@@ -14,6 +14,7 @@
 -->
 <style>
   :root{
+    color-scheme:dark;
     --bg:#14121a; --bg-side:#100e15; --panel:#1d1a24; --panel2:#262230; --panel-hi:#211d2b;
     --border:#35303f; --border-soft:#2a2632;
     --ink:#d9d2c4; --ink-hi:#ece7db; --muted:#9a92a6; --faint:#6f6880; --hairline:rgba(255,255,255,.05);
@@ -28,6 +29,7 @@
     --mono:ui-monospace,"SF Mono","Cascadia Code",Menlo,Consolas,monospace;
   }
   body.light{
+    color-scheme:light;
     --bg:#f4f1e8; --bg-side:#ebe7db; --panel:#fdfcf8; --panel2:#efece2; --panel-hi:#f6f3e9;
     --border:#cfc8b8; --border-soft:#ddd7c9;
     --ink:#2c2735; --ink-hi:#1e1927; --muted:#6a6276; --faint:#948da1; --hairline:rgba(30,25,40,.08);
@@ -91,14 +93,15 @@
   @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important;scroll-behavior:auto!important}}
   html,body{height:100%}
   body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:var(--fs-3);line-height:1.6}
-  ::selection{background:var(--acc-dim)}
+  ::selection{background:color-mix(in srgb, var(--acc) 35%, transparent)}
+  .btn:active,.fchip:active,.seg button:active,button.chip:active,.tab-btn:active,.nav-btn:active,.help:active{transform:scale(.97)}
   button{font:inherit;color:inherit}
 
   /* ── Structure ── */
   .app{display:grid;grid-template-columns:242px 1fr;height:100vh}
   aside.side{background:var(--bg-side);border-right:1px solid var(--border-soft);display:flex;flex-direction:column;
     padding:18px 14px 14px;gap:6px;overflow-y:auto}
-  main#view{overflow-y:auto;overflow-x:hidden;padding:26px 30px 90px;scroll-behavior:smooth;
+  main#view{overflow-y:auto;overflow-x:hidden;padding:26px 30px 90px;
     background-image:radial-gradient(ellipse 800px 380px at 55% -90px,var(--acc-glow),transparent)}
   .wrap{max-width:1060px;margin:0 auto}
 
@@ -140,8 +143,8 @@
 
   /* ── En-tête de vue ── */
   .view-head{margin-bottom:20px}
-  .view-head h2{color:var(--ink-hi);font-family:var(--display);font-variant:small-caps;letter-spacing:.06em;font-weight:600;font-size:var(--fs-5)}
-  .view-head .lede{color:var(--muted);font-size:var(--fs-2);margin-top:3px;max-width:760px}
+  .view-head h2{text-wrap:balance;color:var(--ink-hi);font-family:var(--display);font-variant:small-caps;letter-spacing:.06em;font-weight:600;font-size:var(--fs-5)}
+  .view-head .lede{text-wrap:pretty;color:var(--muted);font-size:var(--fs-2);margin-top:3px;max-width:760px}
   h3.grp-head{font-family:var(--display);font-variant:small-caps;letter-spacing:.05em;font-weight:600;font-size:var(--fs-3);
     color:var(--muted);margin:26px 0 10px;display:flex;align-items:center;gap:10px;position:sticky;top:-26px;
     background:var(--bg);padding:6px 0;z-index:5}
@@ -207,7 +210,7 @@
   .fchip.on{color:var(--acc);border-color:var(--acc-bd);background:var(--acc-dim)}
   .fchip:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
   .toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:10px 0 2px}
-  .btn{appearance:none;display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:32px;
+  .btn{appearance:none;display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:32px;line-height:1.25;
     background:transparent;border:1px solid var(--border);color:var(--muted);
     font-family:var(--body);font-size:var(--fs-2);font-weight:500;padding:0 var(--s-4);border-radius:var(--r-m);cursor:pointer;transition:all .15s}
   .btn:hover{border-color:var(--faint);color:var(--ink)}
@@ -247,7 +250,8 @@
   .rc-id{font-family:var(--mono);font-size:var(--fs-0);font-weight:600;color:var(--acc);background:var(--acc-dim);
     border-radius:var(--r-s);padding:2px 8px;flex:0 0 auto}
   .s-t1 .rc-id{color:#8fbde4;background:rgba(95,159,214,.12)}
-  .rc-name{font-family:var(--display);font-variant:small-caps;letter-spacing:.03em;font-size:var(--fs-3);font-weight:600}
+  .rc-name{font-family:var(--display);font-variant:small-caps;letter-spacing:.03em;font-size:var(--fs-3);font-weight:600;
+    flex:0 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .row-meta{margin-left:auto;display:flex;align-items:center;gap:10px;font-family:var(--mono);font-size:var(--fs-0);color:var(--faint);white-space:nowrap}
   .mini{font-family:var(--mono);font-size:var(--fs-0);padding:1px 6px;border-radius:var(--r-s);border:1px solid var(--border);color:var(--muted)}
   .mini.e{color:var(--acc);border-color:var(--acc-bd)}
@@ -266,7 +270,7 @@
   .rule.open .row-body{display:block}
   .rb-grid{display:grid;grid-template-columns:auto 1fr;gap:7px 16px;font-size:var(--fs-2);margin-top:10px}
   .rb-grid .k{color:var(--faint);font-family:var(--display);font-variant:small-caps;letter-spacing:.04em;font-size:var(--fs-2);white-space:nowrap;padding-top:2px}
-  .chip{display:inline-block;font-family:var(--mono);font-size:var(--fs-0);padding:3px 9px;border-radius:var(--r-s);
+  .chip{display:inline-block;line-height:1.25;font-family:var(--mono);font-size:var(--fs-0);padding:3px 9px;border-radius:var(--r-s);
     border:1px solid var(--border);background:var(--panel2);color:var(--ink);margin:2px 3px 2px 0;white-space:nowrap}
   .chip.off{border-color:rgba(207,96,84,.5);color:#e8968c}
   .chip.deff{border-color:rgba(95,159,214,.5);color:#93c1e8}
@@ -280,12 +284,14 @@
   button.chip{cursor:pointer;transition:opacity .12s,border-color .12s,background .12s}
   button.chip:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
   .chip.stateoff{opacity:.28;border-style:dashed;background:transparent}
+  button.chip.stateoff:hover{opacity:.65}
   .chip.ess{border-width:1.5px;font-weight:700}
   .chip.ess.off{background:rgba(207,96,84,.14)}
   .chip.ess.deff{background:rgba(95,159,214,.14)}
   .chip.ess.util{background:rgba(111,191,143,.14)}
   .chip.pick{cursor:pointer}
   .chip.pick:not(.sel){opacity:.32;border-style:dashed;background:transparent}
+  .chip.pick:not(.sel):hover{opacity:.7}
   .chip.pick.sel{background:var(--acc-dim)}
   .chip.pick.sel.off{background:rgba(207,96,84,.16)}
   .chip.pick.sel.deff{background:rgba(95,159,214,.16)}
@@ -1469,7 +1475,7 @@ function setChip(name){
 }
 function gauge(req){
   let d=""; for(let i=0;i<4;i++) d+=`<span class="dot${i<req?' fill':''}"></span>`;
-  return `<span class="dots" aria-label="${t("gauge", req)}">${d}</span>`;
+  return `<span class="dots" title="${t("gauge", req)}" aria-label="${t("gauge", req)}">${d}</span>`;
 }
 function ruleRow(r){
   const open = UI.open.has(r.id);
