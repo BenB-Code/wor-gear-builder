@@ -811,6 +811,7 @@
       <span class="stepper"><button type="button" id="ap-req-minus" data-i18n-aria="aria_minus" aria-label="réduire">−</button><span class="val" id="ap-req-val">1</span><button type="button" id="ap-req-plus" data-i18n-aria="aria_plus" aria-label="augmenter">+</button></span>
       <span class="rc-warn" id="ap-req-warn"></span>
     </div>
+    <p class="hint" id="ap-mkhint" hidden></p>
     <p class="rule-phrase" id="ap-phrase" hidden></p>
     <div class="ap-actions">
       <button class="btn primary" id="ap-create" data-i18n="btn_create">Créer la règle</button>
@@ -1136,6 +1137,8 @@ fr:{
   al_uncov:n=>`${n} set${n>1?"s":""} ne ${n>1?"sont":"est"} couvert${n>1?"s":""} par aucune règle — voir Sets & transfo.`,
   spec_tip:"jauge stricte ↔ permissive",
   ic_onlyone:"il suffisait d'une seule",
+  mk_btn:"Créer une règle qui garde cette pièce",
+  mk_hint:"Pré-rempli avec cette pièce — élargis les sets et la liste de subs pour ne pas sur-ajuster la règle à un seul drop.",
   oracle_ok:(k,n,p)=>`Ton tri est sain — il garde ${k} pièce${k>1?"s":""} sur ${n} (${p})`,
   oracle_multi0:"rien n'est gardé deux fois par accident",
   oracle_multiN:m=>`${m} pièce${m>1?"s":""} gardée${m>1?"s":""} par ≥ 2 règles — surveille les chevauchements en tête de Règles`,
@@ -1321,6 +1324,8 @@ en:{
   al_uncov:n=>`${n} set${n>1?"s are":" is"} covered by no rule — see Sets & transform.`,
   spec_tip:"strict ↔ permissive gauge",
   ic_onlyone:"any one of them suffices",
+  mk_btn:"Create a rule that keeps this piece",
+  mk_hint:"Pre-filled with this piece — widen the sets and the sub list so the rule doesn't overfit a single drop.",
   oracle_ok:(k,n,p)=>`Your sorting is healthy — it keeps ${k} piece${k>1?"s":""} out of ${n} (${p})`,
   oracle_multi0:"nothing is kept twice by accident",
   oracle_multiN:m=>`${m} piece${m>1?"s":""} kept by ≥ 2 rules — watch the overlaps atop the Rules view`,
@@ -2315,7 +2320,8 @@ function itemCard(p, o={}){
       <ul class="rrefs">${p.matched.map(id=>{ const r=getRule(id);
         return `<li><button type="button" class="ruleref" data-goto="${id}">${id}</button> <span class="rname">${esc(r?r.name:"")}</span></li>`; }).join("")}</ul>${p.matched.length>1?`<span class="ic-note">${t("ic_onlyone")}</span>`:""}`;
   } else if(state==="rec"){
-    band = `<div class="v-line"><span>⚒</span> ${t("ic_rec")}</div>`;
+    band = `<div class="v-line"><span>⚒</span> ${t("ic_rec")}</div>
+      <button type="button" class="btn sm mk-rule" data-mkrule="${esc(JSON.stringify({set:p.set, main:p.main, subs:p.subs}))}">↳ ${t("mk_btn")}</button>`;
   } else {
     const f = o.prov.feasible;
     band = `<div class="v-line"><span>◌</span> ${f.length?t("ic_poss",f.length):t("ic_poss_none")}</div>
@@ -3432,12 +3438,29 @@ function openDlg(editId){
   document.getElementById("ap-name").value = r ? r.name : "";
   document.getElementById("ap-section").value = AP.side;
   document.getElementById("ap-warn").textContent = "";
+  const mh = document.getElementById("ap-mkhint");
+  if(mh) mh.hidden = true;
   document.getElementById("dlg-title").textContent = r ? t("dlg_edit", r.id, r.name) : t("dlg_new");
   document.getElementById("ap-create").textContent = r ? t("btn_save") : t("btn_create");
   renderAddPanel();
   const d = document.getElementById("dlg-overlay");
   if(!d.open) d.showModal();
   document.getElementById("ap-name").focus();
+}
+// Créer-depuis-pièce : l'éditeur pré-rempli avec ce qu'on vient de voir. Garde-fou
+// anti-sur-ajustement : requis à 2 (jamais subs.length) + rappel d'élargir sets/liste.
+function openDlgFromPiece(p){
+  openDlg(null);
+  applySide(SETSIDE[p.set] || "left");
+  AP.sets = new Set(SETSIDE[p.set] ? [p.set] : []);
+  AP.mains = new Set(p.main ? [p.main] : []);
+  AP.pool = new Set((p.subs||[]).filter(a=>a!==p.main));
+  AP.ess = new Set();
+  AP.req = Math.min(2, AP.pool.size || 1);
+  document.getElementById("ap-section").value = AP.side;
+  renderAddPanel();
+  const h = document.getElementById("ap-mkhint");
+  if(h){ h.textContent = t("mk_hint"); h.hidden = false; }
 }
 function closeDlg(){
   const d = document.getElementById("dlg-overlay");
@@ -3817,6 +3840,11 @@ document.addEventListener("click", e=>{
   if(rm){ UI.refMode = rm.dataset.refmode; renderView(); return; }
   const tsf = el.closest("[data-tsfilter]");
   if(tsf){ UI.test.filter = tsf.dataset.tsfilter; updateTestBody(); return; }
+  const mk = el.closest("[data-mkrule]");
+  if(mk){
+    try{ openDlgFromPiece(JSON.parse(mk.dataset.mkrule)); }catch(_){}
+    return;
+  }
   const ph = el.closest("[data-piece]");
   if(ph){
     const i = +ph.dataset.piece;
