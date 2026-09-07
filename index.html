@@ -172,6 +172,8 @@
     font-family:var(--mono);font-size:var(--fs-1);padding:5px 10px;flex:0 0 auto;width:13ch}
   .key-input::placeholder{color:var(--faint);font-family:var(--body)}
   .tsep{width:1px;background:var(--border);margin:2px 4px;flex:0 0 auto}
+  .tabpick{display:flex;gap:6px;max-width:min(560px,100%)}
+  .tabpick .tab-btn{font-size:var(--fs-2);padding:5px 12px}
 
   /* ── Segmented + filtres + toolbar ── */
   .seg{display:inline-flex;background:var(--panel2);border-radius:var(--r-m);padding:3px;gap:2px}
@@ -1798,9 +1800,13 @@ const ICON = {
 function ctlLabel(icon, txt, help){ return `<span class="lab">${ICON[icon]||""}${txt}${help?helpBtn(help):""}</span>`; }
 function helpBtn(key){ return `<button type="button" class="help${HELP_CLOSED.has(key)?"":" on"}" data-help="${key}" data-i18n-title="help_tip" title="${t("help_tip")}" aria-label="${t("help_tip")}">?</button>`; }
 function helpBody(key, html){ return `<div class="hint help-body" data-help-body="${key}"${HELP_CLOSED.has(key)?" hidden":""}>${html}</div>`; }
-function tabSelect(id){
+// Sélecteur d'onglet UNIQUE : mêmes pills que la vue Règles, partout (Testeur, Sets).
+// Le clic passe par le handler global [data-tabsel], devenu view-aware.
+function tabPicker(){
   return `<div class="ctl">${ctlLabel("tab",t("lbl_tab"))}
-    <select id="${id}">${TABS.map(t=>`<option value="${t.id}"${t.id===activeTabId?" selected":""}>${esc(t.name)} (${t.rules.length})</option>`).join("")}</select>
+    <div class="tabs-scroll tabpick">
+      ${TABS.map(tb=>`<button type="button" class="tab-btn${tb.id===activeTabId?' on':''}" data-tabsel="${tb.id}">${esc(tb.name)} <span class="n">${tb.rules.length}</span></button>`).join("")}
+    </div>
   </div>`;
 }
 function destCell(s){
@@ -1827,7 +1833,7 @@ function viewSets(){
       <div class="lede">${t("v_sets_lede")}</div>
     </div>
     <div class="controls">
-      ${tabSelect("sets-tab")}
+      ${tabPicker()}
       <div class="ctl" style="flex:1 1 240px">${ctlLabel("search",t("lbl_search"))}
         <div class="search">
           <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5 14 14"/></svg>
@@ -2168,7 +2174,7 @@ function viewTesteur(){
       <div class="lede">${t("v_test_lede")}</div>
     </div>
     <div class="controls">
-      ${tabSelect("ts-tab")}
+      ${tabPicker()}
       <div class="ctl">${ctlLabel("mode",t("lbl_mode"),"sem")}
         <div class="seg">
           ${[["couverture",t("mode_cov")],["echantillon",t("mode_sample")],["piece",t("mode_piece")]].map(([v,l])=>
@@ -2850,7 +2856,10 @@ document.addEventListener("click", e=>{
     if(UI.renaming) commitRename(true);
     activeTabId = tsel.dataset.tabsel;
     UI.open.clear();
-    refreshTabBar(); updateRuleList(); updateSidebar(); scheduleSave();
+    scheduleSave();
+    if(UI.view === "regles"){ refreshTabBar(); updateRuleList(); }
+    else { refreshSampleVerdicts(); renderView(); }
+    updateSidebar();
     return;
   }
   if(el.closest("#tab-add")){
@@ -3186,10 +3195,6 @@ document.addEventListener("change", e=>{
     rd.onerror = ()=> toast(t("t_file_fail"));
     rd.readAsText(f);
     return;
-  }
-  if(e.target.id==="ts-tab" || e.target.id==="sets-tab"){
-    activeTabId = e.target.value; UI.open.clear();
-    refreshSampleVerdicts(); scheduleSave(); renderView(); return;
   }
   if(e.target.id==="f-set"){ UI.fSet = e.target.value; updateRuleList(); return; }
   if(e.target.id==="ts-lvl"){ const v = e.target.value; UI.test.lvl = v==="all" ? "all" : +v; updateTestBody(); return; }
