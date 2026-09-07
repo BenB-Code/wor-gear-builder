@@ -507,6 +507,14 @@
   body.light .bulk-bar{box-shadow:0 8px 30px rgba(60,50,30,.2)}
   .bulk-bar .bb-n{font-family:var(--mono);font-size:var(--fs-1);color:var(--acc);white-space:nowrap}
   .bulk-bar select{max-width:130px}
+  /* ── Densité compacte : la ligne repliée porte ses chips cyclables et ses sets ── */
+  .row-compact{display:flex;align-items:flex-start;gap:8px 14px;flex-wrap:wrap;padding:0 12px 8px 41px}
+  .row-compact .chip{padding:1px 6px;font-size:10px}
+  .row-compact .rc-chips,.row-compact .rc-msets{display:inline-flex;gap:3px;flex-wrap:wrap;align-items:center}
+  .row-compact .rc-mini{max-width:92px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:default;pointer-events:none}
+  /* ── Comparaison par delta ── */
+  .cov-cmp{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+  .cov-card .delta{font-family:var(--mono);font-size:var(--fs-0);color:var(--deff-hi);margin-top:3px}
   @media(max-width:920px){
     .bulk-bar{bottom:calc(66px + env(safe-area-inset-bottom))}
   }
@@ -1210,6 +1218,7 @@ fr:{
   pal_theme:"Basculer le thème", pal_undo:"Annuler la dernière action", pal_redo:"Rétablir", pal_help:"Aide & raccourcis",
   pal_replace:"Remplacer un set (jeu actif)…", rs_title:"Remplacer un set — toutes les règles du jeu actif", rs_apply:"Remplacer",
   c_replace:(a,b)=>"remplacement "+a+" → "+b, t_replaced:(a,b)=>`Set <b>${a}</b> remplacé par <b>${b}</b> dans le jeu actif.`,
+  cmp_ph:"comparer à…", cmp_note:n=>"Δ vs "+n,
   bb_n:n=>n+" sélectionnée"+(n>1?"s":""), bb_addset:"+ set…", bb_rmset:"− set…", bb_addrole:"+ rôle…", bb_rmrole:"− rôle…",
   c_bulk_req:"requis (lot)", c_bulk_set:"sets (lot)", c_bulk_role:"rôles (lot)", c_bulk_dup:"duplication (lot)", c_bulk_del:"suppression (lot)",
   t_bulk_del:n=>n+" règle"+(n>1?"s":"")+" supprimée"+(n>1?"s":"")+" — Ctrl+Z pour tout annuler.",
@@ -1429,6 +1438,7 @@ en:{
   pal_theme:"Toggle theme", pal_undo:"Undo last action", pal_redo:"Redo", pal_help:"Help & shortcuts",
   pal_replace:"Replace a set (active ruleset)…", rs_title:"Replace a set — every rule of the active ruleset", rs_apply:"Replace",
   c_replace:(a,b)=>"replace "+a+" → "+b, t_replaced:(a,b)=>`Set <b>${a}</b> replaced by <b>${b}</b> in the active ruleset.`,
+  cmp_ph:"compare to…", cmp_note:n=>"Δ vs "+n,
   bb_n:n=>n+" selected", bb_addset:"+ set…", bb_rmset:"− set…", bb_addrole:"+ role…", bb_rmrole:"− role…",
   c_bulk_req:"required (batch)", c_bulk_set:"sets (batch)", c_bulk_role:"roles (batch)", c_bulk_dup:"duplication (batch)", c_bulk_del:"deletion (batch)",
   t_bulk_del:n=>n+" rule"+(n>1?"s":"")+" deleted — Ctrl+Z undoes it all.",
@@ -1633,6 +1643,7 @@ function applyState(s){
   EXTRA_ARCHS = [...s.xarch];
   ensureTab(); bumpSeqs(); registerArchs();
   COV_CACHE = null;
+  COV_CACHE2 = null;
   const ids = new Set(allRules().map(r=>r.id));
   UI.open = new Set([...UI.open].filter(id=>ids.has(id)));
   PREV_STATE = snapState();
@@ -1657,6 +1668,7 @@ function redoCmd(){
 function scheduleSave(label){
   pushCmd(label);
   COV_CACHE = null;
+  COV_CACHE2 = null;
   clearTimeout(covTimer); covTimer = setTimeout(updateCovUI, 250);
   clearTimeout(saveTimer); saveTimer = setTimeout(persist, 600);
 }
@@ -1826,8 +1838,8 @@ function subCombos(main){
   comboCache.set(main, out);
   return out;
 }
-function computeCoverage(){
-  const tab = activeTab();
+function computeCoverage(tabArg){
+  const tab = tabArg || activeTab();
   const rules = tab ? tab.rules : [];
   let total=0, kept=0, multi=0;
   const perRule = {}, uniq = {}, overlap = {};
@@ -2013,6 +2025,10 @@ function ruleRow(r){
         <svg class="chev" width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6l5 5 5-5"/></svg>
       </span>
     </div>
+    ${(DENSITY==="compact" && !open) ? `<div class="row-compact">
+      <span class="rc-chips">${chips}</span>
+      <span class="rc-msets">${sortSets(r.sets).map(n=>`<span class="chip set t${SETTIER[n]} rc-mini" title="${esc(setName(n))}">${esc(setName(n))}</span>`).join("")}</span>
+    </div>` : ""}
     <div class="row-body">
       <div class="rb-grid">
         <span class="k">${t("k_roles")}</span><span>${allArchs().map(a=>`<button type="button" class="fchip arch-tog${(r.arch||[]).includes(a)?' on':''}" data-archrule="${r.id}" data-arch="${esc(a)}">${esc(archLabel(a))}</button>`).join(" ")} ${UI.addingRole===r.id?`<input type="text" class="tab-rename arch-input" id="arch-input" data-ctx="${r.id}" maxlength="20" placeholder="${t("role_ph")}">`:`<button type="button" class="fchip arch-plus" data-archplus="${r.id}">${t("role_plus")}</button>`}</span>
@@ -2033,13 +2049,24 @@ function ruleRow(r){
 }
 
 /* ══════════════ COUVERTURE DANS RÈGLES (la Couverture n'est plus une destination) ══════════════ */
-let COV_CACHE = null, covTimer = null;
+let COV_CACHE = null, COV_CACHE2 = null, covTimer = null;
 function covActive(){
   const tab = activeTab();
   if(!tab || !tab.rules.length) return null;
   if(COV_CACHE && COV_CACHE.tabId === tab.id) return COV_CACHE.cov;
   const cov = computeCoverage();
   COV_CACHE = {tabId: tab.id, cov};
+
+  return cov;
+}
+function covOther(){
+  const id = UI.compareTo;
+  if(!id || id === activeTabId) return null;
+  const tb = TABS.find(x=>x.id===id);
+  if(!tb || !tb.rules.length) return null;
+  if(COV_CACHE2 && COV_CACHE2.tabId === id) return COV_CACHE2.cov;
+  const cov = computeCoverage(tb);
+  COV_CACHE2 = {tabId: id, cov};
 
   return cov;
 }
@@ -2061,6 +2088,10 @@ function covMeta(r){
 function covHead(){
   const c = covActive();
   if(!c) return "";
+  // comparaison par delta : un second jeu de règles, jamais de split-screen
+  const oc = covOther();
+  const dLoc = n => (n>0?"+":"") + n.toLocaleString(t("date_locale"));
+  const dl = (a, b, pts) => oc ? `<div class="delta">Δ ${dLoc(a-b)}${pts!==undefined?` · ${(pts>0?"+":"")+pts.toFixed(2).replace(".", LANG==="fr"?",":".")} pt`:""}</div>` : "";
   const rref = id => { const r = getRule(id); return `<button type="button" class="ruleref" data-goto="${id}" title="${esc(r?r.name:"")}">${id}</button>`; };
   const mute = c.rules.filter(r=>c.perRule[r.id]===0);
   const dup = c.rules.filter(r=>c.perRule[r.id]>0 && c.uniq[r.id]===0);
@@ -2095,12 +2126,16 @@ function covHead(){
   return `
     <div class="cov-strip">
       <div class="cov-card"><div class="num">${c.total.toLocaleString(t("date_locale"))}</div><div class="lbl">${t("cov_total")}</div></div>
-      <div class="cov-card"${c.kept?` title="${t("ord_one", Math.round(c.total/c.kept).toLocaleString(t("date_locale")))}"`:""}><div class="num">${c.kept.toLocaleString(t("date_locale"))} <b>· ${covPct(c.kept/c.total)}</b></div><div class="lbl">${t("cov_kept")}</div></div>
-      <div class="cov-card"><div class="num">${c.multi.toLocaleString(t("date_locale"))}</div><div class="lbl">${t("cov_multi")}</div></div>
+      <div class="cov-card"${c.kept?` title="${t("ord_one", Math.round(c.total/c.kept).toLocaleString(t("date_locale")))}"`:""}><div class="num">${c.kept.toLocaleString(t("date_locale"))} <b>· ${covPct(c.kept/c.total)}</b></div><div class="lbl">${t("cov_kept")}</div>${dl(c.kept, oc?oc.kept:0, oc?100*(c.kept/c.total - oc.kept/oc.total):undefined)}</div>
+      <div class="cov-card"><div class="num">${c.multi.toLocaleString(t("date_locale"))}</div><div class="lbl">${t("cov_multi")}</div>${dl(c.multi, oc?oc.multi:0)}</div>
       <div class="cov-card">${mute.length
         ? `<div class="num bad">${mute.length}</div><div class="lbl">${t("cov_mute")}</div>`
-        : `<div class="num good">✓</div><div class="lbl">${t("cov_all_catch")}</div>`}</div>
+        : `<div class="num good">✓</div><div class="lbl">${t("cov_all_catch")}</div>`}${dl(mute.length, oc?oc.rules.filter(r=>oc.perRule[r.id]===0).length:0)}</div>
     </div>
+    ${TABS.filter(x=>x.id!==activeTabId && x.rules.length).length?`<div class="cov-cmp">
+      <select id="cov-compare"><option value="">${t("cmp_ph")}</option>${TABS.filter(x=>x.id!==activeTabId && x.rules.length).map(x=>`<option value="${x.id}"${UI.compareTo===x.id?" selected":""}>${esc(x.name)}</option>`).join("")}</select>
+      ${oc?`<span class="hint">${t("cmp_note", esc((TABS.find(x=>x.id===UI.compareTo)||{}).name||""))}</span>`:""}
+    </div>`:""}
     ${alerts.length?`<div class="alerts">${alerts.join("")}</div>`:""}
     ${pairs.length?`<details class="acc" id="ov-acc"${UI.ovOpen?" open":""}>
       <summary>${t("ov_sum", pairs.length)}</summary>
@@ -4364,6 +4399,12 @@ document.addEventListener("click", e=>{
   }
 });
 document.addEventListener("change", e=>{
+  if(e.target.id === "cov-compare"){
+    UI.compareTo = e.target.value || null;
+    COV_CACHE2 = null;
+    updateRuleList();
+    return;
+  }
   if(e.target.id && e.target.id.startsWith("bb-")){
     const v = e.target.value;
     e.target.value = "";
