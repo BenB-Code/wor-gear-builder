@@ -108,6 +108,7 @@
   *{box-sizing:border-box;margin:0;padding:0}
   @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important;scroll-behavior:auto!important}}
   html,body{height:100%}
+  body:has(dialog[open]){overflow:hidden}
   body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:var(--fs-3);line-height:1.6}
   ::selection{background:color-mix(in srgb, var(--acc) 35%, transparent)}
   .btn:active,.fchip:active,.seg button:active,button.chip:active,.tab-btn:active,.nav-btn:active,.help:active{transform:scale(.97)}
@@ -499,9 +500,11 @@
   .rule-phrase b{color:var(--ink);font-weight:600}
   .rule-desc{color:var(--ink);font-size:var(--fs-2);font-style:italic;margin:10px 0 0;line-height:1.55;max-width:72ch}
   .q-syntax{display:flex;gap:5px;margin-top:5px}
+  .fsep{width:1px;align-self:stretch;background:var(--border-soft);margin:0 3px;flex:0 0 auto}
   .q-syntax .fchip{font-family:var(--mono);padding:1px 8px}
   /* ── Édition à l'échelle ── */
   .rule.bulksel{border-color:var(--deff-bd);box-shadow:var(--top-light),0 0 0 1px var(--deff-bd)}
+  .rc-move{display:none}
   .bulk-bar{position:fixed;left:50%;transform:translateX(-50%);bottom:14px;z-index:55;display:flex;align-items:center;
     gap:8px;flex-wrap:wrap;justify-content:center;background:var(--panel);border:1px solid var(--border);
     border-radius:var(--r-l);padding:8px 12px;box-shadow:0 8px 30px rgba(0,0,0,.4);max-width:calc(100% - 24px)}
@@ -528,9 +531,11 @@
   .save-line[role="button"]:focus-visible{outline:2px solid var(--acc);outline-offset:2px;border-radius:var(--r-s)}
   /* ── La scène du verdict ── */
   .scene{margin:4px 0 22px;display:flex;flex-direction:column;gap:14px}
-  .scene-phrase{font-family:var(--display);font-size:var(--fs-4);line-height:1.45;color:var(--ink-hi);text-wrap:balance;max-width:56ch}
+  .scene-phrase{font-family:var(--display);font-size:var(--fs-4);line-height:1.45;color:var(--ink-hi);text-wrap:balance}
   .scene-phrase .d{color:var(--acc)}
-  .scene-sub{color:var(--muted);font-size:var(--fs-2);margin-top:-8px;max-width:70ch}
+  .scene-oracle{color:var(--muted);font-size:var(--fs-2);line-height:1.6;margin-top:-8px}
+  .scene-oracle .d{color:var(--util)}
+  .scene-oracle.bad .d{color:var(--off)}
   .scene-cards{margin-top:0;max-width:980px}
   .cov-card.act{cursor:pointer;text-align:left;font:inherit;color:inherit;appearance:none;transition:border-color .15s}
   .cov-card.act:hover{border-color:var(--acc-bd)}
@@ -545,6 +550,14 @@
   .op-banner .d{color:var(--acc)}
   .op-banner .x{margin-left:auto;flex:0 0 auto}
   .ic-note{font-size:var(--fs-0);color:var(--faint);font-style:italic}
+  .session-cols{display:grid;grid-template-columns:minmax(0,1fr) minmax(300px,38%);gap:16px;align-items:start}
+  #session-wrap{position:sticky;top:12px}
+  .ic-acc>summary{cursor:pointer;list-style:none;padding:9px 15px;border-top:1px dashed var(--border-soft);
+    font-size:var(--fs-1);color:var(--muted)}
+  .ic-acc>summary::before{content:"› ";color:var(--faint)}
+  .ic-acc[open]>summary::before{content:"⌄ "}
+  .ic-acc>summary::-webkit-details-marker{display:none}
+  .ic-acc .ic-details{border-top:none;padding-top:0}
   /* ── Couverture en tête de Règles ── */
   #cov-head{margin:2px 0 14px;display:flex;flex-direction:column;gap:10px}
   #cov-head:empty{display:none}
@@ -557,7 +570,8 @@
   .rm-cov.bad{color:var(--off)}
   .spec{position:relative;width:26px;height:4px;border-radius:2px;background:var(--panel2);flex:0 0 auto}
   .spec i{position:absolute;top:-2px;width:4px;height:8px;border-radius:2px;background:var(--head);transform:translateX(-50%)}
-  .ovrow{display:flex;align-items:center;gap:9px;margin:5px 0;font-size:var(--fs-1);max-width:520px}
+  .ov-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:2px 30px}
+  .ovrow{display:flex;align-items:center;gap:9px;margin:5px 0;font-size:var(--fs-1)}
   .ovmir{display:flex;width:130px;height:6px;border-radius:3px;overflow:hidden;flex:0 0 auto}
   .ovmir .s{flex:1;position:relative;background:var(--panel2)}
   .ovmir .s i{position:absolute;top:0;height:100%;background:var(--t1-bd)}
@@ -591,11 +605,12 @@
   .tp-rid .rc-id{font-size:var(--fs-2);padding:3px 10px}
   .tp-name{font-family:var(--display);font-variant:small-caps;letter-spacing:.03em;font-size:var(--fs-5);font-weight:600;color:var(--ink-hi)}
   .tp-entered{font-family:var(--mono);font-size:var(--fs-0);color:var(--util)}
-  .tp-k{font-family:var(--body);font-size:11.5px;font-weight:600;letter-spacing:.08em;color:var(--label);margin-bottom:4px}
-  .tp-v{font-family:var(--mono);font-size:var(--fs-3);line-height:1.5;color:var(--ink)}
+  .tp-k{font-family:var(--body);font-size:12.5px;font-weight:700;letter-spacing:.08em;color:var(--acc);margin-bottom:5px}
+  .tp-v{font-family:var(--mono);font-size:var(--fs-2);line-height:1.5;color:var(--ink)}
+  .tp-reqv{font-size:17px;color:var(--ink-hi)}
   .tp-v .sig,.tp-sub .sig{font-family:var(--body);font-size:var(--fs-1);color:var(--faint)}
   .tp-subs{display:flex;flex-direction:column;gap:6px}
-  .tp-sub{font-family:var(--mono);font-size:19px;color:var(--ink-hi);display:flex;align-items:baseline;gap:8px}
+  .tp-sub{font-family:var(--mono);font-size:17px;color:var(--ink-hi);display:flex;align-items:baseline;gap:8px}
   .tp-sub.ess{color:var(--acc)}
   .tp-keyrow{display:flex;align-items:center;gap:9px;margin-top:4px;flex-wrap:wrap}
   .tp-keyval{font-family:var(--mono);font-size:var(--fs-3);color:var(--ink-hi);background:var(--panel2);
@@ -636,8 +651,8 @@
   .fm-stats{font-family:var(--mono);font-size:var(--fs-1);color:var(--muted);margin-top:8px}
   .fm-stats .k{color:var(--util)}
   .fm-stats .r{color:var(--off)}
-  .fm-verdict{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:8px;
-    border:1px dashed var(--border-soft);border-radius:var(--r-l);margin:12px 0;padding:14px;min-height:110px}
+  .fm-verdict{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:8px;
+    border:1px dashed var(--border-soft);border-radius:var(--r-l);margin:12px 0;padding:14px;min-height:96px}
   .fm-verdict .big{font-family:var(--display);font-variant:small-caps;letter-spacing:.04em;font-size:var(--fs-5);font-weight:600;color:var(--head)}
   .fm-verdict.kept{border-color:var(--acc-bd);background:var(--acc-glow)}
   .fm-verdict.kept .big{color:var(--acc)}
@@ -646,7 +661,8 @@
   .fm-piece{font-family:var(--mono);font-size:var(--fs-1);color:var(--faint)}
   .fm-why{color:var(--muted);font-size:var(--fs-2);max-width:44ch}
   .fm-hint{color:var(--faint);font-size:var(--fs-0)}
-  .fm-taps{display:flex;flex-direction:column;gap:12px;padding-bottom:4px}
+  .fm-taps{flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:12px;padding-bottom:4px}
+  .fm-taps select{max-width:100%}
   .fm-row{display:flex;gap:7px;flex-wrap:wrap}
   .fm-row .chip,.fm-row .fchip{min-height:44px;display:inline-flex;align-items:center;font-size:var(--fs-2);padding:6px 14px}
   .ap-hint{color:var(--faint);font-size:var(--fs-1);margin-top:10px}
@@ -738,12 +754,16 @@
     .help::after{inset:-11px}
     .btn{min-height:40px}
     .btn.sm{min-height:32px}
-    .controls .btn.primary,.ap-actions .btn.primary{width:100%}
+    .controls .btn.primary{width:100%}
+    .ap-actions .btn{width:100%}
+    .rc-move{display:inline-flex}
+    .ovmir{flex:1;width:auto}
+    .session-cols{grid-template-columns:minmax(0,1fr)}
     .row-body{padding-left:16px}
     .rm-mains{display:none}
     .rm-cov{display:none}
     .sr-row .sr-meta{display:none}
-    #session-wrap{position:sticky;top:0;z-index:12;background:var(--bg);padding-bottom:8px}
+    #session-wrap{order:-1;position:sticky;top:0;z-index:12;background:var(--bg);padding-bottom:8px}
     /* fondu de débord : indice visuel qu'une rangée de filtres scrolle */
     .fchips{-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 16px),transparent);mask-image:linear-gradient(90deg,#000 calc(100% - 16px),transparent)}
   }
@@ -827,7 +847,7 @@
   <button type="button" class="btn sm" id="bb-clear" title="désélectionner">✕</button>
 </div>
 
-<nav class="tabbar" id="tabbar" aria-label="navigation">
+<nav class="tabbar" id="mob-tabbar" aria-label="navigation">
   <button class="tb-btn" data-nav="regles">
     <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 4h12M2 8h12M2 12h12"/><circle cx="6" cy="4" r="1.7" fill="var(--bg-side)"/><circle cx="11" cy="8" r="1.7" fill="var(--bg-side)"/><circle cx="5" cy="12" r="1.7" fill="var(--bg-side)"/></svg>
     <span data-i18n="tb_rules">Règles</span></button>
@@ -1075,15 +1095,15 @@ fr:{
   tp_key_hint:"à coller dans le jeu : Réglages ▸ Tri automatique ▸ Importer",
   tp_nokey:"renseigne la clé in-game dans la vue Saisie",
   tp_done_t:"Jeu complet", tp_done_p:n=>`Les ${n} règles sont saisies — le tri in-game est aligné sur ce jeu de règles.`,
-  tp_help:"Entrée = coché → suivante · Retour = décocher-revenir · ← → = naviguer · c = copier la clé",
+  tp_help:"Entrée = coché → suivante · Retour = décocher-revenir · ← → = naviguer",
   fm_start:"Session de farm", fm_seen:"vues", fm_idle:"choisis le set, le slot et la main du drop",
   fm_prov:n=>`en cours — ${n}/4 subs`, fm_keep:"Garder", fm_recycle:"Recycler",
   fm_why_rec:n=>`exclue après ${n} sub${n>1?"s":""} — plus aucune règle possible`,
-  fm_why_base:"recyclée dès la base — corrige la main, ou passe au drop suivant (non comptée)",
+  fm_why_base:"recyclée dès la base — aucune règle ne veut ce set avec cette main",
   fm_why_kept:r=>`satisfait ${r} — le reste des subs est indifférent`,
-  fm_autoreset:"auto-reset 1,5 s — toucher pour garder la saisie", fm_next:"pièce suivante",
+  fm_next:"Pièce suivante",
   fm_sets_recent:"Set — récents d'abord", fm_allsets:"tous les sets",
-  fm_slotmain:"Slot · Main — mémorisés du drop précédent", fm_subs:n=>`Subs ${n}/4`,
+  fm_slotmain:"Slot · Main — conservés d'une pièce à l'autre", fm_subs:n=>`Subs ${n}/4`,
   v_sim_h:"Simulation", v_sim_lede:"Vérifie ce que ton jeu de règles garde et recycle avant de le saisir dans le jeu — sur un échantillon réaliste de pièces tirées.",
   v_session_h:"Session — vérifier une pièce", v_session_lede:"Le jeu vient de te dropper une pièce ? Reproduis-la ici — slot, main, subs, set — et le verdict tombe sur la carte, en direct. Pour enchaîner les drops, lance la Session de farm.",
   v_entry_h:"Saisie en jeu", v_entry_lede:"L'état de recopie du jeu de règles actif : coche chaque règle une fois saisie dans le builder du jeu.",
@@ -1225,7 +1245,10 @@ fr:{
   cmp_ph:"comparer à…", cmp_note:n=>"Δ vs "+n,
   scene_ex:(k,r)=>`Exemples tirés de l'échantillon — ${k} gardée${k>1?"s":""}, ${r} recyclée${r>1?"s":""} · clique une carte pour le détail`,
   h_session:`Reproduis la pièce droppée avec les sélecteurs du bas : <b>slot</b> → <b>main</b> → <b>subs</b> → <b>set</b>. La carte du haut montre en direct les règles encore possibles, puis le verdict (gardée / recyclée) dès qu'il est certain — pas besoin des 4 subs si le sort de la pièce est déjà scellé.<br><b>Session de farm</b> : le même geste en plein écran, pensé pouce — la pièce suivante démarre d'un tap (set, slot et main conservés) et la session compte vues, gardées, recyclées.`,
-  fm_helper:"décris chaque drop : set → main → subs. Le verdict tombe dès qu'il est sûr ; la saisie suivante démarre la pièce d'après.",
+  fm_helper:"choisis le set (menu), le slot et la main, puis tape les subs dans l'ordre du jeu — le verdict s'affiche en direct, dès qu'il est certain. « Pièce suivante » vide les subs ; set, slot et main restent.",
+  fm_set:"Set", fm_set_ph:"choisis le set du drop…",
+  ic_poss_sum:n=>`détail — ce qu'il manque aux ${n} règle${n>1?"s":""} possible${n>1?"s":""}`,
+  ic_near_sum:n=>`règles proches (${n})`,
   bb_n:n=>n+" sélectionnée"+(n>1?"s":""), bb_addset:"+ set…", bb_rmset:"− set…", bb_addrole:"+ rôle…", bb_rmrole:"− rôle…",
   c_bulk_req:"requis (lot)", c_bulk_set:"sets (lot)", c_bulk_role:"rôles (lot)", c_bulk_dup:"duplication (lot)", c_bulk_del:"suppression (lot)",
   t_bulk_del:n=>n+" règle"+(n>1?"s":"")+" supprimée"+(n>1?"s":"")+" — Ctrl+Z pour tout annuler.",
@@ -1233,7 +1256,7 @@ fr:{
   hp_shortcuts_html:`<ul>
     <li><kbd>Ctrl+K</kbd> palette · <kbd>Ctrl+Z</kbd> annuler · <kbd>Ctrl+Shift+Z</kbd> rétablir · <kbd>?</kbd> cette aide</li>
     <li>Liste des règles, carte focalisée : <kbd>j</kbd>/<kbd>k</kbd> ou <kbd>↑</kbd><kbd>↓</kbd> naviguer · <kbd>o</kbd>/<kbd>Espace</kbd> déplier · <kbd>x</kbd> coche « saisie » · <kbd>+</kbd>/<kbd>−</kbd> requis · <kbd>d</kbd> dupliquer · <kbd>Alt+↑↓</kbd> déplacer · <kbd>Shift-clic</kbd>/<kbd>v</kbd> sélectionner (barre d'action en lot)</li>
-    <li>Recopie guidée : <kbd>Entrée</kbd> coché → suivante · <kbd>Retour</kbd> décocher-revenir · <kbd>←</kbd><kbd>→</kbd> naviguer · <kbd>c</kbd> copier la clé</li>
+    <li>Recopie guidée : <kbd>Entrée</kbd> coché → suivante · <kbd>Retour</kbd> décocher-revenir · <kbd>←</kbd><kbd>→</kbd> naviguer</li>
   </ul>`,
   hp_legend_h:"Légende", hp_legend_html:`<ul>
     <li>◆ marque et têtes de section — jamais un état</li>
@@ -1247,7 +1270,7 @@ fr:{
     <li><kbd>/</kbd> ouvre la recherche (le champ dans Règles, la palette ailleurs) · <kbd>g</kbd> puis <kbd>r</kbd>/<kbd>s</kbd>/<kbd>c</kbd>/<kbd>j</kbd>/<kbd>f</kbd> = navigation · <kbd>1</kbd>–<kbd>9</kbd> = activer le n-ième jeu.</li>
     <li>La palette (<kbd>Ctrl+K</kbd>) trouve les règles de tous les jeux, commandes et vues comprises.</li>
   </ul>`,
-  oracle_ok:(k,n,p)=>`Ton tri est sain — il garde ${k} pièce${k>1?"s":""} sur ${n} (${p})`,
+  oracle_ok:"Ton tri est sain",
   oracle_multi0:"rien n'est gardé deux fois par accident",
   oracle_multiN:m=>`${m} pièce${m>1?"s":""} gardée${m>1?"s":""} par ≥ 2 règles — surveille les chevauchements en tête de Règles`,
   oracle_none:n=>`Rien n'est gardé sur ${n} pièces — élargis le scope, ou vérifie les règles du jeu.`,
@@ -1298,15 +1321,15 @@ en:{
   tp_key_hint:"paste in game: Settings ▸ Auto-sort ▸ Import",
   tp_nokey:"set the in-game key in the Entry view",
   tp_done_t:"Full set", tp_done_p:n=>`All ${n} rules are entered — the in-game sorting matches this ruleset.`,
-  tp_help:"Enter = ticked → next · Backspace = untick & back · ← → = navigate · c = copy key",
+  tp_help:"Enter = ticked → next · Backspace = untick & back · ← → = navigate",
   fm_start:"Farm session", fm_seen:"seen", fm_idle:"pick the drop's set, slot and main",
   fm_prov:n=>`in progress — ${n}/4 subs`, fm_keep:"Keep", fm_recycle:"Recycle",
   fm_why_rec:n=>`ruled out after ${n} sub${n>1?"s":""} — no rule possible anymore`,
-  fm_why_base:"recycled from the base — fix the main, or move to the next drop (not counted)",
+  fm_why_base:"recycled from the base — no rule wants this set with this main",
   fm_why_kept:r=>`satisfies ${r} — the remaining subs don't matter`,
-  fm_autoreset:"auto-reset 1.5 s — touch to keep the entry", fm_next:"next piece",
+  fm_next:"Next piece",
   fm_sets_recent:"Set — recent first", fm_allsets:"all sets",
-  fm_slotmain:"Slot · Main — remembered from the previous drop", fm_subs:n=>`Subs ${n}/4`,
+  fm_slotmain:"Slot · Main — kept from piece to piece", fm_subs:n=>`Subs ${n}/4`,
   v_sim_h:"Simulation", v_sim_lede:"Check what your ruleset keeps and recycles before entering it in the game — on a realistic sample of drawn pieces.",
   v_session_h:"Session — check a piece", v_session_lede:"The game just dropped you a piece? Rebuild it here — slot, main, subs, set — and the verdict lands on the card, live. To chain drops, start a Farm session.",
   v_entry_h:"In-game entry", v_entry_lede:"The copy state of the active ruleset: tick each rule once entered in the in-game builder.",
@@ -1448,7 +1471,10 @@ en:{
   cmp_ph:"compare to…", cmp_note:n=>"Δ vs "+n,
   scene_ex:(k,r)=>`Examples drawn from the sample — ${k} kept, ${r} recycled · click a card for details`,
   h_session:`Rebuild the dropped piece with the selectors below: <b>slot</b> → <b>main</b> → <b>subs</b> → <b>set</b>. The card on top shows live which rules are still possible, then the final verdict (kept / recycled) as soon as it is certain — no need for all 4 subs if the piece's fate is already sealed.<br><b>Farm session</b>: the same gesture full-screen, thumb-first — the next piece starts with one tap (set, slot and main kept) and the session counts seen, kept, recycled.`,
-  fm_helper:"describe each drop: set → main → subs. The verdict lands as soon as it is certain; the next input starts the next piece.",
+  fm_helper:"pick the set (menu), the slot and the main, then tap the subs in game order — the verdict shows live, as soon as it is certain. “Next piece” clears the subs; set, slot and main stay.",
+  fm_set:"Set", fm_set_ph:"pick the drop's set…",
+  ic_poss_sum:n=>`details — what the ${n} possible rule${n>1?"s":""} still need`,
+  ic_near_sum:n=>`close rules (${n})`,
   bb_n:n=>n+" selected", bb_addset:"+ set…", bb_rmset:"− set…", bb_addrole:"+ role…", bb_rmrole:"− role…",
   c_bulk_req:"required (batch)", c_bulk_set:"sets (batch)", c_bulk_role:"roles (batch)", c_bulk_dup:"duplication (batch)", c_bulk_del:"deletion (batch)",
   t_bulk_del:n=>n+" rule"+(n>1?"s":"")+" deleted — Ctrl+Z undoes it all.",
@@ -1456,7 +1482,7 @@ en:{
   hp_shortcuts_html:`<ul>
     <li><kbd>Ctrl+K</kbd> palette · <kbd>Ctrl+Z</kbd> undo · <kbd>Ctrl+Shift+Z</kbd> redo · <kbd>?</kbd> this help</li>
     <li>Rule list, focused card: <kbd>j</kbd>/<kbd>k</kbd> or <kbd>↑</kbd><kbd>↓</kbd> navigate · <kbd>o</kbd>/<kbd>Space</kbd> expand · <kbd>x</kbd> “entered” tick · <kbd>+</kbd>/<kbd>−</kbd> required · <kbd>d</kbd> duplicate · <kbd>Alt+↑↓</kbd> move · <kbd>Shift-click</kbd>/<kbd>v</kbd> select (batch action bar)</li>
-    <li>Guided copy: <kbd>Enter</kbd> ticked → next · <kbd>Backspace</kbd> untick & back · <kbd>←</kbd><kbd>→</kbd> navigate · <kbd>c</kbd> copy key</li>
+    <li>Guided copy: <kbd>Enter</kbd> ticked → next · <kbd>Backspace</kbd> untick & back · <kbd>←</kbd><kbd>→</kbd> navigate</li>
   </ul>`,
   hp_legend_h:"Legend", hp_legend_html:`<ul>
     <li>◆ brand & section heads — never a state</li>
@@ -1470,7 +1496,7 @@ en:{
     <li><kbd>/</kbd> opens search (the field in Rules, the palette elsewhere) · <kbd>g</kbd> then <kbd>r</kbd>/<kbd>s</kbd>/<kbd>c</kbd>/<kbd>j</kbd>/<kbd>f</kbd> = navigation · <kbd>1</kbd>–<kbd>9</kbd> = activate the nth ruleset.</li>
     <li>The palette (<kbd>Ctrl+K</kbd>) finds rules across all rulesets, plus commands and views.</li>
   </ul>`,
-  oracle_ok:(k,n,p)=>`Your sorting is healthy — it keeps ${k} piece${k>1?"s":""} out of ${n} (${p})`,
+  oracle_ok:"Your sorting is healthy",
   oracle_multi0:"nothing is kept twice by accident",
   oracle_multiN:m=>`${m} piece${m>1?"s":""} kept by ≥ 2 rules — watch the overlaps atop the Rules view`,
   oracle_none:n=>`Nothing is kept out of ${n} pieces — widen the scope, or check this ruleset's rules.`,
@@ -2047,9 +2073,10 @@ function ruleRow(r){
         <span class="k">${t("k_subs")}</span><span>${chips}</span>
         <span class="k">${t("k_req")}</span><span><span class="stepper"><button type="button" class="st-minus" data-rule="${r.id}" aria-label="${t("aria_minus")}">−</button><span class="val">${r.req}</span><button type="button" class="st-plus" data-rule="${r.id}" aria-label="${t("aria_plus")}">+</button></span>${warn}</span>
       </div>
-      ${r.desc ? `<p class="rule-desc">${esc(r.desc)}</p>` : ""}
-      ${r.pool.length ? `<p class="rule-phrase">${rulePhrase(r)}</p>` : ""}
+      ${r.desc ? `<p class="rule-phrase">${esc(r.desc)}</p>` : ""}
       <div class="rb-actions">
+        <button type="button" class="btn sm rc-move" data-mvup="${r.id}" aria-label="monter">↑</button>
+        <button type="button" class="btn sm rc-move" data-mvdn="${r.id}" aria-label="descendre">↓</button>
         <button type="button" class="btn sm rc-dup" data-rule="${r.id}">${t("b_dup")}</button>
         <button type="button" class="btn sm danger rc-del" data-rule="${r.id}">${t("b_del")}</button>
         <button type="button" class="btn sm rc-edit" data-rule="${r.id}">${t("b_edit")}</button>
@@ -2156,7 +2183,7 @@ function covHead(){
     ${alerts.length?`<div class="alerts">${alerts.join("")}</div>`:""}
     ${pairs.length?`<details class="acc" id="ov-acc"${UI.ovOpen?" open":""}>
       <summary>${t("ov_sum", pairs.length)}</summary>
-      <div class="acc-body"><p class="hint" style="margin:4px 0 8px">${t("ov_hint")}</p>${rows}</div>
+      <div class="acc-body"><p class="hint" style="margin:4px 0 8px">${t("ov_hint")}</p><div class="ov-grid">${rows}</div></div>
     </details>`:""}`;
 }
 // Rafraîchit tête + attributs par carte après une mutation à chaud (chips, requis) — débouncé
@@ -2384,6 +2411,7 @@ function viewRegles(){
           ${ALLSTATS.map(a=>`<button type="button" class="chip ${STAT[a]} pick${UI.fMain.has(a)?' sel':''}" data-fmain="${a}" title="${t("tip_fmain", a)}">${a}</button>`).join("")}
         </div>
       </div>
+      <span class="fsep" aria-hidden="true"></span>
       <div class="ctl">${ctlLabel("subs",t("lbl_subs"))}
         <div class="fchips" id="f-subs">
           ${ALLSTATS.map(a=>`<button type="button" class="chip ${STAT[a]} pick${UI.fSubs.has(a)?' sel':''}" data-fsub="${a}" title="${t("tip_fsub", a)}">${a}</button>`).join("")}
@@ -2475,9 +2503,22 @@ function rerenderRule(id){
   }
   applyRoving();
 }
+function ensureTabVisible(sc){
+  if(!sc) return;
+  const on = sc.querySelector(".tab-btn.on");
+  if(!on) return;
+  // rects relatifs au conteneur : offsetLeft se réfère à l'offsetParent, pas au scroller
+  const r = on.getBoundingClientRect(), c = sc.getBoundingClientRect();
+  if(r.left < c.left) sc.scrollLeft += r.left - c.left - 12;
+  else if(r.right > c.right) sc.scrollLeft += r.right - c.right + 12;
+}
 function refreshTabBar(){
+  const prev = document.querySelector("#tabbar .tabs-scroll");
+  const x = prev ? prev.scrollLeft : 0;
   const el = document.getElementById("tabbar");
   if(el) el.outerHTML = tabBar();
+  const sc = document.querySelector("#tabbar .tabs-scroll");
+  if(sc){ sc.scrollLeft = x; ensureTabVisible(sc); }
 }
 
 /* ══════════════ VUE : SETS ══════════════ */
@@ -2657,24 +2698,18 @@ function samplePanel(){
     const byRule = {};
     for(const p of sample) for(const id of p.matched) byRule[id]=(byRule[id]||0)+1;
     const top = Object.entries(byRule).sort((a,b)=>b[1]-a[1])[0];
-    const keptIdx = sample.map((p,i)=>({p,i})).filter(x=>x.p.matched.length>0).slice(0,2);
-    const recIdx = sample.map((p,i)=>({p,i})).find(x=>x.p.matched.length===0);
-    const showcase = [...keptIdx, ...(recIdx?[recIdx]:[])].slice(0,3);
     let tone = "ok", oracle;
     if(!kept){ tone = "bad"; oracle = t("oracle_none", n); }
     else if(100*kept/n > 10){ tone = "bad"; oracle = t("oracle_wide", pctTxt); }
-    else oracle = `${t("oracle_ok", kept, n, pctTxt)} ; ${multi ? t("oracle_multiN", multi) : t("oracle_multi0")}.`;
+    else oracle = `${t("oracle_ok")} — ${multi ? t("oracle_multiN", multi) : t("oracle_multi0")}.`;
     scene = `<section class="scene">
       <p class="scene-phrase"><span class="d">◆</span> ${t("scene_phrase", n, kept)}</p>
-      <p class="scene-sub">${t("scene_sub")}</p>
+      <p class="scene-oracle ${tone}"><b class="d">◆</b> ${oracle}</p>
       <div class="cov-strip">
         <div class="cov-card"><div class="num">${n.toLocaleString(t("date_locale"))}</div><div class="lbl">${t("scene_drawn")}</div></div>
         <button type="button" class="cov-card act" data-scn="kept"${kept?` title="${t("ord_one", Math.round(n/kept))}"`:""}><div class="num">${kept} <b>· ${pctTxt}</b></div><div class="lbl">${t("scene_kept")}</div></button>
         ${top?`<div class="cov-card"><div class="num"><button type="button" class="ruleref" data-goto="${top[0]}">${top[0]}</button> · ${top[1]}</div><div class="lbl">${t("scene_top")}</div></div>`:""}
       </div>
-      ${showcase.length?`<div class="lab" style="margin:0 0 -6px">${t("scene_ex", keptIdx.length, recIdx?1:0)}</div>
-      <div class="piece-grid scene-cards">${showcase.map(({p,i})=>pieceCard(p,i)).join("")}</div>`:""}
-      <div class="oracle ${tone}"><b class="d">◆</b> ${oracle}</div>
       <div><button type="button" class="btn primary" id="ts-scene-regen">↻ ${t("scene_replay")}</button></div>
     </section>`;
   }
@@ -2779,7 +2814,7 @@ function manualPanel(){
 
         return `<div class="xr" style="font-size:12.5px;color:var(--muted);margin-bottom:6px"><button type="button" class="ruleref" data-goto="${f.r.id}">${f.r.id}</button> <b style="color:var(--ink)">${esc(f.r.name)}</b> <span style="color:var(--faint);font-size:11.5px">— ${sortSets(f.r.sets).map(setName).map(esc).join(", ")}</span>${missLine}</div>`;
       }).join("");
-      details = `<div class="ic-details fixed"><p class="hint" style="margin:0 0 8px">${t("m_rulescov_hint")}</p>${rows}</div>`;
+      details = `<details class="ic-acc"><summary>${t("ic_poss_sum", feasible.length)}</summary><div class="ic-details fixed"><p class="hint" style="margin:0 0 8px">${t("m_rulescov_hint")}</p>${rows}</div></details>`;
     }
     card = itemCard(piece, {prov:{feasible}, details});
   } else {
@@ -2787,11 +2822,11 @@ function manualPanel(){
     piece.matched = ex.matched.map(r=>r.id);
     let details = "";
     if(ex.near.length || ex.off){
-      details = `<div class="ic-details fixed">
+      details = `<details class="ic-acc"><summary>${t("ic_near_sum", ex.near.length)}</summary><div class="ic-details fixed">
         ${ex.near.length?`<span class="lab">${t("m_near_sub")}</span>`:""}
         ${ex.near.map(x=>`<div class="xr" style="font-size:12.5px;color:var(--muted);margin-bottom:6px"><button type="button" class="ruleref" data-goto="${x.r.id}">${x.r.id}</button> <b style="color:var(--ink)">${esc(x.r.name)}</b>${x.reasons.map(w=>`<div class="xr-line" style="font-size:12px">${esc(w)}</div>`).join("")}</div>`).join("")}
         ${ex.off?`<div class="xr" style="color:var(--faint);font-size:12px">${t("xr_off", ex.off)}</div>`:""}
-      </div>`;
+      </div></details>`;
     }
     card = itemCard(piece, {details});
   }
@@ -2815,8 +2850,8 @@ function manualPanel(){
   </div>`;
   const subsSummary = m.subs.length ? `${sortStats(m.subs).join(" · ")} <span style="color:var(--faint)">(${m.subs.length}/4)</span>` : `<span style="color:var(--faint)">0/4</span>`;
   return `
-    <div id="session-wrap">${card}</div>
-    <div class="panel" style="padding:10px 13px">
+    <div class="session-cols">
+    <div class="panel session-left" style="padding:10px 13px">
       ${stepBox("slot", t("m_slot"), slotLabel(m.slot), slotSeg)}
       ${stepBox("main", t("m_main"), m.main||"—", `<div class="tm-stats">${mainChips}</div>`)}
       ${stepBox("subs", t("m_subs_k"), subsSummary,
@@ -2826,6 +2861,8 @@ function manualPanel(){
       ${stepBox("set", t("m_set"), `T${tierLabel(SETTIER[m.set])} · ${esc(setName(m.set))}`,
         `<div style="margin:2px 0 8px">${tierBtns}</div>
          <div class="tm-sets">${setGrid || `<span class="hint">${t("no_set_match")}</span>`}</div>`)}
+    </div>
+    <div id="session-wrap">${card}</div>
     </div>`;
 }
 function constraintsInner(){
@@ -2870,7 +2907,7 @@ function viewSession(){
     ${helpBody("session", t("h_session"))}
     <div class="controls">
       ${tabPicker()}
-      <button type="button" class="btn primary" id="fm-open">▸ ${t("fm_start")}</button>
+      <button type="button" class="btn primary" id="fm-open" style="margin-bottom:1px">▸ ${t("fm_start")}</button>
     </div>
     <div id="test-body">${manualPanel()}</div>
   </div>`;
@@ -3032,11 +3069,7 @@ function tpRender(){
       <div><div class="tp-k">${t("k_sets")}</div><div class="tp-v">${sortSets(r.sets).map(setName).map(esc).join(" · ")}</div></div>
       <div><div class="tp-k">${t("k_mains")}</div><div class="tp-v">${r.mains.length?r.mains.map(a=>`${esc(statSig(a))} <span class="sig">(${a})</span>`).join(" · "):"—"}</div></div>
       <div><div class="tp-k">${t("k_subs")} — ${t("tp_star")}</div><div class="tp-subs">${subs}</div></div>
-      <div><div class="tp-k">${t("k_req")}</div><div class="tp-v">${t("tp_req", r.req)}</div></div>
-      <div><div class="tp-k">${t("lbl_gamekey")}</div>
-        <div class="tp-keyrow">${tab.key?`<span class="tp-keyval">${esc(tab.key)}</span><button type="button" class="btn sm" id="tp-copy">${t("b_copykey")}</button>`:`<span class="hint">${t("tp_nokey")}</span>`}</div>
-        <p class="hint" style="margin:5px 0 0">${t("tp_key_hint")}</p>
-      </div>
+      <div><div class="tp-k">${t("k_req")}</div><div class="tp-v tp-reqv">${r.req} / 4</div></div>
     </div>`;
   }
   d.innerHTML = `<div class="tp-wrap${allDone?" gold":""}">
@@ -3096,12 +3129,12 @@ function tpBack(uncheck){
   }
   tpRender();
 }
-/* ── Session de farm : mode focus plein écran, compteur de pièces PAR SESSION,
-      verdict AU PLUS TÔT (gardée dès qu'une règle est déjà satisfaite, recyclée dès
-      que plus aucune n'est possible — la saisie s'arrête au verdict, pas à la
-      complétude), auto-reset 1,5 s, set/slot/main conservés. Zéro mutation de données. ── */
-let FARM = {m:{slot:"bracelet", set:null, main:null, subs:[]}, seen:0, kept:0, rec:0,
-            locked:false, timer:null, recent:[], allSets:false};
+/* ── Session de farm : un vérificateur de verdict RAPIDE, plein écran.
+      Le verdict s'affiche EN DIRECT (gardée dès qu'une règle est satisfaite, recyclée
+      dès que plus aucune n'est possible) ; la saisie reste LIBRE jusqu'à 4 subs.
+      « Pièce suivante » vide les subs — set, slot et main sont conservés.
+      Zéro compteur, zéro auto-reset, zéro donnée mutée. ── */
+let FARM = {m:{slot:"bracelet", set:null, main:null, subs:[]}};
 function farmVerdict(m){
   const tab = activeTab();
   const slot = SLOTS.find(s=>s.key===m.slot);
@@ -3114,7 +3147,7 @@ function farmVerdict(m){
     const effPool = r.pool.filter(x=>x!==m.main);
     const missEss = r.ess.filter(e=>e!==m.main && !m.subs.includes(e));
     const have = m.subs.filter(x=>effPool.includes(x)).length;
-    if(!missEss.length && have >= r.req) return {state:"kept", rule:r}; // déjà satisfaite : le reste des subs est indifférent
+    if(!missEss.length && have >= r.req) return {state:"kept", rule:r}; // déjà satisfaite : le reste est indifférent
     const free = 4 - m.subs.length;
     const remaining = effPool.filter(x=>!m.subs.includes(x));
     if(missEss.length <= free && have + Math.min(free, remaining.length) >= r.req) anyPossible = true;
@@ -3122,33 +3155,6 @@ function farmVerdict(m){
   if(m.subs.length >= 4 || !anyPossible) return {state:"rec"};
 
   return {state:"prov"};
-}
-function farmReset(render){
-  clearTimeout(FARM.timer); FARM.timer = null;
-  FARM.m.subs = []; // set, slot et main sont conservés — la croisière du farm
-  FARM.locked = false;
-  if(render) farmRender();
-}
-function farmJudge(){
-  const v = farmVerdict(FARM.m);
-  if((v.state==="kept" || v.state==="rec") && !FARM.locked){
-    FARM.locked = true;
-    FARM.recent = [FARM.m.set, ...FARM.recent.filter(s=>s!==FARM.m.set)].slice(0,3);
-    // un verdict tombé DÈS LA BASE (0 sub) s'affiche mais ne compte pas — corriger la
-    // main après coup ne doit pas gonfler le compteur de pièces fantômes
-    if(v.state==="kept" || FARM.m.subs.length >= 1){
-      FARM.seen++;
-      if(v.state==="kept") FARM.kept++; else FARM.rec++;
-      FARM.timer = setTimeout(()=>farmReset(true), 1500);
-    }
-  }
-  farmRender();
-}
-// toute saisie après un verdict démarre la pièce suivante — pas de tap mort
-function farmApply(fn){
-  if(FARM.locked) farmReset(false);
-  fn();
-  farmJudge();
 }
 function farmRender(){
   const d = document.getElementById("farm-dlg");
@@ -3161,30 +3167,21 @@ function farmRender(){
   if(m.set && SETSIDE[m.set] !== slot.side) m.set = null;
   const v = farmVerdict(m);
   const sideSets = SETS.filter(s=>s.side===slot.side);
-  const recents = FARM.recent.filter(n=>SETSIDE[n]===slot.side);
   let verd;
   if(v.state==="idle") verd = `<div class="fm-why">${t("fm_idle")}</div><div class="fm-hint" style="max-width:46ch">${t("fm_helper")}</div>`;
   else if(v.state==="prov") verd = `<div class="big">◌ ${t("fm_prov", m.subs.length)}</div>`;
   else if(v.state==="kept") verd = `<div class="big">✓ ${t("fm_keep")}</div><div class="fm-why">${t("fm_why_kept", v.rule.id+" · "+esc(v.rule.name))}</div>`;
   else verd = `<div class="big">⚒ ${t("fm_recycle")}</div><div class="fm-why">${m.subs.length ? t("fm_why_rec", m.subs.length) : t("fm_why_base")}</div>`;
   const pieceLine = (m.set||m.main) ? `<div class="fm-piece">${m.set?esc(setName(m.set)):"—"} · ${slotLabel(m.slot)} · ${m.main||"—"}${m.subs.length?` — ${sortStats(m.subs).join(", ")}`:""}</div>` : "";
-  const hold = FARM.timer ? `<div class="fm-hint">${t("fm_autoreset")}</div>`
-             : (FARM.locked ? `<button type="button" class="btn sm" id="fm-next">↻ ${t("fm_next")}</button>` : "");
   d.innerHTML = `<div class="tp-wrap">
     <div class="tp-head">
       <button type="button" class="btn sm" id="fm-close">✕ ${t("tp_end")}</button>
       <span class="tp-title">${t("nav_session")} · ${esc(tab?tab.name:"")}</span>
-      <span class="tp-prog"><b>${FARM.seen}</b> ${t("fm_seen")}</span>
     </div>
-    <div class="fm-stats"><span class="k">✓ ${FARM.kept}</span> · <span class="r">⚒ ${FARM.rec}</span></div>
-    <div class="fm-verdict ${v.state}" id="fm-verd">${pieceLine}${verd}${hold}</div>
+    <div class="fm-verdict ${v.state}" id="fm-verd">${pieceLine}${verd}</div>
     <div class="fm-taps">
-      <div><div class="tp-k">${t("fm_sets_recent")}</div>
-        <div class="fm-row">
-          ${recents.map(n=>`<button type="button" class="chip set t${SETTIER[n]} pick${m.set===n?' sel':''}" data-fmset="${esc(n)}">${esc(setName(n))}</button>`).join("")}
-          <button type="button" class="fchip${FARM.allSets?' on':''}" id="fm-allsets">${t("fm_allsets")} ▾</button>
-        </div>
-        ${FARM.allSets?`<div class="fm-row" style="margin-top:7px">${sideSets.map(s=>`<button type="button" class="chip set t${s.t} pick${m.set===s.n?' sel':''}" data-fmset="${esc(s.n)}">${esc(setName(s.n))}</button>`).join("")}</div>`:""}
+      <div><div class="tp-k">${t("fm_set")}</div>
+        <select id="fm-set"><option value="">${t("fm_set_ph")}</option>${sideSets.map(s=>`<option value="${esc(s.n)}"${m.set===s.n?" selected":""}>T${tierLabel(s.t)} · ${esc(setName(s.n))}</option>`).join("")}</select>
       </div>
       <div><div class="tp-k">${t("fm_slotmain")}</div>
         <div class="fm-row">${SLOTS.map(s=>`<button type="button" class="fchip${s.key===m.slot?' on':''}" data-fmslot="${s.key}">${slotLabel(s.key)}</button>`).join("")}</div>
@@ -3193,13 +3190,11 @@ function farmRender(){
       <div><div class="tp-k">${t("fm_subs", m.subs.length)}</div>
         <div class="fm-row">${ALLSTATS.filter(a=>a!==m.main).map(a=>`<button type="button" class="chip ${STAT[a]} pick${m.subs.includes(a)?' sel':''}" data-fmsub="${a}">${a}</button>`).join("")}</div>
       </div>
+      <button type="button" class="btn primary" id="fm-next" style="width:100%;min-height:48px"${m.subs.length?"":" disabled"}>↻ ${t("fm_next")}</button>
     </div>
   </div>`;
 }
 function openFarm(){
-  // une ouverture = une session : les compteurs repartent à zéro
-  FARM.seen = 0; FARM.kept = 0; FARM.rec = 0;
-  farmReset(false);
   const legal = CONSTRAINTS[FARM.m.slot] || [];
   if(!FARM.m.main) FARM.m.main = legal[0] || null;
   farmRender();
@@ -3541,6 +3536,7 @@ function renderView(){
   else if(UI.view==="saisie"){ main.innerHTML = viewSaisie(); }
   else { main.innerHTML = viewRegles(); updateRuleList(); }
   main.scrollTop = 0;
+  ensureTabVisible(main.querySelector(".tabs-scroll"));
   if(UI.pending){
     const id = UI.pending; UI.pending = null;
     const el = document.getElementById("card-"+id);
@@ -4189,26 +4185,24 @@ document.addEventListener("click", e=>{
   // tiroir mobile
   if(el.closest("#fm-open")){ openFarm(); return; }
   if(el.closest("#fm-close")){ closeFarm(); return; }
-  if(el.closest("#fm-next")){ farmReset(true); return; }
-  if(el.closest("#fm-allsets")){ FARM.allSets = !FARM.allSets; farmRender(); return; }
-  const fset = el.closest("[data-fmset]");
-  if(fset){ farmApply(()=>{ FARM.m.set = fset.dataset.fmset; }); return; }
+  if(el.closest("#fm-next")){ FARM.m.subs = []; farmRender(); return; }
   const fslot = el.closest("[data-fmslot]");
-  if(fslot){ farmApply(()=>{
+  if(fslot){
     FARM.m.slot = fslot.dataset.fmslot;
     const legal = CONSTRAINTS[FARM.m.slot] || [];
     if(!legal.includes(FARM.m.main)) FARM.m.main = legal[0] || null;
     FARM.m.subs = FARM.m.subs.filter(s=>s!==FARM.m.main);
-  }); return; }
+    farmRender(); return;
+  }
   const fmain = el.closest("[data-fmmain]");
-  if(fmain){ farmApply(()=>{ FARM.m.main = fmain.dataset.fmmain; FARM.m.subs = FARM.m.subs.filter(s=>s!==FARM.m.main); }); return; }
+  if(fmain){ FARM.m.main = fmain.dataset.fmmain; FARM.m.subs = FARM.m.subs.filter(s=>s!==FARM.m.main); farmRender(); return; }
   const fsub = el.closest("[data-fmsub]");
-  if(fsub){ farmApply(()=>{
+  if(fsub){
     const a = fsub.dataset.fmsub, subs = FARM.m.subs;
     if(subs.includes(a)) FARM.m.subs = subs.filter(x=>x!==a);
     else if(subs.length<4) subs.push(a);
-  }); return; }
-  if(el.closest("#fm-verd")){ if(FARM.timer){ clearTimeout(FARM.timer); FARM.timer = null; farmRender(); } return; }
+    farmRender(); return;
+  }
   if(el.closest("#bb-req-minus") || el.closest("#bb-req-plus")){
     const d = el.closest("#bb-req-plus") ? 1 : -1;
     bulkApply(t("c_bulk_req"), rules=>rules.forEach(r=>{ r.req = Math.max(1, Math.min(4, r.req + d)); r.ess = r.ess.slice(0, 4); }));
@@ -4268,7 +4262,6 @@ document.addEventListener("click", e=>{
   if(el.closest("#tp-close") || el.closest("#tp-close2")){ closeTp(); return; }
   if(el.closest("#tp-next")){ tpNext(true); return; }
   if(el.closest("#tp-prev")){ tpBack(false); return; }
-  if(el.closest("#tp-copy")){ const k = (activeTab()||{}).key; if(k) doCopy(k, el.closest("#tp-copy")); return; }
   if(el.closest("#tb-more")){ document.body.classList.toggle("nav-open"); return; }
   if(el.closest("#scrim")){ document.body.classList.remove("nav-open"); return; }
 
@@ -4307,6 +4300,23 @@ document.addEventListener("click", e=>{
   if(rm){ UI.refMode = rm.dataset.refmode; renderView(); return; }
   const tsf = el.closest("[data-tsfilter]");
   if(tsf){ UI.test.filter = tsf.dataset.tsfilter; updateTestBody(); return; }
+  const mv = el.closest("[data-mvup],[data-mvdn]");
+  if(mv){
+    const up = !!mv.dataset.mvup;
+    const id = up ? mv.dataset.mvup : mv.dataset.mvdn;
+    const r = getRule(id);
+    const tab = activeTab();
+    if(r && tab){
+      const sibs = tab.rules.filter(x=>x.section===r.section);
+      const i = sibs.indexOf(r);
+      const sr = sibs[i + (up ? -1 : 1)];
+      if(sr && reorderRule(id, sr.id, up)){
+        scheduleSave(t("c_move", id));
+        updateRuleList(); refreshTabBar();
+      }
+    }
+    return;
+  }
   const mk = el.closest("[data-mkrule]");
   if(mk){
     try{ openDlgFromPiece(JSON.parse(mk.dataset.mkrule)); }catch(_){}
@@ -4418,6 +4428,7 @@ document.addEventListener("click", e=>{
   }
 });
 document.addEventListener("change", e=>{
+  if(e.target.id === "fm-set"){ FARM.m.set = e.target.value || null; farmRender(); return; }
   if(e.target.id === "cov-compare"){
     UI.compareTo = e.target.value || null;
     COV_CACHE2 = null;
@@ -4539,7 +4550,6 @@ document.addEventListener("keydown", e=>{
     if(e.key==="Backspace"){ e.preventDefault(); tpBack(true); return; }
     if(e.key==="ArrowRight"){ e.preventDefault(); tpNext(false); return; }
     if(e.key==="ArrowLeft"){ e.preventDefault(); tpBack(false); return; }
-    if((e.key==="c"||e.key==="C") && !e.ctrlKey && !e.metaKey){ const b=document.getElementById("tp-copy"); if(b) b.click(); e.preventDefault(); return; }
     return; // rien ne fuit vers les raccourcis de la liste (Échap = fermeture native)
   }
   if(e.target && e.target.id==="arch-input"){
@@ -4667,7 +4677,7 @@ document.addEventListener("dragend", ()=>{ if(DRAG){ DRAG = null; updateRuleList
 // l'Échap natif du <dialog> contourne closeDlg() : le nettoyage vit sur l'événement close
 { const d = document.getElementById("dlg-overlay"); if(d) d.addEventListener("close", ()=>{ AP.editing = null; }); }
 { const d = document.getElementById("farm-dlg");
-  if(d) d.addEventListener("close", ()=>{ clearTimeout(FARM.timer); FARM.timer = null; tpWakeLock(false); }); }
+  if(d) d.addEventListener("close", ()=>tpWakeLock(false)); }
 { const d = document.getElementById("tp-dlg");
   if(d){
     d.addEventListener("close", ()=>{ tpWakeLock(false); renderView(); });
