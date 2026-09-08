@@ -182,6 +182,16 @@
     border-radius:var(--r-m);cursor:pointer;font-size:var(--fs-3);line-height:1;transition:all .15s}
   .tab-add:hover{color:var(--acc);border-color:var(--acc-bd)}
   .tab-add:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+  .addwrap{position:relative;display:inline-flex}
+  .addmenu{position:absolute;top:calc(100% + 6px);right:0;z-index:40;display:flex;flex-direction:column;gap:2px;
+    background:var(--panel);border:1px solid var(--border);border-radius:var(--r-m);padding:6px;min-width:190px;
+    box-shadow:0 8px 24px rgba(0,0,0,.35)}
+  body.light .addmenu{box-shadow:0 8px 24px rgba(60,50,30,.18)}
+  .addmenu[hidden]{display:none}
+  .addmenu button{appearance:none;background:none;border:none;color:var(--ink);font:inherit;font-size:var(--fs-2);
+    text-align:left;padding:7px 11px;border-radius:var(--r-s);cursor:pointer}
+  .addmenu button:hover{background:var(--panel2)}
+  .empty-tpl{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:10px}
   .tab-rename{background:var(--panel2);border:1px solid var(--acc-bd);border-radius:var(--r-m);color:var(--ink);
     font:inherit;font-size:var(--fs-2);padding:6px 10px;width:190px}
   .tab-tools{display:flex;gap:6px;flex-wrap:wrap;align-items:stretch}
@@ -1130,7 +1140,14 @@ fr:{
     <li>« modifier » rouvre l'éditeur complet (nom, ensemble, sets, mains…).</li>
     <li>Tout ce qu'aucune règle du jeu ne couvre est recyclé — chiffre-le dans la <b>Simulation</b>, ou vérifie set par set dans <b>Référence › Sets &amp; transfo</b>.</li>
   </ul>`,
-  empty_tab:"Ce jeu de règles est vide.", btn_create_empty:"＋ Créer une règle", empty_filters:"Aucune règle ne correspond aux filtres.",
+  empty_tab:"Ce jeu de règles est vide.", btn_create_empty:"＋ Créer une règle",
+  empty_tpl_p:"Pars d'un modèle — tu l'ajusteras ensuite règle par règle :",
+  empty_tpl_hint:"…ou construis de zéro :",
+  tpl_vide:"Vide", tpl_early:"Early game", tpl_mid:"Mid game", tpl_end:"End game",
+  tpl_early_desc:"Modèle early (T0-T1) : on équipe vite, deux bons subs suffisent. À ajuster à ton roster.",
+  tpl_mid_desc:"Modèle mid (T1-T2) : requis 3, une ★ par règle. À ajuster à ton roster.",
+  tpl_end_desc:"Modèle end game (T2-T3) : quads only, ★ obligatoires. À ajuster à ton roster.",
+  c_tpl:n=>"création du jeu "+n, t_tpl:(n,c)=>`Jeu de règles <b>${n}</b> créé (${c} règles) — un point de départ à ajuster à ton roster.`, empty_filters:"Aucune règle ne correspond aux filtres.",
   tip_fmain:a=>"ne garder que les règles dont les mains contiennent "+a,
   tip_fsub:a=>"ne garder que les règles dont la liste de subs contient "+a,
   k_sets:"Sets", k_mains:"Main(s)", k_subs:"Subs", k_req:"Requis", k_roles:"Rôles",
@@ -1356,7 +1373,14 @@ en:{
     <li>"edit" reopens the full editor (name, set size, sets, mains…).</li>
     <li>Whatever no rule of the ruleset covers gets recycled — measure it in the <b>Simulation</b>, or check set by set in <b>Reference › Sets &amp; transform</b>.</li>
   </ul>`,
-  empty_tab:"This ruleset is empty.", btn_create_empty:"＋ Create a rule", empty_filters:"No rule matches the filters.",
+  empty_tab:"This ruleset is empty.", btn_create_empty:"＋ Create a rule",
+  empty_tpl_p:"Start from a template — then tune it rule by rule:",
+  empty_tpl_hint:"…or build from scratch:",
+  tpl_vide:"Empty", tpl_early:"Early game", tpl_mid:"Mid game", tpl_end:"End game",
+  tpl_early_desc:"Early template (T0-T1): equip fast, two good subs are enough. Tune it to your roster.",
+  tpl_mid_desc:"Mid template (T1-T2): required 3, one ★ per rule. Tune it to your roster.",
+  tpl_end_desc:"End game template (T2-T3): quads only, mandatory ★. Tune it to your roster.",
+  c_tpl:n=>"ruleset "+n+" created", t_tpl:(n,c)=>`Ruleset <b>${n}</b> created (${c} rules) — a starting point to tune to your roster.`, empty_filters:"No rule matches the filters.",
   tip_fmain:a=>"only keep rules whose mains include "+a,
   tip_fsub:a=>"only keep rules whose sub list includes "+a,
   k_sets:"Sets", k_mains:"Main(s)", k_subs:"Subs", k_req:"Required", k_roles:"Roles",
@@ -2219,7 +2243,15 @@ function tabBar(){
           return `<button type="button" class="tab-btn${t.id===activeTabId?' on':''}" data-tabsel="${t.id}">${esc(t.name)} <span class="n">${t.rules.length}</span></button>`;
         }).join("")}
       </div>
-      <button type="button" class="tab-add" id="tab-add" title="${t("tab_add")}">＋</button>
+      <span class="addwrap"><button type="button" class="tab-add" id="tab-add" title="${t("tab_add")}">＋</button>
+        <div class="addmenu" id="addmenu" hidden>
+          <button type="button" data-tpl="vide">${t("tpl_vide")}</button>
+          <button type="button" data-tpl="early">${t("tpl_early")}</button>
+          <button type="button" data-tpl="mid">${t("tpl_mid")}</button>
+          <button type="button" data-tpl="end">${t("tpl_end")}</button>
+          <button type="button" data-tpl="import">${t("import_btn")}</button>
+        </div>
+      </span>
     </div>
     <span class="tab-tools">
       <button type="button" class="btn sm" id="tab-rename">${t("rename")}</button>
@@ -2412,7 +2444,16 @@ function updateRuleList(){
   const tab = activeTab();
   let html = "";
   if(!tab || !tab.rules.length){
-    html = `<div class="empty"><p>${t("empty_tab")}</p><button type="button" class="btn primary" id="add-open-empty">${t("btn_create_empty")}</button></div>`;
+    html = `<div class="empty">
+      <p>${t("empty_tpl_p")}</p>
+      <div class="empty-tpl">
+        <button type="button" class="btn" data-tpl="early">${t("tpl_early")}</button>
+        <button type="button" class="btn" data-tpl="mid">${t("tpl_mid")}</button>
+        <button type="button" class="btn" data-tpl="end">${t("tpl_end")}</button>
+      </div>
+      <p class="hint" style="margin-top:10px">${t("empty_tpl_hint")}</p>
+      <button type="button" class="btn primary" id="add-open-empty">${t("btn_create_empty")}</button>
+    </div>`;
   } else {
     const list = tab.rules.filter(matchFilters);
     if(!list.length){
@@ -3112,6 +3153,53 @@ function tpBack(uncheck){
     if(r && isEntered(r.id)) tpSetEntered(r, false);
   }
   tpRender();
+}
+/* ── Templates Early / Mid / End (D9) : des jeux de règles prêts à ajuster.
+      Les sets sont résolus PAR TIER à la création (robuste aux ajouts de sets) ;
+      les règles passent par sanitizeRule comme un import. Contenu = brouillon
+      doctrine (budgets, trio CC·CD·AS, HP% > DEF%) — à affiner en jouant. ── */
+const TEMPLATES = {
+  early: {tiers:[0,1], rules:[
+    {name:"Survie",  section:"left",  mains:["ATK","HP"], pool:["HP","HP%","DEF","DEF%","RR","HE"], ess:[], req:2, arch:["tank","heal"], desc:"Early : deux subs de survie suffisent — on équipe, on ne collectionne pas."},
+    {name:"Dégâts",  section:"left",  mains:["ATK","HP"], pool:["ATK","ATK%","CC","CD","AS"], ess:[], req:2, arch:["dps"]},
+    {name:"Survie",  section:"right", mains:["HP","HP%","DEF","DEF%"], pool:["HP","HP%","DEF","DEF%","RR","HE"], ess:[], req:2, arch:["tank","heal","support"]},
+    {name:"Dégâts",  section:"right", mains:["ATK","ATK%","CD"], pool:["ATK","ATK%","CC","CD","AS"], ess:[], req:2, arch:["dps"]}
+  ]},
+  mid: {tiers:[1,2], rules:[
+    {name:"Tank",    section:"left",  mains:["ATK","HP"], pool:["HP","HP%","DEF","DEF%","RR","AS"], ess:["HP%"], req:3, arch:["tank"]},
+    {name:"Heal",    section:"left",  mains:["ATK","HP"], pool:["HP","HP%","DEF%","RR","HE","AS"], ess:["HP%"], req:3, arch:["heal"]},
+    {name:"DPS",     section:"left",  mains:["ATK","HP"], pool:["ATK","ATK%","CC","CD","AS"], ess:["ATK%"], req:3, arch:["dps"]},
+    {name:"Tank",    section:"right", mains:["HP%","DEF%"], pool:["HP","HP%","DEF","DEF%","RR","AS"], ess:["HP%"], req:3, arch:["tank"]},
+    {name:"DPS crit", section:"right", mains:["ATK%","CD"], pool:["ATK","ATK%","CC","CD","AS","HE"], ess:["CC"], req:3, arch:["dps"], desc:"Le trio CC · CD · AS porte le dégât."},
+    {name:"Support", section:"right", mains:["HP%","DEF%","HE"], pool:["HP%","DEF%","RR","HE","AS"], ess:["AS"], req:3, arch:["support","inspire"]}
+  ]},
+  end: {tiers:[2,3], rules:[
+    {name:"Tank quad", section:"left",  mains:["ATK","HP"], pool:["HP","HP%","DEF","DEF%","RR","AS"], ess:["DEF%","HP%"], req:4, arch:["tank"], desc:"Quads only : DEF% et HP% obligatoires."},
+    {name:"Heal quad", section:"left",  mains:["ATK","HP"], pool:["HP","HP%","DEF%","RR","HE","AS"], ess:["HP%","AS"], req:4, arch:["heal"]},
+    {name:"DPS quad",  section:"left",  mains:["ATK","HP"], pool:["ATK","ATK%","CC","CD","AS"], ess:["ATK%","CD"], req:4, arch:["dps"]},
+    {name:"Tank quad", section:"right", mains:["HP%","DEF%"], pool:["HP","HP%","DEF","DEF%","RR","AS"], ess:["HP%","RR"], req:4, arch:["tank"]},
+    {name:"DPS quad",  section:"right", mains:["ATK%","CD"], pool:["ATK","ATK%","CC","CD","AS"], ess:["CC","CD"], req:4, arch:["dps"], desc:"Le trio complet — la ★ portée en main ne compte pas contre la pièce."},
+    {name:"Heal / Support quad", section:"right", mains:["HP%","HE"], pool:["HP","HP%","DEF%","RR","HE","AS"], ess:["AS","HP%"], req:4, arch:["heal","support"]}
+  ]}
+};
+function makeTemplateTab(key){
+  const tpl = TEMPLATES[key];
+  if(!tpl) return;
+  bumpSeqs();
+  const nt = newTab(t("tpl_"+key));
+  nt.desc = t("tpl_"+key+"_desc");
+  for(const rr of tpl.rules){
+    const sets = SETS.filter(s=>s.side===rr.section && tpl.tiers.includes(s.t)).map(s=>s.n);
+    const rule = sanitizeRule({...rr, id:"TMP", sets});
+    if(rule && rule.sets.length && rule.pool.length){ rule.id = nextRuleId(nt, rule.section); nt.rules.push(rule); }
+  }
+  registerArchs();
+  activeTabId = nt.id;
+  UI.open.clear();
+  scheduleSave(t("c_tpl", nt.name));
+  goto("/regles");
+  renderView(); refreshTabBar(); updateSidebar();
+  toast(t("t_tpl", esc(nt.name), nt.rules.length));
 }
 function viewSaisie(){
   const tab = activeTab();
@@ -3856,6 +3944,8 @@ function commitRename(commit){
 }
 document.addEventListener("click", e=>{
   const el = e.target;
+  { const am = document.getElementById("addmenu");
+    if(am && !am.hidden && !el.closest(".addwrap")) am.hidden = true; }
 
   // bouton « ? » : replie/déplie tous les blocs d'aide de la même clé, état persisté
   const hb = el.closest("[data-help]");
@@ -3902,10 +3992,26 @@ document.addEventListener("click", e=>{
     return;
   }
   if(el.closest("#tab-add")){
-    const nt = newTab(t("tab_new", TABS.length+1));
-    activeTabId = nt.id; UI.open.clear();
-    refreshTabBar(); updateRuleList(); updateSidebar(); scheduleSave();
-    toast(t("t_tab_created", esc(nt.name)));
+    const am = document.getElementById("addmenu");
+    if(am) am.hidden = !am.hidden;
+    return;
+  }
+  const tplBtn = el.closest("[data-tpl]");
+  if(tplBtn){
+    const key = tplBtn.dataset.tpl;
+    const am = document.getElementById("addmenu");
+    if(am) am.hidden = true;
+    if(key === "vide"){
+      const nt = newTab(t("tab_new", TABS.length+1));
+      activeTabId = nt.id; UI.open.clear();
+      refreshTabBar(); updateRuleList(); updateSidebar(); scheduleSave();
+      toast(t("t_tab_created", esc(nt.name)));
+    } else if(key === "import"){
+      const fi = document.getElementById("import-file");
+      if(fi && fi.click) fi.click();
+    } else {
+      makeTemplateTab(key);
+    }
     return;
   }
   if(el.closest("#tab-rename")){
