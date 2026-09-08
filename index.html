@@ -512,6 +512,7 @@
   .q-syntax{display:flex;gap:5px;margin-top:5px}
   .fsep{width:1px;align-self:stretch;background:var(--border-soft);margin:0 3px;flex:0 0 auto}
   .q-syntax .fchip{font-family:var(--mono);padding:1px 8px}
+  .jarg{font-style:normal;text-decoration:underline dotted var(--faint);text-underline-offset:3px;cursor:help}
   /* ── Édition à l'échelle ── */
   .rule.bulksel{border-color:var(--deff-bd);box-shadow:var(--top-light),0 0 0 1px var(--deff-bd)}
   .rc-move{display:none}
@@ -1141,6 +1142,16 @@ fr:{
     <li>Tout ce qu'aucune règle du jeu ne couvre est recyclé — chiffre-le dans la <b>Simulation</b>, ou vérifie set par set dans <b>Référence › Sets &amp; transfo</b>.</li>
   </ul>`,
   empty_tab:"Ce jeu de règles est vide.", btn_create_empty:"＋ Créer une règle",
+  ob_welcome:"Bienvenue — pars d'un modèle (Early, Mid, End) ou crée ta première règle : tout est annulable avec Ctrl+Z.",
+  ob_step2:"◆ Étape suivante : vérifie ce que ton jeu de règles garde vraiment — lance une Simulation.",
+  ob_step3:"◆ Dernière étape : recopie tes règles dans le builder du jeu — la Saisie en jeu te guide règle par règle.",
+  ob_go_sim:"ouvrir la Simulation", ob_go_entry:"ouvrir la Saisie",
+  lex_main:"Main : la stat principale de la pièce — fixée par le slot (arme = ATK, torse = HP…).",
+  lex_sub:"Subs : les 4 stats secondaires de la pièce — c'est sur elles que les règles trient.",
+  lex_star:"★ : sub obligatoire — la pièce doit la porter (sauf si c'est déjà sa main).",
+  lex_req:"Requis : le nombre minimal de subs de la liste que la pièce doit aligner, ★ incluses.",
+  lex_tier:"Tier : la qualité du set (T0 → T3, T∞) — le filet coloré des cartes.",
+  lex_set:"Set : la famille d'équipement de la pièce — son bonus s'active en 2 ou 3 pièces.",
   empty_tpl_p:"Pars d'un modèle — tu l'ajusteras ensuite règle par règle :",
   empty_tpl_hint:"…ou construis de zéro :",
   tpl_vide:"Vide", tpl_early:"Early game", tpl_mid:"Mid game", tpl_end:"End game",
@@ -1374,6 +1385,16 @@ en:{
     <li>Whatever no rule of the ruleset covers gets recycled — measure it in the <b>Simulation</b>, or check set by set in <b>Reference › Sets &amp; transform</b>.</li>
   </ul>`,
   empty_tab:"This ruleset is empty.", btn_create_empty:"＋ Create a rule",
+  ob_welcome:"Welcome — start from a template (Early, Mid, End) or create your first rule: everything is undoable with Ctrl+Z.",
+  ob_step2:"◆ Next step: check what your ruleset really keeps — run a Simulation.",
+  ob_step3:"◆ Last step: copy your rules into the in-game builder — In-game entry guides you rule by rule.",
+  ob_go_sim:"open Simulation", ob_go_entry:"open Entry",
+  lex_main:"Main: the piece's primary stat — fixed by the slot (weapon = ATK, armor = HP…).",
+  lex_sub:"Subs: the piece's 4 secondary stats — rules sort on them.",
+  lex_star:"★: mandatory sub — the piece must carry it (unless it's already its main).",
+  lex_req:"Required: the minimum number of listed subs the piece must line up, ★ included.",
+  lex_tier:"Tier: the set's quality (T0 → T3, T∞) — the colored strip on cards.",
+  lex_set:"Set: the piece's equipment family — its bonus activates with 2 or 3 pieces.",
   empty_tpl_p:"Start from a template — then tune it rule by rule:",
   empty_tpl_hint:"…or build from scratch:",
   tpl_vide:"Empty", tpl_early:"Early game", tpl_mid:"Mid game", tpl_end:"End game",
@@ -1555,7 +1576,7 @@ function applyLang(){
   document.querySelectorAll("[data-i18n-ph]").forEach(el=>{ el.placeholder = t(el.dataset.i18nPh); });
   document.querySelectorAll("[data-i18n-title]").forEach(el=>{ el.title = t(el.dataset.i18nTitle); });
   document.querySelectorAll("[data-i18n-aria]").forEach(el=>{ el.setAttribute("aria-label", t(el.dataset.i18nAria)); });
-  document.querySelectorAll("[data-i18n-html]").forEach(el=>{ el.innerHTML = t(el.dataset.i18nHtml); });
+  document.querySelectorAll("[data-i18n-html]").forEach(el=>{ el.innerHTML = jargonize(t(el.dataset.i18nHtml)); });
   syncHelp();
 }
 // Aligne les « ? » et leurs blocs d'aide (y compris ceux du HTML statique) sur l'état mémorisé
@@ -1571,6 +1592,9 @@ const UI = { view:"regles", rovingId:null, q:"", fSection:"all", fArch:"all", fM
                     manual:{ slot:"bracelet", set:"Infernal Roar", main:"ATK%", subs:[] } } };
 
 let HELP_CLOSED = new Set();
+// Onboarding (D9) : 0 = neuf (accueil à 0 règle), 2 = a des règles (toast → Simulation
+// déjà montré), 3 = terminé (toast → Saisie montré). Jamais d'overlay tutorial.
+let OB = 0;
 let SEEN_SETS = null;        // noms de sets connus à la dernière visite (bandeau patch) — null avant la première sauvegarde
 let BANNER_DISMISSED = false; // le bandeau d'ouverture ne revient pas dans la session une fois écarté
 
@@ -1632,7 +1656,7 @@ function setSave(txt, cls){
   if(st) st.textContent = txt;
   if(line){ line.className = "save-line" + (cls?" "+cls:""); }
 }
-function payload(){ return JSON.stringify({v:4, consV:CONS_V, tabs:TABS, active:activeTabId, entered:[...ENTERED], constraints:CONSTRAINTS, theme, acc:ACC, dens:DENSITY, lang:LANG_CHOSEN?LANG:null, xarch:EXTRA_ARCHS, tabSeq, helpClosed:[...HELP_CLOSED], seenSets:SEEN_SETS}); }
+function payload(){ return JSON.stringify({v:4, consV:CONS_V, tabs:TABS, active:activeTabId, entered:[...ENTERED], constraints:CONSTRAINTS, theme, acc:ACC, dens:DENSITY, lang:LANG_CHOSEN?LANG:null, xarch:EXTRA_ARCHS, tabSeq, helpClosed:[...HELP_CLOSED], seenSets:SEEN_SETS, ob:OB}); }
 function getStore(){
   try{
     if(window.storage && window.storage.get && window.storage.set){
@@ -1789,6 +1813,7 @@ async function restoreState(){
       if(Array.isArray(data.xarch)) EXTRA_ARCHS = [...new Set(data.xarch.filter(x=>typeof x==="string").map(x=>x.trim().slice(0,20)).filter(x=>x && !ARCHS.includes(x)))];
       if(Array.isArray(data.helpClosed)) HELP_CLOSED = new Set(data.helpClosed.filter(x=>typeof x==="string" && x.length<=24).slice(0,50));
       if(Array.isArray(data.seenSets)) SEEN_SETS = data.seenSets.filter(x=>typeof x==="string").slice(0,200);
+      if(Number.isInteger(data.ob)) OB = Math.max(0, Math.min(3, data.ob));
     } else if(data){
       const rules = (data.v>=2) ? (data.rules||{}) : (data||{});
       const customs = (data.v>=2 && Array.isArray(data.custom)) ? data.custom : [];
@@ -1807,6 +1832,10 @@ async function restoreState(){
   }catch(e){ setSave(t("save_session"),"warn"); ensureTab(); }
   // Premier passage ou sauvegarde antérieure au bandeau patch : on part du référentiel courant (pas de patch rétroactif)
   if(!SEEN_SETS) SEEN_SETS = SETS.map(s=>s.n);
+  // Profil existant d'avant l'onboarding : il a des règles, on ne lui fait pas la visite
+  if(OB === 0 && allRules().length) OB = 3;
+  // Accueil du profil neuf : un toast, l'état vide fait le reste (les templates y sont)
+  if(OB === 0 && !allRules().length) setTimeout(()=>toast(t("ob_welcome"), {ttl:9000}), 800);
   PREV_STATE = snapState(); // point zéro de la pile : l'état restauré n'est pas annulable
   applyTheme();
   applyLang();
@@ -2556,7 +2585,23 @@ const ICON = {
 };
 function ctlLabel(icon, txt, help){ return `<span class="lab">${ICON[icon]||""}${txt}${help?helpBtn(help):""}</span>`; }
 function helpBtn(key){ return `<button type="button" class="help${HELP_CLOSED.has(key)?"":" on"}" data-help="${key}" data-i18n-title="help_tip" title="${t("help_tip")}" aria-label="${t("help_tip")}">?</button>`; }
-function helpBody(key, html){ return `<div class="hint help-body" data-help-body="${key}"${HELP_CLOSED.has(key)?" hidden":""}>${html}</div>`; }
+// Tooltips jargon : dans les textes d'aide uniquement, les ~6 termes qui bloquent la
+// première règle (main, sub, ★, requis, tier, set) portent leur définition au survol.
+// On ne touche que les segments TEXTE (jamais l'intérieur des balises/attributs).
+const JARGON = {main:"lex_main", mains:"lex_main", sub:"lex_sub", subs:"lex_sub",
+                requis:"lex_req", required:"lex_req", tier:"lex_tier", tiers:"lex_tier",
+                set:"lex_set", sets:"lex_set"};
+function jargonize(html){
+  return String(html).split(/(<[^>]*>)/).map(part=>{
+    if(part.startsWith("<")) return part;
+    let out = part.replace(/★/g, `<dfn class="jarg" title="${esc(t("lex_star"))}">★</dfn>`);
+    out = out.replace(/\b(mains?|subs?|requis|required|tiers?|sets?)\b/gi,
+      m => `<dfn class="jarg" title="${esc(t(JARGON[m.toLowerCase()]))}">${m}</dfn>`);
+
+    return out;
+  }).join("");
+}
+function helpBody(key, html){ return `<div class="hint help-body" data-help-body="${key}"${HELP_CLOSED.has(key)?" hidden":""}>${jargonize(html)}</div>`; }
 // Sélecteur d'onglet UNIQUE : mêmes pills que la vue Règles, partout (Testeur, Sets).
 // Le clic passe par le handler global [data-tabsel], devenu view-aware.
 function tabPicker(){
@@ -3182,6 +3227,20 @@ const TEMPLATES = {
     {name:"Heal / Support quad", section:"right", mains:["HP%","HE"], pool:["HP","HP%","DEF%","RR","HE","AS"], ess:["AS","HP%"], req:4, arch:["heal","support"]}
   ]}
 };
+// Les deux toasts d'étape : après la première règle → « vérifie en Simulation » ;
+// à l'arrivée en Simulation → « recopie dans le jeu » (le toast n°2 mène à la recopie).
+function obStep2(){
+  if(OB >= 2 || !allRules().length) return;
+  OB = 2;
+  scheduleSave();
+  toast(t("ob_step2"), {ttl:9000, action:{label:t("ob_go_sim"), fn(){ goto("/simulation"); }}});
+}
+function obStep3(){
+  if(OB !== 2 || !allRules().length) return;
+  OB = 3;
+  scheduleSave();
+  toast(t("ob_step3"), {ttl:9000, action:{label:t("ob_go_entry"), fn(){ goto("/saisie"); }}});
+}
 function makeTemplateTab(key){
   const tpl = TEMPLATES[key];
   if(!tpl) return;
@@ -3200,6 +3259,7 @@ function makeTemplateTab(key){
   goto("/regles");
   renderView(); refreshTabBar(); updateSidebar();
   toast(t("t_tpl", esc(nt.name), nt.rules.length));
+  setTimeout(obStep2, 1200);
 }
 function viewSaisie(){
   const tab = activeTab();
@@ -3529,7 +3589,7 @@ function renderView(){
   const main = document.getElementById("view");
   document.querySelectorAll(".nav-btn,.tb-btn").forEach(b=>b.classList.toggle("active", b.dataset.nav===UI.view));
   if(UI.view==="reference"){ main.innerHTML = viewReference(); }
-  else if(UI.view==="simulation"){ main.innerHTML = viewSimulation(); }
+  else if(UI.view==="simulation"){ main.innerHTML = viewSimulation(); setTimeout(obStep3, 900); }
   else if(UI.view==="session"){ main.innerHTML = viewSession(); }
   else if(UI.view==="saisie"){ main.innerHTML = viewSaisie(); }
   else { main.innerHTML = viewRegles(); updateRuleList(); }
@@ -3912,6 +3972,7 @@ function saveRule(){
     if(UI.view!=="regles"){ goto("/regles/"+id); } else { renderView(); }
     scheduleSave(t("c_rule", id));
     toast(t("t_rule_created", id));
+    setTimeout(obStep2, 1200);
   }
 }
 
