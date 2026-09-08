@@ -649,6 +649,14 @@
   .pal-it .kbd{margin-left:auto}
   .pal-it.sel{background:var(--acc-dim);color:var(--ink-hi)}
   .pal-empty{padding:14px;color:var(--faint);font-size:var(--fs-2)}
+  .il-wrap{padding:18px;display:flex;flex-direction:column;gap:8px}
+  .il-title{color:var(--head);font-family:var(--display);font-variant:small-caps;letter-spacing:.04em;font-size:var(--fs-4);font-weight:600}
+  .il-sub{color:var(--muted);font-size:var(--fs-2)}
+  .il-list{max-height:min(340px,46vh);overflow-y:auto;display:flex;flex-direction:column;gap:5px;
+    margin-top:6px;border-top:1px solid var(--border-soft);padding-top:10px}
+  .il-row{display:flex;align-items:center;gap:10px;font-size:var(--fs-2);min-width:0}
+  .il-row b{color:var(--ink);font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .il-meta{margin-left:auto;font-family:var(--mono);font-size:var(--fs-0);color:var(--faint);white-space:nowrap}
   kbd{font-family:var(--mono);font-size:var(--fs-0);background:var(--panel2);border:1px solid var(--border-soft);
     border-radius:4px;padding:1px 6px;color:var(--muted);white-space:nowrap}
   /* ── Panneau ? ── */
@@ -805,6 +813,9 @@
           <button type="button" data-lang="fr">Français</button>
           <button type="button" data-lang="en">EN</button>
         </div>
+      </div>
+      <div class="acc-row"><span class="lab" data-i18n="lbl_author">Ex-libris</span>
+        <input type="text" class="key-input" id="author-input" maxlength="24" data-i18n-ph="ph_author" placeholder="ton pseudo — signé dans les partages" style="flex:1;min-width:0">
       </div>
       <div class="acc-row"><span class="lab" data-i18n="accent">Accent</span>
         <span class="acc-dots">
@@ -1143,6 +1154,9 @@ fr:{
   </ul>`,
   empty_tab:"Ce jeu de règles est vide.", btn_create_empty:"＋ Créer une règle",
   ob_welcome:"Bienvenue — pars d'un modèle (Early, Mid, End) ou crée ta première règle : tout est annulable avec Ctrl+Z.",
+  il_title:n=>`Jeu de règles « ${n} »`, il_by:a=>"de "+a, il_count:c=>`${c} règle${c>1?"s":""}`,
+  il_adopt:"Adopter ce jeu", il_look:"Fermer sans importer",
+  lbl_author:"Ex-libris", ph_author:"ton pseudo — signé dans les partages",
   ob_step2:"◆ Étape suivante : vérifie ce que ton jeu de règles garde vraiment — lance une Simulation.",
   ob_step3:"◆ Dernière étape : recopie tes règles dans le builder du jeu — la Saisie en jeu te guide règle par règle.",
   ob_go_sim:"ouvrir la Simulation", ob_go_entry:"ouvrir la Saisie",
@@ -1386,6 +1400,9 @@ en:{
   </ul>`,
   empty_tab:"This ruleset is empty.", btn_create_empty:"＋ Create a rule",
   ob_welcome:"Welcome — start from a template (Early, Mid, End) or create your first rule: everything is undoable with Ctrl+Z.",
+  il_title:n=>`Ruleset “${n}”`, il_by:a=>"by "+a, il_count:c=>`${c} rule${c>1?"s":""}`,
+  il_adopt:"Adopt this ruleset", il_look:"Close without importing",
+  lbl_author:"Ex-libris", ph_author:"your handle — signed into shares",
   ob_step2:"◆ Next step: check what your ruleset really keeps — run a Simulation.",
   ob_step3:"◆ Last step: copy your rules into the in-game builder — In-game entry guides you rule by rule.",
   ob_go_sim:"open Simulation", ob_go_entry:"open Entry",
@@ -1595,6 +1612,7 @@ let HELP_CLOSED = new Set();
 // Onboarding (D9) : 0 = neuf (accueil à 0 règle), 2 = a des règles (toast → Simulation
 // déjà montré), 3 = terminé (toast → Saisie montré). Jamais d'overlay tutorial.
 let OB = 0;
+let AUTHOR = ""; // ex-libris : signé dans les liens et exports, affiché sur la landing d'import
 let SEEN_SETS = null;        // noms de sets connus à la dernière visite (bandeau patch) — null avant la première sauvegarde
 let BANNER_DISMISSED = false; // le bandeau d'ouverture ne revient pas dans la session une fois écarté
 
@@ -1634,6 +1652,8 @@ function legalMainsForSide(side){
 /* ══════════════ PERSISTANCE ══════════════ */
 let saveTimer = null;
 function applyTheme(){
+  const ai = document.getElementById("author-input");
+  if(ai && ai.value !== AUTHOR) ai.value = AUTHOR;
   if(document.body && document.body.classList) document.body.classList.toggle("light", theme==="light");
   if(document.body && document.body.setAttribute){
     document.body.setAttribute("data-acc", ACC);
@@ -1656,7 +1676,7 @@ function setSave(txt, cls){
   if(st) st.textContent = txt;
   if(line){ line.className = "save-line" + (cls?" "+cls:""); }
 }
-function payload(){ return JSON.stringify({v:4, consV:CONS_V, tabs:TABS, active:activeTabId, entered:[...ENTERED], constraints:CONSTRAINTS, theme, acc:ACC, dens:DENSITY, lang:LANG_CHOSEN?LANG:null, xarch:EXTRA_ARCHS, tabSeq, helpClosed:[...HELP_CLOSED], seenSets:SEEN_SETS, ob:OB}); }
+function payload(){ return JSON.stringify({v:4, consV:CONS_V, tabs:TABS, active:activeTabId, entered:[...ENTERED], constraints:CONSTRAINTS, theme, acc:ACC, dens:DENSITY, lang:LANG_CHOSEN?LANG:null, xarch:EXTRA_ARCHS, tabSeq, helpClosed:[...HELP_CLOSED], seenSets:SEEN_SETS, ob:OB, author:AUTHOR}); }
 function getStore(){
   try{
     if(window.storage && window.storage.get && window.storage.set){
@@ -1814,6 +1834,7 @@ async function restoreState(){
       if(Array.isArray(data.helpClosed)) HELP_CLOSED = new Set(data.helpClosed.filter(x=>typeof x==="string" && x.length<=24).slice(0,50));
       if(Array.isArray(data.seenSets)) SEEN_SETS = data.seenSets.filter(x=>typeof x==="string").slice(0,200);
       if(Number.isInteger(data.ob)) OB = Math.max(0, Math.min(3, data.ob));
+      if(typeof data.author==="string") AUTHOR = data.author.slice(0,24);
     } else if(data){
       const rules = (data.v>=2) ? (data.rules||{}) : (data||{});
       const customs = (data.v>=2 && Array.isArray(data.custom)) ? data.custom : [];
@@ -3634,13 +3655,8 @@ function route(){
     try{ history.replaceState(null,"","#/regles"); }catch(_){}
     UI.view = "regles";
     decodeShare(payload)
-      .then(txt=>importRulesText(txt))
-      .catch(()=>({ok:false, err:t("err_link")}))
-      .then(res=>{
-        if(res.ok){ UI.open.clear(); scheduleSave(); toast(t("t_import_link", esc(res.tab.name), res.tab.rules.length)); }
-        else { toast(t("t_link_fail", esc(res.err))); }
-        renderView(); updateSidebar();
-      });
+      .then(txt=>{ showImportLanding(txt); })
+      .catch(()=>{ toast(t("t_link_fail", esc(t("err_link")))); });
     renderView(); return;
   }
   const [view, param] = h.split("/");
@@ -3730,8 +3746,8 @@ async function inflateText(b64){ const buf = await new Response(new Blob([bytesF
 const STAT_CODE = ["ATK","ATK%","CC","CD","HP","HP%","DEF","DEF%","RR","HE","AS"];
 const statMask = arr => arr.reduce((m,s)=>{ const i = STAT_CODE.indexOf(s); return i<0 ? m : m|(1<<i); }, 0);
 const statUnmask = m => STAT_CODE.filter((_,i)=>m&(1<<i));
-function packTab(tab){ return {v:2, n:tab.name, ...(tab.key?{k:tab.key}:{}), ...(tab.desc?{d:tab.desc}:{}), r:tab.rules.map(r=>[r.name, r.sets, statMask(r.mains), statMask(r.pool), statMask(r.ess), r.req, (r.arch&&r.arch.length)?r.arch:0, r.desc||0])}; }
-function unpackTab(o){ return {name:o.n, key:typeof o.k==="string"?o.k:"", desc:typeof o.d==="string"?o.d:"", rules:(Array.isArray(o.r)?o.r:[]).map(x=>({name:x[0], sets:Array.isArray(x[1])?x[1]:[], mains:statUnmask(+x[2]||0), pool:statUnmask(+x[3]||0), ess:statUnmask(+x[4]||0), req:+x[5]||1, arch:Array.isArray(x[6])?x[6]:[], desc:typeof x[7]==="string"?x[7]:""}))}; }
+function packTab(tab){ return {v:2, n:tab.name, ...(AUTHOR?{a:AUTHOR}:{}), ...(tab.key?{k:tab.key}:{}), ...(tab.desc?{d:tab.desc}:{}), r:tab.rules.map(r=>[r.name, r.sets, statMask(r.mains), statMask(r.pool), statMask(r.ess), r.req, (r.arch&&r.arch.length)?r.arch:0, r.desc||0])}; }
+function unpackTab(o){ return {name:o.n, author:typeof o.a==="string"?o.a:"", key:typeof o.k==="string"?o.k:"", desc:typeof o.d==="string"?o.d:"", rules:(Array.isArray(o.r)?o.r:[]).map(x=>({name:x[0], sets:Array.isArray(x[1])?x[1]:[], mains:statUnmask(+x[2]||0), pool:statUnmask(+x[3]||0), ess:statUnmask(+x[4]||0), req:+x[5]||1, arch:Array.isArray(x[6])?x[6]:[], desc:typeof x[7]==="string"?x[7]:""}))}; }
 async function encodeShare(tab){
   try{ return "2." + await deflateText(JSON.stringify(packTab(tab))); }
   catch(_){ return b64uEncode(JSON.stringify(exportTabObj(tab))); } // navigateur sans CompressionStream : lien long v1
@@ -3742,6 +3758,7 @@ async function decodeShare(payload){
 }
 function exportTabObj(tab){
   return { format:"wor-tri-rules", version:1, exported:new Date().toISOString().slice(0,10),
+           ...(AUTHOR?{author:AUTHOR}:{}),
            tab:{ name:tab.name, ...(tab.key?{key:tab.key}:{}), ...(tab.desc?{desc:tab.desc}:{}), rules:tab.rules.map(r=>{ const {id, ...rest} = r; return rest; }) } };
 }
 function importRulesText(text){
@@ -3787,6 +3804,33 @@ function importRulesText(text){
   registerArchs();
   activeTabId = nt.id;
   return {ok:true, tab:nt};
+}
+// Landing d'import : l'aperçu AVANT d'adopter — nom, ex-libris, description, règles.
+let PENDING_IMPORT = null;
+function showImportLanding(text){
+  let data; try{ data = JSON.parse(text); }catch(e){ toast(t("t_link_fail", esc(t("err_json")))); return; }
+  if(data && data.v===2 && Array.isArray(data.r)) data = unpackTab(data);
+  const tb = (data && data.format==="wor-tri-rules" && data.tab) ? {...data.tab, author:data.tab.author||data.author||""} : data;
+  if(!tb || !Array.isArray(tb.rules) || !tb.rules.length){ toast(t("t_link_fail", esc(t("err_struct")))); return; }
+  PENDING_IMPORT = text;
+  const rows = tb.rules.slice(0, 40).map(r=>{
+    const rr = sanitizeRule({...(r && typeof r==="object" ? r : {}), id:"?"});
+    if(!rr || !rr.sets.length || !rr.pool.length) return "";
+
+    return `<div class="il-row"><b>${esc(rr.name)}</b><span class="il-meta">${rr.mains.join("/")||"—"} · ${rr.req}/4 · ${t("rm_sets", rr.sets.length)}</span></div>`;
+  }).join("");
+  const d = document.getElementById("pal-dlg");
+  d.innerHTML = `<div class="il-wrap">
+    <b class="il-title">${t("il_title", esc(String(tb.name||"Import").slice(0,40)))}</b>
+    <div class="il-sub">${tb.author?`${t("il_by", esc(String(tb.author).slice(0,24)))} · `:""}${t("il_count", tb.rules.length)}</div>
+    ${tb.desc?`<p class="rule-phrase" style="margin:2px 0 0">${esc(String(tb.desc).slice(0,300))}</p>`:""}
+    <div class="il-list">${rows}</div>
+    <div class="ap-actions" style="margin-top:4px">
+      <button type="button" class="btn primary" id="il-adopt">${t("il_adopt")}</button>
+      <button type="button" class="btn" id="il-close">${t("il_look")}</button>
+    </div>
+  </div>`;
+  if(!d.open) d.showModal();
 }
 function finishImport(text){
   const prevActive = activeTabId;
@@ -4303,6 +4347,20 @@ document.addEventListener("click", e=>{
     return;
   }
   if(el.closest("#rs-cancel")){ document.getElementById("pal-dlg").close(); return; }
+  if(el.closest("#il-adopt")){
+    document.getElementById("pal-dlg").close();
+    if(PENDING_IMPORT){
+      const res = importRulesText(PENDING_IMPORT);
+      PENDING_IMPORT = null;
+      if(res.ok){
+        UI.open.clear(); scheduleSave();
+        toast(t("t_import_link", esc(res.tab.name), res.tab.rules.length));
+      } else toast(t("t_import_fail", esc(res.err)));
+      renderView(); refreshTabBar(); updateSidebar();
+    }
+    return;
+  }
+  if(el.closest("#il-close")){ PENDING_IMPORT = null; document.getElementById("pal-dlg").close(); return; }
   if(el.closest("#save-line")){ exportBackup(); return; }
   if(el.closest("#pal-btn")){ openPal(); return; }
   if(el.closest("#help-btn")){ openHelp(); return; }
@@ -4532,6 +4590,7 @@ document.addEventListener("input", e=>{
   if(e.target.id === "sets-q"){ UI.setsQ = e.target.value; updateSetsTables(); }
   if(e.target.id === "tab-key"){ const tab = activeTab(); if(tab){ tab.key = e.target.value.slice(0,60); scheduleSave(); } }
   if(e.target.id === "tab-desc"){ const tab = activeTab(); if(tab){ tab.desc = e.target.value.slice(0,300); scheduleSave(t("c_tabdesc")); } }
+  if(e.target.id === "author-input"){ AUTHOR = e.target.value.slice(0,24); scheduleSave(); }
 });
 document.addEventListener("keydown", e=>{
   // Ctrl+K : la palette (toggle) — depuis n'importe où, sauf autre dialogue ouvert
