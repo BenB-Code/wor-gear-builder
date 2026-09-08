@@ -2581,6 +2581,13 @@ function ensureTabVisible(sc){
   if(r.left < c.left) sc.scrollLeft += r.left - c.left - 12;
   else if(r.right > c.right) sc.scrollLeft += r.right - c.right + 12;
 }
+// Cérémonies (D13) : une transition douce sur les seuls événements RARES — adoption
+// d'un import, suppression d'un jeu, jeu complet à n/n. La navigation n'est JAMAIS animée.
+function ceremony(fn){
+  if(document.startViewTransition && !matchMedia("(prefers-reduced-motion: reduce)").matches){
+    document.startViewTransition(fn);
+  } else fn();
+}
 function refreshTabBar(){
   const prev = document.querySelector("#tabbar .tabs-scroll");
   const x = prev ? prev.scrollLeft : 0;
@@ -3208,7 +3215,8 @@ function tpNext(mark){
   } else {
     TP.idx = Math.min(rules.length-1, TP.idx+1);
   }
-  tpRender();
+  if(mark && rules.every(x=>isEntered(x.id))) ceremony(tpRender);
+  else tpRender();
 }
 function tpBack(uncheck){
   const rules = tpRules();
@@ -4144,7 +4152,8 @@ document.addEventListener("click", e=>{
     ensureTab();
     activeTabId = (TABS[idx]||TABS[idx-1]||TABS[0]).id;
     UI.open.clear();
-    refreshTabBar(); updateRuleList(); updateSidebar(); scheduleSave();
+    ceremony(()=>{ refreshTabBar(); updateRuleList(); updateSidebar(); });
+    scheduleSave();
     toast(t("t_tab_del", esc(snap.name), snap.rules.length), {action:{label:t("undo"), fn(){
       TABS.splice(Math.min(idx,TABS.length),0,snap);
       activeTabId = snap.id;
@@ -4356,7 +4365,7 @@ document.addEventListener("click", e=>{
         UI.open.clear(); scheduleSave();
         toast(t("t_import_link", esc(res.tab.name), res.tab.rules.length));
       } else toast(t("t_import_fail", esc(res.err)));
-      renderView(); refreshTabBar(); updateSidebar();
+      ceremony(()=>{ renderView(); refreshTabBar(); updateSidebar(); });
     }
     return;
   }
