@@ -513,10 +513,6 @@
   .bulk-bar select{max-width:130px}
   .bulk-bar[hidden]{display:none}
   /* ── Densité compacte : la ligne repliée porte ses chips cyclables et ses sets ── */
-  .row-compact{display:flex;align-items:flex-start;gap:8px 14px;flex-wrap:wrap;padding:0 12px 8px 41px}
-  .row-compact .chip{padding:1px 6px;font-size:10px}
-  .row-compact .rc-chips,.row-compact .rc-msets{display:inline-flex;gap:3px;flex-wrap:wrap;align-items:center}
-  .row-compact .rc-mini{max-width:92px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:default;pointer-events:none}
   /* ── Comparaison par delta ── */
   .cov-cmp{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
   .cov-card .delta{font-family:var(--mono);font-size:var(--fs-0);color:var(--faint);margin-top:3px}
@@ -570,8 +566,8 @@
   .rm-cov.bad{color:var(--off)}
   .spec{position:relative;width:26px;height:4px;border-radius:2px;background:var(--panel2);flex:0 0 auto}
   .spec i{position:absolute;top:-2px;width:4px;height:8px;border-radius:2px;background:var(--head);transform:translateX(-50%)}
-  .ov-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:2px 30px}
-  .ovrow{display:flex;align-items:center;gap:9px;margin:5px 0;font-size:var(--fs-1)}
+  .ov-grid{columns:300px;column-gap:34px;column-rule:1px solid var(--border-soft)}
+  .ovrow{display:flex;align-items:center;gap:9px;margin:5px 0;font-size:var(--fs-1);break-inside:avoid}
   .ovmir{display:flex;width:130px;height:6px;border-radius:3px;overflow:hidden;flex:0 0 auto}
   .ovmir .s{flex:1;position:relative;background:var(--panel2)}
   .ovmir .s i{position:absolute;top:0;height:100%;background:var(--t1-bd)}
@@ -579,8 +575,12 @@
   .ovmir .s.r i{left:0}
   .ovn{font-family:var(--mono);font-size:var(--fs-0);color:var(--faint)}
   /* ── Saisie en jeu ── */
-  .sr-row{display:flex;align-items:center;gap:11px;background:var(--panel);border:1px solid var(--border-soft);
+  .sr-row{display:flex;flex-direction:column;align-items:stretch;gap:5px;background:var(--panel);border:1px solid var(--border-soft);
     border-radius:var(--r-m);padding:9px 13px;margin:7px 0;cursor:pointer;box-shadow:var(--top-light)}
+  .sr-head{display:flex;align-items:center;gap:11px}
+  .sr-detail{font-family:var(--mono);font-size:var(--fs-1);color:var(--muted);line-height:1.65;padding-left:28px}
+  .sr-detail b{color:var(--ink);font-weight:600}
+  .sr-detail .st{color:var(--acc)}
   .sr-row .sr-name{font-weight:600;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .sr-row .sr-meta{margin-left:auto;font-family:var(--mono);font-size:var(--fs-0);color:var(--faint);white-space:nowrap}
   .sr-row.done{opacity:.55}
@@ -2061,10 +2061,6 @@ function ruleRow(r){
         <svg class="chev" width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6l5 5 5-5"/></svg>
       </span>
     </div>
-    ${(DENSITY==="compact" && !open) ? `<div class="row-compact">
-      <span class="rc-chips">${chips}</span>
-      <span class="rc-msets">${sortSets(r.sets).map(n=>`<span class="chip set t${SETTIER[n]} rc-mini" title="${esc(setName(n))}">${esc(setName(n))}</span>`).join("")}</span>
-    </div>` : ""}
     <div class="row-body">
       <div class="rb-grid">
         <span class="k">${t("k_roles")}</span><span>${allArchs().map(a=>`<button type="button" class="fchip arch-tog${(r.arch||[]).includes(a)?' on':''}" data-archrule="${r.id}" data-arch="${esc(a)}">${esc(archLabel(a))}</button>`).join(" ")} ${UI.addingRole===r.id?`<input type="text" class="tab-rename arch-input" id="arch-input" data-ctx="${r.id}" maxlength="20" placeholder="${t("role_ph")}">`:`<button type="button" class="fchip arch-plus" data-archplus="${r.id}">${t("role_plus")}</button>`}</span>
@@ -2922,12 +2918,20 @@ function saisieRows(){
     const rows = rules.filter(r=>r.section===sec);
     if(!rows.length) continue;
     html += `<h3 class="grp-head">${sideLabel(sec)} <span class="n">${rows.length}</span></h3>`;
-    html += rows.map(r=>`<label class="sr-row${isEntered(r.id)?" done":""}">
-      <input type="checkbox" class="chk" data-entered="${r.id}" ${isEntered(r.id)?"checked":""} aria-label="${t("aria_entered")}">
-      <span class="rc-id">${r.id}</span>
-      <span class="sr-name">${esc(r.name)}</span>
-      <span class="sr-meta">${r.mains.join("/")||"—"} · ${r.req}/4 · ${t("rm_sets", r.sets.length)}</span>
-    </label>`).join("");
+    html += rows.map(r=>{
+      const pool = [...sortStats(r.pool.filter(a=>r.ess.includes(a))), ...sortStats(r.pool.filter(a=>!r.ess.includes(a)))];
+      const subsTxt = pool.map(a=>r.ess.includes(a)?`<span class="st">★${a}</span>`:a).join(" ");
+
+      return `<label class="sr-row${isEntered(r.id)?" done":""}">
+      <div class="sr-head">
+        <input type="checkbox" class="chk" data-entered="${r.id}" ${isEntered(r.id)?"checked":""} aria-label="${t("aria_entered")}">
+        <span class="rc-id">${r.id}</span>
+        <span class="sr-name">${esc(r.name)}</span>
+        <span class="sr-meta">${r.req}/4</span>
+      </div>
+      <div class="sr-detail">${sortSets(r.sets).map(setName).map(esc).join(" · ")} — <b>${r.mains.join("/")||"—"}</b> — ${subsTxt}</div>
+    </label>`;
+    }).join("");
   }
 
   return html;
