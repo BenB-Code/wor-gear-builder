@@ -182,16 +182,6 @@
     border-radius:var(--r-m);cursor:pointer;font-size:var(--fs-3);line-height:1;transition:all .15s}
   .tab-add:hover{color:var(--acc);border-color:var(--acc-bd)}
   .tab-add:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
-  .addwrap{position:relative;display:inline-flex}
-  .addmenu{position:absolute;top:calc(100% + 6px);right:0;z-index:40;display:flex;flex-direction:column;gap:2px;
-    background:var(--panel);border:1px solid var(--border);border-radius:var(--r-m);padding:6px;min-width:190px;
-    box-shadow:0 8px 24px rgba(0,0,0,.35)}
-  body.light .addmenu{box-shadow:0 8px 24px rgba(60,50,30,.18)}
-  .addmenu[hidden]{display:none}
-  .addmenu button{appearance:none;background:none;border:none;color:var(--ink);font:inherit;font-size:var(--fs-2);
-    text-align:left;padding:7px 11px;border-radius:var(--r-s);cursor:pointer}
-  .addmenu button:hover{background:var(--panel2)}
-  .empty-tpl{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:10px}
   .tab-rename{background:var(--panel2);border:1px solid var(--acc-bd);border-radius:var(--r-m);color:var(--ink);
     font:inherit;font-size:var(--fs-2);padding:6px 10px;width:190px}
   .tab-tools{display:flex;gap:6px;flex-wrap:wrap;align-items:stretch}
@@ -508,6 +498,10 @@
   .rule-phrase{border-left:2px solid var(--acc-bd);background:var(--acc-glow);border-radius:0 var(--r-s) var(--r-s) 0;
     padding:7px 11px;margin:10px 0 2px;color:var(--muted);font-size:var(--fs-2);line-height:1.55}
   .rule-phrase b{color:var(--ink);font-weight:600}
+  #ap-desc{display:block;width:100%;margin-top:5px;resize:vertical;min-height:56px;background:var(--panel2);
+    border:1px solid var(--border);border-radius:var(--r-s);color:var(--ink);font:inherit;font-size:var(--fs-2);
+    line-height:1.5;padding:7px 10px}
+  #ap-desc:focus-visible{outline:2px solid var(--acc);outline-offset:1px}
   .rule-desc{color:var(--ink);font-size:var(--fs-2);font-style:italic;margin:10px 0 0;line-height:1.55;max-width:72ch}
   .q-syntax{display:flex;gap:5px;margin-top:5px}
   .fsep{width:1px;align-self:stretch;background:var(--border-soft);margin:0 3px;flex:0 0 auto}
@@ -586,20 +580,10 @@
   .ovmir .s.l i{right:0}
   .ovmir .s.r i{left:0}
   .ovn{font-family:var(--mono);font-size:var(--fs-0);color:var(--faint)}
-  /* ── Saisie en jeu ── */
-  .sr-row{display:flex;flex-direction:column;align-items:stretch;gap:5px;background:var(--panel);border:1px solid var(--border-soft);
-    border-radius:var(--r-m);padding:9px 13px;margin:7px 0;cursor:pointer;box-shadow:var(--top-light)}
-  .sr-head{display:flex;align-items:center;gap:11px}
-  .sr-detail{display:flex;flex-wrap:wrap;align-items:center;gap:4px;padding-left:28px}
-  .sr-detail .fsep{margin:0 6px;align-self:stretch}
-  .sr-row .sr-name{font-weight:600;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .sr-row .sr-meta{margin-left:auto;font-family:var(--mono);font-size:var(--fs-0);color:var(--faint);white-space:nowrap}
-  .sr-row.done{opacity:.55}
-  .sr-row.done .sr-name{text-decoration:line-through;text-decoration-color:var(--faint)}
   .prog-wrap.wide{max-width:460px;margin:2px 0 16px}
-  .prog-wrap[data-nav]{cursor:pointer;border-radius:var(--r-s)}
-  .prog-wrap[data-nav]:hover .prog-label{color:var(--ink)}
-  .prog-wrap[data-nav]:focus-visible{outline:2px solid var(--acc);outline-offset:3px}
+  .prog-wrap[role="button"]{cursor:pointer;border-radius:var(--r-s)}
+  .prog-wrap[role="button"]:hover .prog-label{color:var(--ink)}
+  .prog-wrap[role="button"]:focus-visible{outline:2px solid var(--acc);outline-offset:3px}
   /* ── Téléprompteur de recopie (mode focus plein écran) ── */
   dialog.tp{width:100vw;height:100dvh;max-width:none;max-height:none;margin:0;padding:0;border:none;background:var(--bg);color:var(--ink)}
   dialog.tp::backdrop{background:var(--bg)}
@@ -764,7 +748,6 @@
     .row-body{padding-left:16px}
     .rm-mains{display:none}
     .rm-cov{display:none}
-    .sr-row .sr-meta{display:none}
     #session-wrap{order:-1;position:sticky;top:0;z-index:12;background:var(--bg);padding-bottom:8px}
     /* fondu de débord : indice visuel qu'une rangée de filtres scrolle */
     .fchips{-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 16px),transparent);mask-image:linear-gradient(90deg,#000 calc(100% - 16px),transparent)}
@@ -789,15 +772,12 @@
       <button class="nav-btn" data-nav="session">
         <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2.5" y="3" width="11" height="10" rx="1.5"/><path d="M5.5 8.2l1.8 1.8 3.4-3.6"/></svg>
         <span data-i18n="nav_session">Session</span></button>
-      <button class="nav-btn" data-nav="saisie">
-        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 13l.8-3L11 2.8a1.3 1.3 0 0 1 1.8 0l.4.4a1.3 1.3 0 0 1 0 1.8L6 12.2 3 13Z"/><path d="M10 4l2 2"/></svg>
-        <span data-i18n="nav_entry">Saisie en jeu</span> <span class="count" id="nav-count-entry">0/0</span></button>
       <button class="nav-btn" data-nav="reference">
         <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 2.5h7a3 3 0 0 1 3 3V14H6a3 3 0 0 1-3-3V2.5Z"/><path d="M6 5.5h4M6 8h4"/></svg>
         <span data-i18n="nav_ref">Référence</span></button>
     </nav>
     <div class="side-foot">
-      <div class="prog-wrap" data-nav="saisie" role="button" tabindex="0">
+      <div class="prog-wrap" id="tp-open" role="button" tabindex="0" data-i18n-title="tp_start" title="Recopie guidée">
         <div class="prog-label"><span data-i18n="prog">Saisie en jeu</span><b id="prog-num">0/0</b></div>
         <div class="prog-bar"><i id="prog-fill" style="width:0%"></i></div>
       </div>
@@ -862,9 +842,6 @@
   <button class="tb-btn" data-nav="session">
     <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2.5" y="3" width="11" height="10" rx="1.5"/><path d="M5.5 8.2l1.8 1.8 3.4-3.6"/></svg>
     <span data-i18n="tb_session">Session</span></button>
-  <button class="tb-btn" data-nav="saisie">
-    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 13l.8-3L11 2.8a1.3 1.3 0 0 1 1.8 0l.4.4a1.3 1.3 0 0 1 0 1.8L6 12.2 3 13Z"/><path d="M10 4l2 2"/></svg>
-    <span data-i18n="tb_entry">Saisie</span></button>
   <button class="tb-btn" data-nav="reference">
     <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 2.5h7a3 3 0 0 1 3 3V14H6a3 3 0 0 1-3-3V2.5Z"/><path d="M6 5.5h4M6 8h4"/></svg>
     <span data-i18n="tb_ref">Réf.</span></button>
@@ -879,7 +856,8 @@
     <h3 id="dlg-title">Nouvelle règle</h3>
     <div class="ap-row">
       <label><span data-i18n="lab_name">Nom</span> <input type="text" id="ap-name" data-i18n-ph="ph_name" placeholder="ex. DPS scaler, Tank quad…" maxlength="60"></label>
-      <label style="flex:1 1 100%"><span data-i18n="lab_desc">Description (optionnelle)</span> <input type="text" id="ap-desc" data-i18n-ph="ph_desc" placeholder="le pourquoi de la règle, pour toi ou pour qui l'importera" maxlength="240"></label>
+      <label style="flex:1 1 100%;display:block"><span data-i18n="lab_desc">Description (optionnelle)</span>
+        <textarea id="ap-desc" rows="2" maxlength="240" data-i18n-ph="ph_desc" placeholder="le pourquoi de la règle, pour toi ou pour qui l'importera"></textarea></label>
       <label><span data-i18n="lab_side">Ensemble</span> <select id="ap-section">
         <option value="left" data-i18n="side_left">Ensemble 2 pièces</option>
         <option value="right" data-i18n="side_right">Ensemble 3 pièces</option>
@@ -1153,13 +1131,13 @@ fr:{
     <li>Tout ce qu'aucune règle du jeu ne couvre est recyclé — chiffre-le dans la <b>Simulation</b>, ou vérifie set par set dans <b>Référence › Sets &amp; transfo</b>.</li>
   </ul>`,
   empty_tab:"Ce jeu de règles est vide.", btn_create_empty:"＋ Créer une règle",
-  ob_welcome:"Bienvenue — pars d'un modèle (Early, Mid, End) ou crée ta première règle : tout est annulable avec Ctrl+Z.",
+  ob_welcome:"Bienvenue — crée ta première règle avec « + Nouvelle règle » ; tout est annulable (Ctrl+Z) et l'aide vit derrière les « ? ».",
   il_title:n=>`Jeu de règles « ${n} »`, il_by:a=>"de "+a, il_count:c=>`${c} règle${c>1?"s":""}`,
   il_adopt:"Adopter ce jeu", il_look:"Fermer sans importer",
   lbl_author:"Ex-libris", ph_author:"ton pseudo — signé dans les partages",
   ob_step2:"◆ Étape suivante : vérifie ce que ton jeu de règles garde vraiment — lance une Simulation.",
-  ob_step3:"◆ Dernière étape : recopie tes règles dans le builder du jeu — la Saisie en jeu te guide règle par règle.",
-  ob_go_sim:"ouvrir la Simulation", ob_go_entry:"ouvrir la Saisie",
+  ob_step3:"◆ Dernière étape : recopie tes règles dans le builder du jeu — la recopie guidée te les dicte une par une.",
+  ob_go_sim:"ouvrir la Simulation", ob_go_entry:"lancer la recopie",
   lex_main:"Main : la stat principale de la pièce — fixée par le slot (arme = ATK, torse = HP…).",
   lex_sub:"Subs : les 4 stats secondaires de la pièce — c'est sur elles que les règles trient.",
   lex_star:"★ : sub obligatoire — la pièce doit la porter (sauf si c'est déjà sa main).",
@@ -1291,7 +1269,7 @@ fr:{
   hp_search_h:"Recherche", hp_search_html:`<ul>
     <li>La recherche de la vue Règles couvre id, nom, sets (EN + FR), mains et rôles.</li>
     <li>Préfixes : <kbd>set:</kbd> <kbd>sub:</kbd> <kbd>req:</kbd> <kbd>role:</kbd> — cumulables, ex. « set:tourbillon req:4 ».</li>
-    <li><kbd>/</kbd> ouvre la recherche (le champ dans Règles, la palette ailleurs) · <kbd>g</kbd> puis <kbd>r</kbd>/<kbd>s</kbd>/<kbd>c</kbd>/<kbd>j</kbd>/<kbd>f</kbd> = navigation · <kbd>1</kbd>–<kbd>9</kbd> = activer le n-ième jeu.</li>
+    <li><kbd>/</kbd> ouvre la recherche (le champ dans Règles, la palette ailleurs) · <kbd>g</kbd> puis <kbd>r</kbd>/<kbd>s</kbd>/<kbd>c</kbd>/<kbd>f</kbd> = navigation · <kbd>1</kbd>–<kbd>9</kbd> = activer le n-ième jeu.</li>
     <li>La palette (<kbd>Ctrl+K</kbd>) trouve les règles de tous les jeux, commandes et vues comprises.</li>
   </ul>`,
   oracle_ok:"Ton tri est sain",
@@ -1399,13 +1377,13 @@ en:{
     <li>Whatever no rule of the ruleset covers gets recycled — measure it in the <b>Simulation</b>, or check set by set in <b>Reference › Sets &amp; transform</b>.</li>
   </ul>`,
   empty_tab:"This ruleset is empty.", btn_create_empty:"＋ Create a rule",
-  ob_welcome:"Welcome — start from a template (Early, Mid, End) or create your first rule: everything is undoable with Ctrl+Z.",
+  ob_welcome:"Welcome — create your first rule with “+ New rule”; everything is undoable (Ctrl+Z) and help lives behind the “?” buttons.",
   il_title:n=>`Ruleset “${n}”`, il_by:a=>"by "+a, il_count:c=>`${c} rule${c>1?"s":""}`,
   il_adopt:"Adopt this ruleset", il_look:"Close without importing",
   lbl_author:"Ex-libris", ph_author:"your handle — signed into shares",
   ob_step2:"◆ Next step: check what your ruleset really keeps — run a Simulation.",
-  ob_step3:"◆ Last step: copy your rules into the in-game builder — In-game entry guides you rule by rule.",
-  ob_go_sim:"open Simulation", ob_go_entry:"open Entry",
+  ob_step3:"◆ Last step: copy your rules into the in-game builder — the guided copy dictates them one by one.",
+  ob_go_sim:"open Simulation", ob_go_entry:"start guided copy",
   lex_main:"Main: the piece's primary stat — fixed by the slot (weapon = ATK, armor = HP…).",
   lex_sub:"Subs: the piece's 4 secondary stats — rules sort on them.",
   lex_star:"★: mandatory sub — the piece must carry it (unless it's already its main).",
@@ -1537,7 +1515,7 @@ en:{
   hp_search_h:"Search", hp_search_html:`<ul>
     <li>The Rules view search covers id, name, sets (EN + FR), mains and roles.</li>
     <li>Prefixes: <kbd>set:</kbd> <kbd>sub:</kbd> <kbd>req:</kbd> <kbd>role:</kbd> — stackable, e.g. “set:whirlwind req:4”.</li>
-    <li><kbd>/</kbd> opens search (the field in Rules, the palette elsewhere) · <kbd>g</kbd> then <kbd>r</kbd>/<kbd>s</kbd>/<kbd>c</kbd>/<kbd>j</kbd>/<kbd>f</kbd> = navigation · <kbd>1</kbd>–<kbd>9</kbd> = activate the nth ruleset.</li>
+    <li><kbd>/</kbd> opens search (the field in Rules, the palette elsewhere) · <kbd>g</kbd> then <kbd>r</kbd>/<kbd>s</kbd>/<kbd>c</kbd>/<kbd>f</kbd> = navigation · <kbd>1</kbd>–<kbd>9</kbd> = activate the nth ruleset.</li>
     <li>The palette (<kbd>Ctrl+K</kbd>) finds rules across all rulesets, plus commands and views.</li>
   </ul>`,
   oracle_ok:"Your sorting is healthy",
@@ -1796,10 +1774,10 @@ function migrateRuleIds(){
 }
 async function restoreState(){
   const store = getStore();
-  if(!store){ setSave(t("save_session"),"warn"); ensureTab(); renderView(); return; }
+  if(!store){ setSave(t("save_session"),"warn"); ensureTab(); obBoot(); renderView(); return; }
   try{
     const raw = await store.get(KEY);
-    if(!raw){ setSave(store.tag==="local" ? t("save_ready_local") : t("save_ready"),"ok"); ensureTab(); renderView(); return; }
+    if(!raw){ setSave(store.tag==="local" ? t("save_ready_local") : t("save_ready"),"ok"); ensureTab(); obBoot(); renderView(); return; }
     const data = JSON.parse(raw);
     if(data && data.v===4){
       if(Array.isArray(data.tabs)){
@@ -1855,8 +1833,7 @@ async function restoreState(){
   if(!SEEN_SETS) SEEN_SETS = SETS.map(s=>s.n);
   // Profil existant d'avant l'onboarding : il a des règles, on ne lui fait pas la visite
   if(OB === 0 && allRules().length) OB = 3;
-  // Accueil du profil neuf : un toast, l'état vide fait le reste (les templates y sont)
-  if(OB === 0 && !allRules().length) setTimeout(()=>toast(t("ob_welcome"), {ttl:9000}), 800);
+  obBoot();
   PREV_STATE = snapState(); // point zéro de la pile : l'état restauré n'est pas annulable
   applyTheme();
   applyLang();
@@ -2293,15 +2270,7 @@ function tabBar(){
           return `<button type="button" class="tab-btn${t.id===activeTabId?' on':''}" data-tabsel="${t.id}">${esc(t.name)} <span class="n">${t.rules.length}</span></button>`;
         }).join("")}
       </div>
-      <span class="addwrap"><button type="button" class="tab-add" id="tab-add" title="${t("tab_add")}">＋</button>
-        <div class="addmenu" id="addmenu" hidden>
-          <button type="button" data-tpl="vide">${t("tpl_vide")}</button>
-          <button type="button" data-tpl="early">${t("tpl_early")}</button>
-          <button type="button" data-tpl="mid">${t("tpl_mid")}</button>
-          <button type="button" data-tpl="end">${t("tpl_end")}</button>
-          <button type="button" data-tpl="import">${t("import_btn")}</button>
-        </div>
-      </span>
+      <button type="button" class="tab-add" id="tab-add" title="${t("tab_add")}">＋</button>
     </div>
     <span class="tab-tools">
       <button type="button" class="btn sm" id="tab-rename">${t("rename")}</button>
@@ -2494,16 +2463,7 @@ function updateRuleList(){
   const tab = activeTab();
   let html = "";
   if(!tab || !tab.rules.length){
-    html = `<div class="empty">
-      <p>${t("empty_tpl_p")}</p>
-      <div class="empty-tpl">
-        <button type="button" class="btn" data-tpl="early">${t("tpl_early")}</button>
-        <button type="button" class="btn" data-tpl="mid">${t("tpl_mid")}</button>
-        <button type="button" class="btn" data-tpl="end">${t("tpl_end")}</button>
-      </div>
-      <p class="hint" style="margin-top:10px">${t("empty_tpl_hint")}</p>
-      <button type="button" class="btn primary" id="add-open-empty">${t("btn_create_empty")}</button>
-    </div>`;
+    html = `<div class="empty"><p>${t("empty_tab")}</p><button type="button" class="btn primary" id="add-open-empty">${t("btn_create_empty")}</button></div>`;
   } else {
     const list = tab.rules.filter(matchFilters);
     if(!list.length){
@@ -3002,35 +2962,6 @@ function viewSession(){
     <div id="test-body">${manualPanel()}</div>
   </div>`;
 }
-// Saisie en jeu — l'état de recopie du jeu de règles actif (le mode guidé se branchera ici)
-function saisieRows(){
-  const tab = activeTab();
-  const rules = tab ? tab.rules : [];
-  if(!rules.length) return `<div class="empty"><p>${t("empty_tab")}</p></div>`;
-  let html = "";
-  for(const sec of SECTIONS){
-    const rows = rules.filter(r=>r.section===sec);
-    if(!rows.length) continue;
-    html += `<h3 class="grp-head">${sideLabel(sec)} <span class="n">${rows.length}</span></h3>`;
-    html += rows.map(r=>{
-      const pool = [...sortStats(r.pool.filter(a=>r.ess.includes(a))), ...sortStats(r.pool.filter(a=>!r.ess.includes(a)))];
-      const subChips = pool.map(a=>`<span class="chip ${STAT[a]}${r.ess.includes(a)?" ess":""}">${r.ess.includes(a)?"★ "+a:a}</span>`).join("");
-      const mainChips = r.mains.length ? r.mains.map(a=>`<span class="chip ${STAT[a]}">${a}</span>`).join("") : "—";
-
-      return `<label class="sr-row${isEntered(r.id)?" done":""}">
-      <div class="sr-head">
-        <input type="checkbox" class="chk" data-entered="${r.id}" ${isEntered(r.id)?"checked":""} aria-label="${t("aria_entered")}">
-        <span class="rc-id">${r.id}</span>
-        <span class="sr-name">${esc(r.name)}</span>
-        <span class="sr-meta">${r.req}/4</span>
-      </div>
-      <div class="sr-detail">${sortSets(r.sets).map(setChip).join("")}<span class="fsep" aria-hidden="true"></span>${mainChips}<span class="fsep" aria-hidden="true"></span>${subChips}</div>
-    </label>`;
-    }).join("");
-  }
-
-  return html;
-}
 /* ── Palette Ctrl+K : navigation, jeux de règles, commandes (toutes couvertes par
       l'undo quand elles mutent), et TOUTES les règles de TOUS les jeux (data-goto+flash).
       « La palette EST le tutoriel » : les raccourcis s'affichent à droite. ── */
@@ -3051,7 +2982,6 @@ function palItems(){
   add("nav", t("pal_nav", t("nav_rules")), "", ()=>goto("/regles"));
   add("nav", t("pal_nav", t("nav_sim")), "", ()=>goto("/simulation"));
   add("nav", t("pal_nav", t("nav_session")), "", ()=>goto("/session"));
-  add("nav", t("pal_nav", t("nav_entry")), "", ()=>goto("/saisie"));
   add("nav", t("pal_nav", t("nav_ref")), "", ()=>goto("/reference"));
   add("nav", t("pal_nav", t("nav_sets")), "", ()=>{ UI.refMode = "sets"; goto("/reference"); renderView(); });
   for(const tb of TABS)
@@ -3228,36 +3158,13 @@ function tpBack(uncheck){
   }
   tpRender();
 }
-/* ── Templates Early / Mid / End (D9) : des jeux de règles prêts à ajuster.
-      Les sets sont résolus PAR TIER à la création (robuste aux ajouts de sets) ;
-      les règles passent par sanitizeRule comme un import. Contenu = brouillon
-      doctrine (budgets, trio CC·CD·AS, HP% > DEF%) — à affiner en jouant. ── */
-const TEMPLATES = {
-  early: {tiers:[0,1], rules:[
-    {name:"Survie",  section:"left",  mains:["ATK","HP"], pool:["HP","HP%","DEF","DEF%","RR","HE"], ess:[], req:2, arch:["tank","heal"], desc:"Early : deux subs de survie suffisent — on équipe, on ne collectionne pas."},
-    {name:"Dégâts",  section:"left",  mains:["ATK","HP"], pool:["ATK","ATK%","CC","CD","AS"], ess:[], req:2, arch:["dps"]},
-    {name:"Survie",  section:"right", mains:["HP","HP%","DEF","DEF%"], pool:["HP","HP%","DEF","DEF%","RR","HE"], ess:[], req:2, arch:["tank","heal","support"]},
-    {name:"Dégâts",  section:"right", mains:["ATK","ATK%","CD"], pool:["ATK","ATK%","CC","CD","AS"], ess:[], req:2, arch:["dps"]}
-  ]},
-  mid: {tiers:[1,2], rules:[
-    {name:"Tank",    section:"left",  mains:["ATK","HP"], pool:["HP","HP%","DEF","DEF%","RR","AS"], ess:["HP%"], req:3, arch:["tank"]},
-    {name:"Heal",    section:"left",  mains:["ATK","HP"], pool:["HP","HP%","DEF%","RR","HE","AS"], ess:["HP%"], req:3, arch:["heal"]},
-    {name:"DPS",     section:"left",  mains:["ATK","HP"], pool:["ATK","ATK%","CC","CD","AS"], ess:["ATK%"], req:3, arch:["dps"]},
-    {name:"Tank",    section:"right", mains:["HP%","DEF%"], pool:["HP","HP%","DEF","DEF%","RR","AS"], ess:["HP%"], req:3, arch:["tank"]},
-    {name:"DPS crit", section:"right", mains:["ATK%","CD"], pool:["ATK","ATK%","CC","CD","AS","HE"], ess:["CC"], req:3, arch:["dps"], desc:"Le trio CC · CD · AS porte le dégât."},
-    {name:"Support", section:"right", mains:["HP%","DEF%","HE"], pool:["HP%","DEF%","RR","HE","AS"], ess:["AS"], req:3, arch:["support","inspire"]}
-  ]},
-  end: {tiers:[2,3], rules:[
-    {name:"Tank quad", section:"left",  mains:["ATK","HP"], pool:["HP","HP%","DEF","DEF%","RR","AS"], ess:["DEF%","HP%"], req:4, arch:["tank"], desc:"Quads only : DEF% et HP% obligatoires."},
-    {name:"Heal quad", section:"left",  mains:["ATK","HP"], pool:["HP","HP%","DEF%","RR","HE","AS"], ess:["HP%","AS"], req:4, arch:["heal"]},
-    {name:"DPS quad",  section:"left",  mains:["ATK","HP"], pool:["ATK","ATK%","CC","CD","AS"], ess:["ATK%","CD"], req:4, arch:["dps"]},
-    {name:"Tank quad", section:"right", mains:["HP%","DEF%"], pool:["HP","HP%","DEF","DEF%","RR","AS"], ess:["HP%","RR"], req:4, arch:["tank"]},
-    {name:"DPS quad",  section:"right", mains:["ATK%","CD"], pool:["ATK","ATK%","CC","CD","AS"], ess:["CC","CD"], req:4, arch:["dps"], desc:"Le trio complet — la ★ portée en main ne compte pas contre la pièce."},
-    {name:"Heal / Support quad", section:"right", mains:["HP%","HE"], pool:["HP","HP%","DEF%","RR","HE","AS"], ess:["AS","HP%"], req:4, arch:["heal","support"]}
-  ]}
-};
+// L'accueil du profil neuf — appelé sur TOUTES les sorties de restoreState (les retours
+// anticipés « pas de stockage » / « rien d'enregistré » sont justement le profil vierge).
+function obBoot(){
+  if(OB === 0 && !allRules().length) setTimeout(()=>toast(t("ob_welcome"), {ttl:9000}), 800);
+}
 // Les deux toasts d'étape : après la première règle → « vérifie en Simulation » ;
-// à l'arrivée en Simulation → « recopie dans le jeu » (le toast n°2 mène à la recopie).
+// à l'arrivée en Simulation → la recopie guidée.
 function obStep2(){
   if(OB >= 2 || !allRules().length) return;
   OB = 2;
@@ -3268,51 +3175,7 @@ function obStep3(){
   if(OB !== 2 || !allRules().length) return;
   OB = 3;
   scheduleSave();
-  toast(t("ob_step3"), {ttl:9000, action:{label:t("ob_go_entry"), fn(){ goto("/saisie"); }}});
-}
-function makeTemplateTab(key){
-  const tpl = TEMPLATES[key];
-  if(!tpl) return;
-  bumpSeqs();
-  const nt = newTab(t("tpl_"+key));
-  nt.desc = t("tpl_"+key+"_desc");
-  for(const rr of tpl.rules){
-    const sets = SETS.filter(s=>s.side===rr.section && tpl.tiers.includes(s.t)).map(s=>s.n);
-    const rule = sanitizeRule({...rr, id:"TMP", sets});
-    if(rule && rule.sets.length && rule.pool.length){ rule.id = nextRuleId(nt, rule.section); nt.rules.push(rule); }
-  }
-  registerArchs();
-  activeTabId = nt.id;
-  UI.open.clear();
-  scheduleSave(t("c_tpl", nt.name));
-  goto("/regles");
-  renderView(); refreshTabBar(); updateSidebar();
-  toast(t("t_tpl", esc(nt.name), nt.rules.length));
-  setTimeout(obStep2, 1200);
-}
-function viewSaisie(){
-  const tab = activeTab();
-  return `<div class="wrap">
-    <div class="view-head">
-      <h2>${t("v_entry_h")}</h2>
-      <div class="lede">${t("v_entry_lede")}</div>
-    </div>
-    <div class="controls">
-      ${tabPicker()}
-      <div class="ctl">${ctlLabel("key",t("lbl_gamekey"))}
-        <div class="key-row" style="margin-top:0">
-          <input type="text" class="key-input" id="tab-key" maxlength="60" placeholder="${t("ph_gamekey")}" value="${esc((tab||{}).key||"")}">
-          <button type="button" class="btn sm" id="tab-key-copy">${t("b_copykey")}</button>
-        </div>
-      </div>
-    </div>
-    ${tab && tab.rules.length ? `<button type="button" class="btn primary" id="tp-open" style="margin:2px 0 14px">▸ ${t("tp_start")}</button>` : ""}
-    <div class="prog-wrap wide">
-      <div class="prog-label"><span>${t("prog")}</span><b id="saisie-num">0/0</b></div>
-      <div class="prog-bar"><i id="saisie-fill" style="width:0%"></i></div>
-    </div>
-    <div id="saisie-list">${saisieRows()}</div>
-  </div>`;
+  toast(t("ob_step3"), {ttl:9000, action:{label:t("ob_go_entry"), fn(){ openTp(); }}});
 }
 function updateTestBody(){
   const el = document.getElementById("test-body");
@@ -3620,7 +3483,6 @@ function renderView(){
   if(UI.view==="reference"){ main.innerHTML = viewReference(); }
   else if(UI.view==="simulation"){ main.innerHTML = viewSimulation(); setTimeout(obStep3, 900); }
   else if(UI.view==="session"){ main.innerHTML = viewSession(); }
-  else if(UI.view==="saisie"){ main.innerHTML = viewSaisie(); }
   else { main.innerHTML = viewRegles(); updateRuleList(); }
   main.scrollTop = 0;
   ensureTabVisible(main.querySelector(".tabs-scroll"));
@@ -3645,16 +3507,6 @@ function updateSidebar(){
   if(pn) pn.textContent = done+"/"+rules.length;
   const pf = document.getElementById("prog-fill");
   if(pf) pf.style.width = (rules.length? Math.round(done/rules.length*100):0)+"%";
-  const ne = document.getElementById("nav-count-entry");
-  if(ne) ne.textContent = done+"/"+rules.length;
-  const sn = document.getElementById("saisie-num");
-  if(sn) sn.textContent = done+"/"+rules.length;
-  const sf = document.getElementById("saisie-fill");
-  if(sf) sf.style.width = (rules.length? Math.round(done/rules.length*100):0)+"%";
-  document.querySelectorAll("#saisie-list [data-entered]").forEach(c=>{
-    const row = c.closest(".sr-row");
-    if(row) row.classList.toggle("done", c.checked);
-  });
 }
 function route(){
   const h = location.hash.replace(/^#\/?/, "");
@@ -3672,7 +3524,7 @@ function route(){
   else if(view==="sets"){ UI.view = "reference"; UI.refMode = "sets"; }         // ancien lien : la vue Sets vit dans Référence
   else if(view==="simulation" || view==="testeur"){ UI.view = "simulation"; }   // « testeur » = ancien nom
   else if(view==="session"){ UI.view = "session"; }
-  else if(view==="saisie"){ UI.view = "saisie"; }
+  else if(view==="saisie"){ UI.view = "regles"; } // l'ancienne vue Saisie → Règles
   else {
     UI.view = "regles";
     if(param){
@@ -4057,8 +3909,6 @@ function commitRename(commit){
 }
 document.addEventListener("click", e=>{
   const el = e.target;
-  { const am = document.getElementById("addmenu");
-    if(am && !am.hidden && !el.closest(".addwrap")) am.hidden = true; }
 
   // bouton « ? » : replie/déplie tous les blocs d'aide de la même clé, état persisté
   const hb = el.closest("[data-help]");
@@ -4105,26 +3955,10 @@ document.addEventListener("click", e=>{
     return;
   }
   if(el.closest("#tab-add")){
-    const am = document.getElementById("addmenu");
-    if(am) am.hidden = !am.hidden;
-    return;
-  }
-  const tplBtn = el.closest("[data-tpl]");
-  if(tplBtn){
-    const key = tplBtn.dataset.tpl;
-    const am = document.getElementById("addmenu");
-    if(am) am.hidden = true;
-    if(key === "vide"){
-      const nt = newTab(t("tab_new", TABS.length+1));
-      activeTabId = nt.id; UI.open.clear();
-      refreshTabBar(); updateRuleList(); updateSidebar(); scheduleSave();
-      toast(t("t_tab_created", esc(nt.name)));
-    } else if(key === "import"){
-      const fi = document.getElementById("import-file");
-      if(fi && fi.click) fi.click();
-    } else {
-      makeTemplateTab(key);
-    }
+    const nt = newTab(t("tab_new", TABS.length+1));
+    activeTabId = nt.id; UI.open.clear();
+    refreshTabBar(); updateRuleList(); updateSidebar(); scheduleSave();
+    toast(t("t_tab_created", esc(nt.name)));
     return;
   }
   if(el.closest("#tab-rename")){
@@ -4643,7 +4477,7 @@ document.addEventListener("keydown", e=>{
     if(!typing && !document.querySelector("dialog[open]")){
       if(UI.gChord && Date.now() - UI.gChord < 900){
         UI.gChord = 0;
-        const dest = ({r:"/regles", s:"/simulation", c:"/session", j:"/saisie", f:"/reference"})[e.key.toLowerCase()];
+        const dest = ({r:"/regles", s:"/simulation", c:"/session", f:"/reference"})[e.key.toLowerCase()];
         if(dest){ e.preventDefault(); goto(dest); return; }
       }
       if(e.key==="g" || e.key==="G"){ UI.gChord = Date.now(); return; }
