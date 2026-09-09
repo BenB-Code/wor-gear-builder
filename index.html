@@ -641,6 +641,17 @@
   .il-row{display:flex;align-items:center;gap:10px;font-size:var(--fs-2);min-width:0}
   .il-row b{color:var(--ink);font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .il-meta{margin-left:auto;font-family:var(--mono);font-size:var(--fs-0);color:var(--faint);white-space:nowrap}
+  /* ── Menu Partager ── */
+  .sharewrap{position:relative;display:inline-flex}
+  .sharemenu{position:absolute;top:calc(100% + 6px);right:0;z-index:40;display:flex;flex-direction:column;gap:2px;
+    background:var(--panel);border:1px solid var(--border);border-radius:var(--r-m);padding:6px;min-width:190px;
+    box-shadow:0 8px 24px rgba(0,0,0,.35)}
+  body.light .sharemenu{box-shadow:0 8px 24px rgba(60,50,30,.18)}
+  .sharemenu[hidden]{display:none}
+  .sharemenu button{appearance:none;background:none;border:none;color:var(--ink);font:inherit;font-size:var(--fs-2);
+    text-align:left;padding:7px 11px;border-radius:var(--r-s);cursor:pointer}
+  .sharemenu button:hover{background:var(--panel2)}
+  .sharemenu button:disabled{opacity:.5}
   kbd{font-family:var(--mono);font-size:var(--fs-0);background:var(--panel2);border:1px solid var(--border-soft);
     border-radius:4px;padding:1px 6px;color:var(--muted);white-space:nowrap}
   /* ── Panneau ? ── */
@@ -1134,6 +1145,13 @@ fr:{
   ob_welcome:"Bienvenue — crée ta première règle avec « + Nouvelle règle » ; tout est annulable (Ctrl+Z) et l'aide vit derrière les « ? ».",
   il_title:n=>`Jeu de règles « ${n} »`, il_by:a=>"de "+a, il_count:c=>`${c} règle${c>1?"s":""}`,
   il_adopt:"Adopter ce jeu", il_look:"Fermer sans importer",
+  sh_link:"Copier le lien", sh_png:"Image à partager (PNG)",
+  sc_brand:"Tri d'équipement — Watcher of Realms",
+  sc_rules:n=>`${n} règles · ensembles 2 & 3 pièces`,
+  sc_kept_l:"des profils possibles sont gardés — tout le reste part au recyclage",
+  sc_foot:"QR = lien d'import du jeu · clé à coller : Réglages ▸ Tri automatique ▸ Importer",
+  t_share_png:"Share card téléchargée — prête à poster.",
+  t_share_png_fail:"Génération de l'image impossible.",
   lbl_author:"Ex-libris", ph_author:"ton pseudo — signé dans les partages",
   ob_step2:"◆ Étape suivante : vérifie ce que ton jeu de règles garde vraiment — lance une Simulation.",
   ob_step3:"◆ Dernière étape : recopie tes règles dans le builder du jeu — la recopie guidée te les dicte une par une.",
@@ -1380,6 +1398,13 @@ en:{
   ob_welcome:"Welcome — create your first rule with “+ New rule”; everything is undoable (Ctrl+Z) and help lives behind the “?” buttons.",
   il_title:n=>`Ruleset “${n}”`, il_by:a=>"by "+a, il_count:c=>`${c} rule${c>1?"s":""}`,
   il_adopt:"Adopt this ruleset", il_look:"Close without importing",
+  sh_link:"Copy the link", sh_png:"Shareable image (PNG)",
+  sc_brand:"Gear sorting — Watcher of Realms",
+  sc_rules:n=>`${n} rules · 2 & 3-piece sets`,
+  sc_kept_l:"of all possible profiles are kept — everything else goes to recycling",
+  sc_foot:"QR = ruleset import link · key to paste in game: Settings ▸ Auto-sort ▸ Import",
+  t_share_png:"Share card downloaded — ready to post.",
+  t_share_png_fail:"Could not generate the image.",
   lbl_author:"Ex-libris", ph_author:"your handle — signed into shares",
   ob_step2:"◆ Next step: check what your ruleset really keeps — run a Simulation.",
   ob_step3:"◆ Last step: copy your rules into the in-game builder — the guided copy dictates them one by one.",
@@ -2278,7 +2303,12 @@ function tabBar(){
       <button type="button" class="btn sm danger" id="tab-del">${t("tab_del")}</button>
       <span class="tsep" aria-hidden="true"></span>
       <button type="button" class="btn sm" id="tab-export">${t("export")}</button>
-      <button type="button" class="btn sm" id="tab-share">${t("share")}</button>
+      <span class="sharewrap"><button type="button" class="btn sm" id="tab-share">${t("share")}</button>
+        <div class="sharemenu" id="sharemenu" hidden>
+          <button type="button" data-shr="link">${t("sh_link")}</button>
+          <button type="button" data-shr="png">${t("sh_png")}</button>
+        </div>
+      </span>
     </span>
     <div class="key-row">
       <span class="lab">${t("lbl_gamekey")}</span>
@@ -3608,6 +3638,364 @@ const statMask = arr => arr.reduce((m,s)=>{ const i = STAT_CODE.indexOf(s); retu
 const statUnmask = m => STAT_CODE.filter((_,i)=>m&(1<<i));
 function packTab(tab){ return {v:2, n:tab.name, ...(AUTHOR?{a:AUTHOR}:{}), ...(tab.key?{k:tab.key}:{}), ...(tab.desc?{d:tab.desc}:{}), r:tab.rules.map(r=>[r.name, r.sets, statMask(r.mains), statMask(r.pool), statMask(r.ess), r.req, (r.arch&&r.arch.length)?r.arch:0, r.desc||0])}; }
 function unpackTab(o){ return {name:o.n, author:typeof o.a==="string"?o.a:"", key:typeof o.k==="string"?o.k:"", desc:typeof o.d==="string"?o.d:"", rules:(Array.isArray(o.r)?o.r:[]).map(x=>({name:x[0], sets:Array.isArray(x[1])?x[1]:[], mains:statUnmask(+x[2]||0), pool:statUnmask(+x[3]||0), ess:statUnmask(+x[4]||0), req:+x[5]||1, arch:Array.isArray(x[6])?x[6]:[], desc:typeof x[7]==="string"?x[7]:""}))}; }
+/* ── QR maison : mode octets, correction L, versions 1-15, masque 0 fixe.
+      Tables v1-15 croisées arithmétiquement (total codewords = data + ec×blocs). ── */
+const QR_SPEC = {
+  1:{ec:7,  blocks:[[1,19]]},  2:{ec:10, blocks:[[1,34]]},  3:{ec:15, blocks:[[1,55]]},
+  4:{ec:20, blocks:[[1,80]]},  5:{ec:26, blocks:[[1,108]]}, 6:{ec:18, blocks:[[2,68]]},
+  7:{ec:20, blocks:[[2,78]]},  8:{ec:24, blocks:[[2,97]]},  9:{ec:30, blocks:[[2,116]]},
+  10:{ec:18, blocks:[[2,68],[2,69]]}, 11:{ec:20, blocks:[[4,81]]},
+  12:{ec:24, blocks:[[2,92],[2,93]]}, 13:{ec:26, blocks:[[4,107]]},
+  14:{ec:30, blocks:[[3,115],[1,116]]}, 15:{ec:22, blocks:[[5,87],[1,88]]}
+};
+const QR_ALIGN = {1:[],2:[6,18],3:[6,22],4:[6,26],5:[6,30],6:[6,34],7:[6,22,38],8:[6,24,42],
+  9:[6,26,46],10:[6,28,50],11:[6,30,54],12:[6,32,58],13:[6,34,62],14:[6,26,46,66],15:[6,26,48,70]};
+
+const GEXP = new Uint8Array(512), GLOG = new Uint8Array(256);
+(function(){
+  let x = 1;
+  for(let i=0;i<255;i++){ GEXP[i]=x; GLOG[x]=i; x<<=1; if(x & 0x100) x^=0x11d; }
+  for(let i=255;i<512;i++) GEXP[i]=GEXP[i-255];
+})();
+function gmul(a,b){ return (a && b) ? GEXP[GLOG[a]+GLOG[b]] : 0; }
+
+// Reste de la division par le polynôme générateur de degré `degree` (algorithme classique)
+function rsRemainder(data, degree){
+  const coefs = new Array(degree).fill(0);
+  coefs[degree-1] = 1;
+  let root = 1;
+  for(let i=0;i<degree;i++){
+    for(let j=0;j<degree;j++){
+      coefs[j] = gmul(coefs[j], root);
+      if(j+1 < degree) coefs[j] ^= coefs[j+1];
+    }
+    root = gmul(root, 2);
+  }
+  const res = new Array(degree).fill(0);
+  for(const b of data){
+    const factor = b ^ res.shift();
+    res.push(0);
+    for(let j=0;j<degree;j++) res[j] ^= gmul(coefs[j], factor);
+  }
+
+  return res;
+}
+
+function qrDataCap(v){ let k=0; for(const [n,dk] of QR_SPEC[v].blocks) k += n*dk; return k; }
+
+function bchRemainder(value, gen, genDeg, valDeg){
+  // value déjà décalé de genDeg bits ; réduit modulo gen
+  for(let bit = valDeg + genDeg - 1; bit >= genDeg; bit--){
+    if((value >> bit) & 1) value ^= gen << (bit - genDeg);
+  }
+
+  return value;
+}
+function formatBits(mask){
+  const data = (0b01 << 3) | mask;           // niveau L = 01
+  const rem = bchRemainder(data << 10, 0b10100110111, 10, 5);
+
+  return ((data << 10) | rem) ^ 0b101010000010010;
+}
+function versionBits(v){
+  const rem = bchRemainder(v << 12, 0b1111100100101, 12, 6);
+
+  return (v << 12) | rem;
+}
+
+// Encode `text` (UTF-8) → {size, get(r,c)} ou null si trop long pour v15
+function qrEncode(text){
+  const bytes = (typeof TextEncoder !== "undefined") ? new TextEncoder().encode(text) : Buffer.from(text, "utf8");
+  let v = 0;
+  for(let cand=1; cand<=15; cand++){
+    const capBits = qrDataCap(cand) * 8;
+    const need = 4 + (cand < 10 ? 8 : 16) + bytes.length * 8;
+    if(need <= capBits){ v = cand; break; }
+  }
+  if(!v) return null;
+  const spec = QR_SPEC[v];
+  const capBytes = qrDataCap(v);
+
+  // flux de bits : mode 0100, longueur, données, terminateur, bourrage
+  const buf = [];
+  let acc = 0, accN = 0;
+  const push = (val, n) => { for(let i=n-1;i>=0;i--){ acc = (acc<<1) | ((val>>i)&1); if(++accN===8){ buf.push(acc); acc=0; accN=0; } } };
+  push(0b0100, 4);
+  push(bytes.length, v < 10 ? 8 : 16);
+  for(const b of bytes) push(b, 8);
+  const termBits = Math.min(4, capBytes*8 - (buf.length*8 + accN));
+  push(0, termBits);
+  if(accN) push(0, 8-accN);
+  let padFlip = true;
+  while(buf.length < capBytes){ buf.push(padFlip ? 0xEC : 0x11); padFlip = !padFlip; }
+
+  // blocs + correction + entrelacement
+  const blocks = [];
+  let off = 0;
+  for(const [n, dk] of spec.blocks) for(let i=0;i<n;i++){ blocks.push(buf.slice(off, off+dk)); off += dk; }
+  const ecs = blocks.map(b => rsRemainder(b, spec.ec));
+  const inter = [];
+  const maxDk = Math.max(...blocks.map(b=>b.length));
+  for(let i=0;i<maxDk;i++) for(const b of blocks) if(i < b.length) inter.push(b[i]);
+  for(let i=0;i<spec.ec;i++) for(const e of ecs) inter.push(e[i]);
+
+  // matrice
+  const size = 17 + 4*v;
+  const M = Array.from({length:size}, () => new Int8Array(size).fill(-1));
+  const set = (r,c,val) => { M[r][c] = val ? 1 : 0; };
+  const finder = (r0,c0) => {
+    for(let dr=-1;dr<=7;dr++) for(let dc=-1;dc<=7;dc++){
+      const r = r0+dr, c = c0+dc;
+      if(r<0||c<0||r>=size||c>=size) continue;
+      if(dr<0||dr>6||dc<0||dc>6){ set(r,c,0); continue; } // séparateur
+      const m = Math.max(Math.abs(dr-3), Math.abs(dc-3));
+      set(r,c, m<=1 || m===3);
+    }
+  };
+  finder(0,0); finder(0,size-7); finder(size-7,0);
+  for(let i=8;i<size-8;i++){
+    if(M[6][i]===-1) set(6,i, i%2===0);
+    if(M[i][6]===-1) set(i,6, i%2===0);
+  }
+  const A = QR_ALIGN[v];
+  for(let ai=0; ai<A.length; ai++) for(let aj=0; aj<A.length; aj++){
+    // seuls les trois coins qui chevauchent les motifs de repère se sautent —
+    // un motif d'alignement posé SUR la ligne de timing (coordonnée 6) est légitime
+    if((ai===0 && aj===0) || (ai===0 && aj===A.length-1) || (ai===A.length-1 && aj===0)) continue;
+    const r0 = A[ai], c0 = A[aj];
+    for(let dr=-2;dr<=2;dr++) for(let dc=-2;dc<=2;dc++)
+      set(r0+dr, c0+dc, Math.max(Math.abs(dr),Math.abs(dc)) !== 1);
+  }
+  set(size-8, 8, 1); // module sombre
+
+  // réservation des zones de format (écrites après le masque)
+  const fmtPos = [];
+  for(let i=0;i<=5;i++) fmtPos.push([8,i]);
+  fmtPos.push([8,7],[8,8],[7,8]);
+  for(let i=9;i<=14;i++) fmtPos.push([14-i,8]);
+  const fmtPos2 = [];
+  for(let i=0;i<=6;i++) fmtPos2.push([size-1-i,8]);
+  for(let i=7;i<=14;i++) fmtPos2.push([8, size-15+i]);
+  for(const [r,c] of [...fmtPos, ...fmtPos2]) if(M[r][c]===-1) M[r][c]=0;
+
+  // info de version (v ≥ 7)
+  if(v >= 7){
+    const vb = versionBits(v);
+    for(let i=0;i<18;i++){
+      const bit = (vb >> i) & 1;
+      set(size-11 + (i%3), Math.floor(i/3), bit);
+      set(Math.floor(i/3), size-11 + (i%3), bit);
+    }
+  }
+
+  // placement des données en zigzag + masque 0
+  const totalBits = inter.length * 8;
+  let bi = 0, up = true;
+  for(let col=size-1; col>0; col-=2){
+    if(col===6) col--;
+    for(let k=0;k<size;k++){
+      const r = up ? size-1-k : k;
+      for(const c of [col, col-1]){
+        if(M[r][c] !== -1) continue;
+        let bit = bi < totalBits ? (inter[bi>>3] >> (7-(bi&7))) & 1 : 0;
+        bi++;
+        if(((r+c) & 1) === 0) bit ^= 1; // masque 0
+        M[r][c] = bit;
+      }
+    }
+    up = !up;
+  }
+
+  // bits de format (masque 0)
+  const fmt = formatBits(0);
+  for(let i=0;i<15;i++){
+    const bit = (fmt >> (14 - i)) & 1; // MSB en premier le long du parcours
+    const [r1,c1] = fmtPos[i]; M[r1][c1] = bit;
+    const [r2,c2] = fmtPos2[i]; M[r2][c2] = bit;
+  }
+
+  return { size, get:(r,c)=>M[r][c]===1, version:v };
+}
+
+
+/* ── Share card PNG (D10) : la maquette M7 validée, rendue en canvas 1200×630.
+      Le QR encode le lien d'import (court si le raccourcisseur répond, long sinon) ;
+      contrairement à la maquette (placeholder inversé), le QR réel est SOMBRE SUR
+      CLAIR — un QR inversé échoue sur beaucoup de lecteurs. ── */
+function scWrap(g, text, maxW, maxLines){
+  const words = String(text).split(/\s+/);
+  const lines = [];
+  let line = "";
+  for(const w of words){
+    const cand = line ? line + " " + w : w;
+    if(g.measureText(cand).width <= maxW || !line){ line = cand; continue; }
+    lines.push(line);
+    line = w;
+    if(lines.length === maxLines) break;
+  }
+  if(lines.length < maxLines && line) lines.push(line);
+  if(line && lines.length === maxLines && lines[maxLines-1] !== line){
+    let last = lines[maxLines-1];
+    while(last && g.measureText(last + "…").width > maxW) last = last.slice(0, -1);
+    lines[maxLines-1] = last + "…";
+  }
+
+  return lines;
+}
+function scEllipsis(g, text, maxW){
+  let s = String(text);
+  if(g.measureText(s).width <= maxW) return s;
+  while(s && g.measureText(s + "…").width > maxW) s = s.slice(0, -1);
+
+  return s + "…";
+}
+async function renderShareCard(tab){
+  const payload = await encodeShare(tab);
+  let url = location.origin + location.pathname + "#/import=" + payload;
+  try{ url = await shortenShare(url); }catch(_){ /* lien long : le QR grossit, c'est tout */ }
+  const qr = qrEncode(url);
+  const cov = computeCoverage(tab);
+  const pctFull = covPct(cov.total ? cov.kept/cov.total : 0); // ex. « 1,02 % »
+  const pctNum = pctFull.replace(/\s*%$/, "");
+  const DISPLAY = "'Palatino Linotype', Palatino, 'Book Antiqua', Georgia, serif";
+  const BODY = "-apple-system, 'Segoe UI', Roboto, Arial, sans-serif";
+  const MONO = "Consolas, 'Cascadia Code', Menlo, monospace";
+  const W = 1200, H = 630, PX = 64;
+  const c = document.createElement("canvas");
+  c.width = W; c.height = H;
+  const g = c.getContext("2d");
+
+  // socle grimoire : fond dégradé, coins arrondis, bord, liseré et souffle zénithaux
+  g.beginPath(); g.roundRect(0.5, 0.5, W-1, H-1, 18);
+  const bg = g.createLinearGradient(0, 0, 0, H);
+  bg.addColorStop(0, "#191622"); bg.addColorStop(.46, "#14121a"); bg.addColorStop(1, "#110f16");
+  g.fillStyle = bg; g.fill();
+  g.strokeStyle = "#322c3e"; g.stroke();
+  g.save();
+  g.beginPath(); g.roundRect(0, 0, W, H, 18); g.clip();
+  const glow = g.createRadialGradient(W/2, -190, 10, W/2, -190, 430);
+  glow.addColorStop(0, "rgba(226,176,74,.10)"); glow.addColorStop(1, "rgba(226,176,74,0)");
+  g.fillStyle = glow; g.fillRect(0, 0, W, 240);
+  g.fillStyle = "rgba(255,255,255,.07)"; g.fillRect(0, 0, W, 1);
+
+  // marque, à droite
+  g.font = "small-caps 600 17px " + DISPLAY;
+  g.textBaseline = "alphabetic";
+  const brand = t("sc_brand");
+  const bw = g.measureText(brand).width;
+  g.fillStyle = "#a59dae"; g.fillText(brand, W-PX-bw, 52);
+  g.fillStyle = "#e2b04a"; g.font = "12px " + BODY; g.fillText("◆", W-PX-bw-18, 50);
+
+  // filet or
+  const fy = 70;
+  const fg = g.createLinearGradient(PX, 0, W-PX, 0);
+  fg.addColorStop(0, "rgba(226,176,74,0)"); fg.addColorStop(.18, "rgba(226,176,74,.45)");
+  fg.addColorStop(.82, "rgba(226,176,74,.45)"); fg.addColorStop(1, "rgba(226,176,74,0)");
+  g.fillStyle = fg; g.fillRect(PX, fy, W-2*PX, 1);
+
+  // zones : pied + colonne QR à droite
+  const footY = H - 46;
+  const qsz = 216;
+  const colW = W - 2*PX - qsz - 60;
+
+  // hauteur naturelle de la pile de gauche → centrage vertical entre filet et pied
+  g.font = "italic 19px " + DISPLAY;
+  const descLines = tab.desc ? scWrap(g, "« " + tab.desc + " »", colW - 26, 3) : [];
+  const stackH = 56 + 24 + 14 + 34 + 104 + 18 + 14 + (descLines.length ? 34 + descLines.length*29 : 0);
+  let y = fy + Math.max(24, ((footY - fy) - stackH) / 2) + 56;
+
+  // titre + sous-ligne
+  g.font = "small-caps 600 50px " + DISPLAY;
+  g.fillStyle = "#ece7db";
+  g.fillText(scEllipsis(g, tab.name, colW), PX, y);
+  y += 24 + 14;
+  g.font = "600 14px " + BODY;
+  g.letterSpacing = "1.7px";
+  g.fillStyle = "#a59dae";
+  g.fillText(t("sc_rules", tab.rules.length).toUpperCase(), PX, y);
+  g.letterSpacing = "0px";
+
+  // % doré (le seul dégradé d'or de la carte avec le souffle)
+  y += 34 + 104;
+  g.font = "104px " + DISPLAY;
+  g.fillStyle = "#e2b04a";
+  g.shadowColor = "rgba(226,176,74,.28)"; g.shadowBlur = 34;
+  g.fillText(pctNum, PX, y);
+  const nw = g.measureText(pctNum).width;
+  g.font = "46px " + DISPLAY;
+  g.fillText(" %", PX + nw, y);
+  g.shadowBlur = 0;
+  y += 18 + 14;
+  g.font = "600 14px " + BODY;
+  g.letterSpacing = "1.7px";
+  g.fillStyle = "#a59dae";
+  g.fillText(t("sc_kept_l").toUpperCase(), PX, y);
+  g.letterSpacing = "0px";
+
+  // description de l'auteur — ou rien
+  if(descLines.length){
+    y += 34;
+    g.fillStyle = "#e2b04a"; g.font = "14px " + BODY; g.fillText("◆", PX, y);
+    g.fillStyle = "#c4bcd0"; g.font = "italic 19px " + DISPLAY;
+    for(const line of descLines){ g.fillText(line, PX + 26, y); y += 29; }
+  }
+
+  // colonne droite : QR (sombre sur clair, scannable) + clé in-game
+  const rightH = qsz + (tab.key ? 74 : 0);
+  let qy = fy + Math.max(24, ((footY - fy) - rightH) / 2);
+  const qx = W - PX - qsz;
+  if(qr){
+    g.beginPath(); g.roundRect(qx, qy, qsz, qsz, 14);
+    g.fillStyle = "#f2eef6"; g.fill();
+    g.strokeStyle = "#322c3e"; g.stroke();
+    const pad = 14, cell = (qsz - 2*pad) / qr.size;
+    g.fillStyle = "#14121a";
+    for(let r=0;r<qr.size;r++) for(let cc=0;cc<qr.size;cc++)
+      if(qr.get(r,cc)) g.fillRect(qx + pad + cc*cell, qy + pad + r*cell, Math.ceil(cell), Math.ceil(cell));
+  }
+  if(tab.key){
+    g.textAlign = "center";
+    g.font = "600 12px " + BODY;
+    g.letterSpacing = "1.5px";
+    g.fillStyle = "#a59dae";
+    g.fillText(t("lbl_gamekey").toUpperCase(), qx + qsz/2, qy + qsz + 30);
+    g.letterSpacing = "0px";
+    g.font = "600 26px " + MONO;
+    g.fillStyle = "#ece7db";
+    g.fillText(scEllipsis(g, tab.key, qsz + 40), qx + qsz/2, qy + qsz + 62);
+    g.textAlign = "left";
+  }
+
+  // pied
+  g.fillStyle = "rgba(255,255,255,.07)"; g.fillRect(0, footY, W, 1);
+  g.font = "12.5px " + BODY;
+  g.fillStyle = "#8a8298";
+  const foot = t("sc_foot");
+  g.fillText(foot, W - PX - g.measureText(foot).width, footY + 29);
+  g.restore();
+
+  return c;
+}
+async function shareCardPng(btn){
+  const tab = activeTab();
+  if(!tab || !tab.rules.length){ toast(t("empty_tab")); return; }
+  const prev = btn ? btn.textContent : "";
+  if(btn){ btn.textContent = "…"; btn.disabled = true; }
+  try{
+    const canvas = await renderShareCard(tab);
+    const blob = await new Promise(res => canvas.toBlob(res, "image/png"));
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "wor-tri-" + slug(tab.name) + "-card.png";
+    a.click();
+    setTimeout(()=>URL.revokeObjectURL(a.href), 4000);
+    toast(t("t_share_png"));
+  }catch(e){
+    toast(t("t_share_png_fail"));
+  }finally{
+    if(btn){ btn.textContent = prev; btn.disabled = false; }
+  }
+}
 async function encodeShare(tab){
   try{ return "2." + await deflateText(JSON.stringify(packTab(tab))); }
   catch(_){ return b64uEncode(JSON.stringify(exportTabObj(tab))); } // navigateur sans CompressionStream : lien long v1
@@ -3909,6 +4297,8 @@ function commitRename(commit){
 }
 document.addEventListener("click", e=>{
   const el = e.target;
+  { const sm = document.getElementById("sharemenu");
+    if(sm && !sm.hidden && !el.closest(".sharewrap")) sm.hidden = true; }
 
   // bouton « ? » : replie/déplie tous les blocs d'aide de la même clé, état persisté
   const hb = el.closest("[data-help]");
@@ -4131,9 +4521,24 @@ document.addEventListener("click", e=>{
     toast(t("t_export", esc(tab.name)));
     return;
   }
-  const shr = el.closest("#tab-share");
+  if(el.closest("#tab-share")){
+    const sm = document.getElementById("sharemenu");
+    if(sm){
+      sm.hidden = !sm.hidden;
+      if(!sm.hidden){
+        // ancré à droite du bouton par défaut ; s'il sort de l'écran (bouton près du bord gauche), on bascule à gauche
+        sm.style.left = ""; sm.style.right = "";
+        if(sm.getBoundingClientRect().left < 8){ sm.style.right = "auto"; sm.style.left = "0"; }
+      }
+    }
+    return;
+  }
+  const shr = el.closest("[data-shr]");
   if(shr){
+    const sm = document.getElementById("sharemenu");
+    if(sm) sm.hidden = true;
     const tab = activeTab(); if(!tab) return;
+    if(shr.dataset.shr === "png"){ shareCardPng(shr); return; }
     const prev = shr.textContent;
     const done = ()=>{ shr.disabled = false; shr.textContent = prev; };
     shr.textContent = "…"; shr.disabled = true;
