@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Les 3 analyses à froid · Design Review 2 — WoR Gear Builder</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="shell">
+<nav class="toc">
+  <div class="brand"><span class="d">◆</span> Design Review 2</div>
+  <div class="sub">Cycle brainstorm &amp; challenge · sept. 2026</div>
+  <a href="index.html">Synthèse du cycle</a>
+  <div class="grp">Le cycle</div>
+  <a href="01-analyses.html" class="on">Les 3 analyses à froid</a>
+  <a href="02-debat.html">Le débat</a>
+  <a href="03-challenge.html">Challenge du rapport 1</a>
+  <a href="04-conclusions.html">Conclusions &amp; recommandations</a>
+  <div class="grp">Référence</div>
+  <a href="../rapport-1-audit/index.html">← Rapport 1</a>
+</nav>
+<main>
+
+<span class="kicker">Phase 1 · analyses individuelles, sans lecture croisée</span>
+<h1>Les 3 analyses à froid</h1>
+<p class="lede">Chaque designer a audité l'app sur pièces (9 captures + CSS lignes 15-560), sans lire le rapport 1
+ni les deux autres analyses. Voici leurs 42 constats, restitués dans leur substance — thèse d'abord, puis les
+constats en tableau priorisé. Les numéros (IA-1, IX-1, GUI-1…) servent de références dans tout le rapport.</p>
+
+<!-- ============ ARCHITECTE D'INFORMATION ============ -->
+<h2>Architecte d'information — les frontières de vues coupent le cycle d'usage</h2>
+<div class="quote">L'app est organisée par <b>nature d'outil</b> (Règles / Testeur / Sets / Référence) alors que
+l'utilisateur vit un <b>cycle</b> : construire → vérifier → recopier en jeu → farmer → réviser. Les corrections les
+plus rentables ne sont pas cosmétiques : ce sont des fusions et des renversements de hiérarchie — la couverture
+appartient aux règles, la pièce manuelle appartient au farm, la saisie en jeu est un mode à part entière et non
+une jauge de pied de page.<span class="who">— thèse de l'architecte d'information</span></div>
+
+<div class="tbl-wrap"><table>
+<tr><th style="width:52px">Réf.</th><th style="width:60px">Prio</th><th>Constat</th><th>Proposition</th></tr>
+<tr><td><b>IA-1</b></td><td><span class="prio p0">P0</span></td>
+<td>La couverture n'est pas un « test », c'est un <b>attribut de la règle</b>. Le mode « Couverture » du Testeur est
+un calcul instantané et déterministe — il n'y a rien à « lancer » ; l'aller-retour Règles → Testeur → Règles casse
+la boucle d'édition.</td>
+<td>Afficher « 36 profils · 2,14 % · ok » en permanence sur chaque carte de règle (la row-head a la place) + les
+4 stat-cards globales en tête de la vue Règles. Le Testeur perd ce mode et ne garde que ce qui se <i>génère</i>
+(Échantillon) et ce qui se <i>saisit</i> (Pièce).</td></tr>
+<tr><td><b>IA-2</b></td><td><span class="prio p0">P0</span></td>
+<td>« Onglet » : un mot d'UI promu concept de domaine — et sélectionné <b>trois fois avec trois UI différentes</b>
+(tabs dans Règles, <code>&lt;select&gt;</code> dans Testeur et dans Sets).</td>
+<td>Le nommer « Jeu de règles » partout, et faire du jeu actif un <b>contexte global du shell</b> : sélecteur unique
+dans la sidebar sous la marque, visible depuis toutes les vues.</td></tr>
+<tr><td><b>IA-3</b></td><td><span class="prio p0">P0</span></td>
+<td>« Saisie en jeu 0/18 » : le but final de l'app vit en pied de sidebar, <b>entre Mode clair et Densité</b>.
+Règle d'or violée : ne jamais mélanger progression métier et réglages d'UI dans le même bloc.</td>
+<td>En faire une <b>cinquième destination de nav</b> (« Saisie en jeu », badge 0/18) ou un CTA primaire dans
+Règles — c'est aussi le lieu naturel de la « recopie guidée plein écran » du backlog.</td></tr>
+<tr><td><b>IA-4</b></td><td><span class="prio p0">P0</span></td>
+<td>La vue Règles <b>enterre les règles</b> : ~40 % de la hauteur avant la première règle (titre, tabs, 5 outils
+d'onglet, encart clé in-game, recherche &amp; filtres, rangée de boutons). Renommer/Supprimer servent une fois par mois.</td>
+<td>Replier les outils dans un menu « ⋯ » porté par l'onglet actif ; la clé in-game part dans le flux de saisie.
+Objectif mesurable : G1 Tank visible au-dessus de la ligne de flottaison.</td></tr>
+<tr><td><b>IA-5</b></td><td><span class="prio p1">P1</span></td>
+<td>« Pièce manuelle » est mal rangée : le backlog (farm 3-taps, créer-règle-depuis-pièce, vérif d'un drop réel)
+décrit un usage <b>en jeu, sur mobile, répété</b> — l'opposé du Testeur analytique posé au bureau.</td>
+<td>L'extraire en destination <b>« Session »</b> mobile-first, qui absorbera le mode farm. Le Testeur redevient pur
+(simulation statistique). Bonus : « créer une règle depuis cette pièce » y devient naturel.</td></tr>
+<tr><td><b>IA-6</b></td><td><span class="prio p1">P1</span></td>
+<td>« Sets &amp; transfo » est <b>deux vues cousues ensemble</b> : référence statique (bonus, source, transfo) et
+audit dynamique (couverture, dépendante du jeu actif). Le badge « 48 » en nav est un compteur d'inventaire statique
+déguisé en information actionnable.</td>
+<td>La référence part dans Référence ; la colonne Couverture devient l'écran « Angles morts » (sets non couverts
+d'abord, tri par tier décroissant, chips de règles cliquables). Le badge « 48 » disparaît.</td></tr>
+<tr><td><b>IA-7</b></td><td><span class="prio p1">P1</span></td>
+<td>Le groupement premier des règles est technique (« Ensemble 2 pièces / 3 pièces ») : personne ne pense son tri
+par taille de set. Le joueur pense par <b>archétype</b> (Tank, Heal, DPS — déjà le nom des règles).</td>
+<td>Groupement par rôle en vue par défaut, la taille d'ensemble en badge de carte ; groupement actuel en option
+de tri. Les IDs G/D survivent tels quels.</td></tr>
+<tr><td><b>IA-8</b></td><td><span class="prio p1">P1</span></td>
+<td>L'Échantillon <b>enterre sa réponse</b> : « 48 gardée(s) / 2000 — 2,4 % » est le verdict de toute la simulation,
+rendu en mono 11px, écrasé par une grille de 2000 cartes.</td>
+<td>Renverser : verdict global + répartition par tier en stat-cards (même patron que Couverture), pièces en second
+niveau, repliées ou paginées. C'est là que vivra la jauge stricte/permissive du backlog.</td></tr>
+<tr><td><b>IA-9</b></td><td><span class="prio p1">P1</span></td>
+<td><b>Deux éditeurs de règle concurrents</b> : la modale « Nouvelle règle » et la carte dépliée sont le même
+formulaire implémenté deux fois, avec des ordres de champs différents.</td>
+<td>Supprimer la modale : « + Nouvelle règle » insère une carte vide dépliée en tête de liste. Cohérence spatiale,
+un écran de moins, et « créer-règle-depuis-pièce » réutilisera la même carte pré-remplie.</td></tr>
+<tr><td><b>IA-10</b></td><td><span class="prio p2">P2</span></td>
+<td>Vocabulaire non aligné sur son propre lexique : « Sets » vs « Ensemble » vs « Sets &amp; transfo » ; « Subs »
+jamais défini in situ. Le Lexique existe — à quatre clics du jargon.</td>
+<td>Faire du lexique la <b>source unique</b> alimentant les tooltips du backlog : chaque terme (Main, Sub, RR, T∞,
+saturant) cliquable partout, défini une fois.</td></tr>
+<tr><td><b>IA-11</b></td><td><span class="prio p2">P2</span></td>
+<td>Référence mélange <b>faits</b> (taux de drop, lexique) et <b>opinions</b> (doctrine, politique par tier,
+budgets saturants — les justifications des règles de l'auteur).</td>
+<td>Avec les notes-par-règle du backlog, rapatrier les justifications au niveau de la règle ; Référence redevient
+courte : données du jeu + lexique + mécanique in-game.</td></tr>
+<tr><td><b>IA-12</b></td><td><span class="prio p2">P2</span></td>
+<td>Le statut de persistance est un murmure : « ● enregistré (local) » en fs-0 — « tout vit dans ce navigateur et
+peut disparaître » traité en note de bas de page ; import, export et statut éclatés en trois endroits.</td>
+<td>Un bloc <b>« Mes données »</b> unique en sidebar : Importer / Exporter / Partager / statut de sauvegarde.</td></tr>
+<tr><td><b>IA-13</b></td><td><span class="prio p2">P2</span></td>
+<td>Mobile : la destination la plus utile est la plus chère en taps — Pièce manuelle = burger → Testeur → mode
+Pièce → scroll.</td>
+<td>Une fois « Session » extraite, en faire la <b>vue d'atterrissage mobile par défaut</b>. Desktop atterrit sur
+Règles, mobile sur Session : deux contextes, deux entrées.</td></tr>
+<tr><td><b>IA-14</b></td><td><span class="prio p2">P2</span></td>
+<td>Le Testeur s'ouvre sur une question au lieu d'une réponse : onglet + mode + scope + source + niveau + pièces
+avant tout contenu.</td>
+<td>L'Échantillon s'ouvre <b>pré-généré avec des défauts sensés</b> (dernier scope, 2000 pièces) : on ajuste un
+résultat, on ne configure pas un néant. Les templates par phase du backlog vivent dans « + nouveau jeu de règles ».</td></tr>
+</table></div>
+
+<div class="panel reco"><h4>Cible de navigation proposée</h4>
+<p><b>Règles</b> (couverture intégrée) · <b>Simulation</b> (ex-Échantillon) · <b>Session</b> (ex-Pièce manuelle +
+futur farm + créer-règle-depuis-pièce) · <b>Saisie en jeu</b> (recopie guidée, clé, progression) ·
+<b>Référence</b> (faits + lexique + angles morts des sets) — et le sélecteur de jeu de règles dans le shell,
+hors des vues.</p></div>
+
+<!-- ============ INTERACTION / MOTION ============ -->
+<h2>Interaction &amp; motion — quatre gestes muets, des décors qui bougent</h2>
+<div class="quote">L'app a déjà un vocabulaire de mouvement (flash, pop, tin) mais il est <b>décoratif là où il
+devrait être fonctionnel</b> : les moments qui portent la boucle d'usage (cocher, générer, verdict, réordonner au
+doigt) sont muets ou cassants, pendant que des transitions génériques (<code>all .15s</code>) tournent partout.
+Une app de jeu plus vivante sans être plus chargée : oui — en animant les <i>conséquences</i> (état qui change)
+et jamais les <i>décors</i>.<span class="who">— thèse de l'interaction / motion designer</span></div>
+
+<p>Existant recensé au préalable : <code>flash</code> 1.6s (ring accent), <code>pop</code> .18s (dialog),
+<code>tin</code> .2s (toast), chevrons .15-.2s, drag (<code>opacity .45</code> + liserés drop),
+<code>prog-bar width .3s</code>, drawer mobile .22s — et un kill-switch <code>prefers-reduced-motion</code> global
+(<code>*{transition:none!important;animation:none!important}</code>).</p>
+
+<div class="tbl-wrap"><table>
+<tr><th style="width:52px">Réf.</th><th style="width:60px">Prio</th><th>Constat</th><th>Spécification</th></tr>
+<tr><td><b>IX-1</b></td><td><span class="prio p0">P0</span></td>
+<td>Cocher une règle — l'action n°1 — n'a <b>aucun feedback là où elle se joue</b> (mobile) : le seul écho est la
+barre « Saisie en jeu », cachée derrière le burger. Un tap → un ✓ instantané, et c'est tout.</td>
+<td>(a) pop du ✓ : scale .6→1, 180ms, overshoot ; (b) ligne cochée atténuée (opacity .55 + nom barré léger) 200ms ;
+(c) compteur flottant transitoire « 12/18 » (pill bas d'écran, 1.2s) sur mobile. Reduced-motion : (b) et (c) sans
+animation — le changement d'état visuel doit survivre.</td></tr>
+<tr><td><b>IX-2</b></td><td><span class="prio p0">P0</span></td>
+<td>Accordéons en <code>display:none → block</code> : bascule brute, ouvrir G1 pousse G2-G10 de ~260px en 0ms.
+<b>Le plus gros défaut de continuité de l'app</b>, invisible sur capture statique.</td>
+<td><code>grid-template-rows: 0fr→1fr</code> sur un wrapper, 200ms ease-out — pas de JS de mesure, pas de
+max-height magique. Chevron aligné à 200ms. Reduced-motion : bascule instantanée.</td></tr>
+<tr><td><b>IX-3</b></td><td><span class="prio p0">P0</span></td>
+<td>« Générer » 2000 pièces : <b>aucun état de chargement, aucune arrivée</b>. Rendu synchrone = gel perceptible +
+apparition en bloc + scroll qui saute. Le bouton primaire le plus lourd de l'app est muet.</td>
+<td>Bouton busy (« Génération… », spinner 14px) ; rendu par tranches rAF (200 cartes/frame) ; le bandeau Résultat
+apparaît en premier (tin 160ms) ; cartes en fade 120ms <b>sans stagger</b>. Reduced-motion : tranches conservées
+(perf), fades supprimés.</td></tr>
+<tr><td><b>IX-4</b></td><td><span class="prio p0">P0</span></td>
+<td>Drag &amp; drop HTML5 : <b>inutilisable au doigt</b> (mort au touch), et au drop desktop la ligne se téléporte
+— liserés 3px disparus, aucun settle.</td>
+<td>Mobile : boutons ↑/↓ au long-press ou poignée 44px en pointer events. Desktop : FLIP au drop (transform 220ms)
++ flash court (600ms) sur la ligne posée. Reduced-motion : fond <code>--acc-dim</code> 1s à la place.</td></tr>
+<tr><td><b>IX-5</b></td><td><span class="prio p1">P1</span></td>
+<td>Le clic-cycle des subs (hors → liste → ★) est <b>le geste le plus opaque de l'app</b> ; pire, le glyphe ★
+élargit la chip → toute la rangée se décale au clic, le doigt perd sa cible en plein triple-tap.</td>
+<td>Espace du ★ réservé (<code>::before</code> largeur fixe, opacity 0→1) — plus aucun shift ; micro-pulse au
+changement d'état ; hint transitoire au premier cycle de la session (« clic : liste → ★ requis → retiré »).</td></tr>
+<tr><td><b>IX-6</b></td><td><span class="prio p1">P1</span></td>
+<td><b>Aucun état <code>:active</code> nulle part</b> : hover et focus-visible soignés, mais sur mobile, entre le
+tap et le résultat, il n'y a rien. Cause principale du feel « inerte ».</td>
+<td>Global : <code>:active{transform:scale(.97);transition-duration:60ms}</code> sur btn, fchip, chip.pick, seg,
+tab-btn ; retour 120ms. Reduced-motion : <code>filter:brightness(.92)</code> à la place.</td></tr>
+<tr><td><b>IX-7</b></td><td><span class="prio p1">P1</span></td>
+<td><code>transition:all .15s</code> partout : easing par défaut, propriétés non maîtrisées — anime aussi
+padding/border au reflow, micro-flou générique.</td>
+<td>Tokens <code>--ease-out:cubic-bezier(.2,0,0,1)</code>, <code>--dur-1:120ms</code>, <code>--dur-2:200ms</code> ;
+transitions énumérées (color, background-color, border-color, box-shadow) ; jamais <code>all</code>.</td></tr>
+<tr><td><b>IX-8</b></td><td><span class="prio p1">P1</span></td>
+<td>Pièce manuelle : le panneau « ✓ Gardée par » se construit <b>sous</b> les sélecteurs — au dernier tap, le
+résultat apparaît hors viewport mobile. <b>Le moment de vérité du Testeur n'est pas vu.</b></td>
+<td>Verdict en bandeau sticky (bas de viewport mobile), mis à jour en place : cross-fade 140ms + tint de fond
+vert/rouge 400ms. Reduced-motion : swap sec, tint conservé.</td></tr>
+<tr><td><b>IX-9</b></td><td><span class="prio p1">P1</span></td>
+<td>Import JSON / copier la clé : succès muet ou toast générique loin du geste ; l'import remplace des règles sans
+montrer ce qui a changé.</td>
+<td>« Copier » → le bouton devient « copié ✓ » 1.2s (pas de toast) ; import → flash 600ms sur chaque règle ajoutée
++ résumé toast. Le flash devient la <b>signature d'arrivée de contenu</b>, partout.</td></tr>
+<tr><td><b>IX-10</b></td><td><span class="prio p1">P1</span></td>
+<td>Changement de vue : coupe sèche + <b>scroll hérité</b> de la vue précédente (arrivée mi-page). Le geste le plus
+fréquent après la coche est le moins soigné.</td>
+<td>Scroll mémorisé par vue ; entrée en fade + rise 4px, 140ms, sur le conteneur seulement. Pas de slide
+directionnel. Reduced-motion : fade off, restitution scroll conservée.</td></tr>
+<tr><td><b>IX-11</b></td><td><span class="prio p2">P2</span></td>
+<td>Le kill-switch reduced-motion <b>détruit aussi le feedback</b> : <code>*{animation:none!important}</code>
+supprime le flash — l'utilisateur qui importe/duplique ne voit plus aucune confirmation.</td>
+<td>Doubler chaque animation porteuse de sens d'un état statique équivalent. Règle d'équipe :
+<b>reduced-motion ≠ reduced-feedback</b>.</td></tr>
+<tr><td><b>IX-12</b></td><td><span class="prio p2">P2</span></td>
+<td>Steppers (Requis, Niveau) : cibles 24px non repassées à 40px en mobile ; valeur qui change sans tick ; le
+message « injouable » pousse les boutons Créer/Annuler au moment où on va les taper.</td>
+<td>Mobile min 36px ; pulse de la valeur au clic (120ms) ; message en fade avec <b>hauteur réservée</b>
+(min-height fixe).</td></tr>
+<tr><td><b>IX-13</b></td><td><span class="prio p2">P2</span></td>
+<td>Les gros chiffres du Testeur (172 410 / 1 767 / 86 / 0) tombent secs, et le « 0 » d'alerte ne s'alarme jamais.</td>
+<td>Count-up court (300ms) au premier calcul uniquement, swap sec ensuite — « l'outil reste un instrument, pas un
+slot machine ». Si « règles qui ne gardent rien » devient &gt; 0 : tint <code>--off</code> 400ms — une alerte,
+pas une célébration.</td></tr>
+<tr><td><b>IX-14</b></td><td><span class="prio p2">P2</span></td>
+<td>La barre « Saisie en jeu » anime déjà sa largeur, mais à 18/18 <b>rien ne se passe</b> — la fin de LA tâche de
+l'app est un non-événement.</td>
+<td>À 100 % : barre passe <code>--util</code> (400ms) + toast « Jeu de règles saisi ✓ ». Le pattern reste unique —
+<b>une seule célébration dans toute l'app</b>, à l'endroit qui la mérite.</td></tr>
+</table></div>
+
+<!-- ============ GAME-UI ============ -->
+<h2>Game-UI — parler la langue de WoR, refuser les codes F2P</h2>
+<div class="quote">L'app parle « dashboard élégant », pas encore « outil compagnon de WoR ». La grammaire gacha
+(rareté, slots, cartes d'item, boucle de collection) est présente en germe — couleurs de tiers, chips de sets,
+coche de saisie — mais jamais exploitée comme un joueur l'attend. Bonne nouvelle : tout se règle en SVG inline /
+unicode, zéro dépendance.<span class="who">— thèse du game-UI designer</span></div>
+
+<div class="tbl-wrap"><table>
+<tr><th style="width:52px">Réf.</th><th style="width:60px">Prio</th><th>Constat</th><th>Proposition</th></tr>
+<tr><td><b>GUI-1</b></td><td><span class="prio p0">P0</span></td>
+<td>L'échelle de rareté <b>viole la grammaire gacha universelle</b> : <code>--t4</code> (T∞) en vert au-dessus de
+T3 rouge, T2 or, T1 violet, T0 bleu. Pour tout joueur de gacha, vert = uncommon — jamais le sommet.</td>
+<td>Outil de <b>recopie</b> → l'encodage couleur des tiers doit être un miroir 1:1 des frames/lueurs de l'écran
+d'équipement in-game. Vérifier contre le jeu, puis figer ; si c'est bien vert, le documenter dans Référence pour
+désamorcer le réflexe.</td></tr>
+<tr><td><b>GUI-2</b></td><td><span class="prio p0">P0</span></td>
+<td><b>Zéro glyphe de slot</b> : Arme / Torse / Bracelet / Collier / Bague ne sont que du texte small-caps, alors
+que le style d'icônes existe déjà (nav : stroke 1.6, 15px, currentColor).</td>
+<td>5 glyphes SVG assortis (épée, plastron, brassard, amulette, anneau) devant chaque occurrence de slot. Dans la
+grille de 2000 pièces, l'œil trie par silhouette avant de lire — <b>le gain de scan le moins cher de l'app</b>.
+Ne PAS iconifier les 11 stats : les sigles mono sont déjà la langue de la communauté.</td></tr>
+<tr><td><b>GUI-3</b></td><td><span class="prio p0">P0</span></td>
+<td>Le verdict gardée/recyclée — <b>le moment de vérité</b> — est encodé sur 8 pixels (point vert/rouge) + une
+opacité. Dans un jeu, garder/détruire un item est une décision cérémonielle.</td>
+<td>Gardée = liseré gauche 3px or (motif existant) + « ✓ Gardée par G5 » ; recyclée = désaturation + glyphe ⚒
+(forge — cohérent avec « Gear Forge » des données). Tri visuel instantané même en vignette.</td></tr>
+<tr><td><b>GUI-4</b></td><td><span class="prio p0">P0</span></td>
+<td>La boucle cœur (recopier in-game) est enterrée en bas de sidebar : « Saisie en jeu 0/18 » + barre de 5px —
+pourtant LA jauge de progression, le seul « collectible » de l'app.</td>
+<td>La traiter en <b>quest log</b> : règle cochée = état « gravée » (fond <code>--acc-dim</code>, ✓ or, ID G1
+plein), jalon ◆ par groupe complété, 18/18 = état terminé sobre (bordure or, « Jeu de règles gravé en jeu »).
+Aucune particule, aucun confetti — la satisfaction vient de l'état qui change.</td></tr>
+<tr><td><b>GUI-5</b></td><td><span class="prio p1">P1</span></td>
+<td>Small-caps Palatino partout = <b>hiérarchie plate</b> : nav, tabs, labels, boutons, noms de règles… tout est
+cérémoniel, donc rien ne l'est.</td>
+<td>Deux registres : serif small-caps réservé aux <b>objets du monde</b> (titres de vue, noms de règles, noms de
+sets) ; les labels d'interface (Rôles, Sets, Main(s), Subs, Requis…) passent en <b>mono uppercase</b> letterspacé
+— registre déjà présent dans les <code>th</code>.</td></tr>
+<tr><td><b>GUI-6</b></td><td><span class="prio p1">P1</span></td>
+<td>L'accent configurable (5 pastilles) dilue l'identité ET <b>percute les tiers</b> : accent violet ≈ T1, bleu ≈
+T0, rouge ≈ T3, vert ≈ T∞ — quatre choix sur cinq rendent l'accent ambigu avec un encodage sémantique.</td>
+<td>L'or EST l'identité médiévale de l'app (et l'accent du jeu lui-même). Trancher : supprimer le picker, ou le
+reléguer en easter egg — jamais en réglage de premier niveau.</td></tr>
+<tr><td><b>GUI-7</b></td><td><span class="prio p1">P1</span></td>
+<td>Le tier d'un set n'est encodé que par une <b>bordure de chip 1px</b> — illisible à 13px en périphérie.</td>
+<td>Préfixer chaque chip set d'un ◆ coloré au tier (« ◆ Crinière d'or ») : le glyphe brand devient le pip de
+rareté. Daltonisme couvert par le badge T∞/T3/T2 de la table Sets + <code>title</code> ailleurs.</td></tr>
+<tr><td><b>GUI-8</b></td><td><span class="prio p1">P1</span></td>
+<td>Les ●●●● du row-head sont un <b>encodage muet</b> : aucun joueur ne devine que les points = subs requis.
+« Un encodage qu'il faut expliquer dans le "?" n'est pas un encodage, c'est une devinette. »</td>
+<td>Forme explicite que le mono permet : <code>4 subs · 4 sets</code> (ou fraction <code>4/4</code>), ou points
+préfixés d'un label mono <code>subs</code>.</td></tr>
+<tr><td><b>GUI-9</b></td><td><span class="prio p1">P1</span></td>
+<td>Ce que Fribbels (E7/HSR) et Genshin Optimizer font que cette app ne fait pas : <b>rendre la pièce comme une
+carte d'item</b>. L'item affiché ressemble à l'item in-game → confiance immédiate + screenshots partagés
+spontanément. Ici la pièce du testeur est un formulaire à chips.</td>
+<td>Composant « carte d'item » : glyphe slot, main stat en <code>--fs-4</code> mono, subs en colonne, filet
+supérieur coloré au tier — réutilisé dans l'échantillon, la pièce manuelle (aperçu vivant pendant la saisie) et,
+gratuitement, la share card du backlog.</td></tr>
+<tr><td><b>GUI-10</b></td><td><span class="prio p1">P1</span></td>
+<td>Le stepper « pièce manuelle » (grief client) : le mix accordéon/bouton actuel n'a <b>ni ordre ni état</b>.</td>
+<td>Stepper assumé : <code>◆ I Slot → ◆ II Main → ◆ III Subs → ◆ IV Set</code> — diamant plein = renseigné,
+creux = vide, or = courant. Chiffres romains : gratuits, lisibles, médiévaux sans clinquant. Correction locale,
+pas de refonte.</td></tr>
+<tr><td><b>GUI-11</b></td><td><span class="prio p2">P2</span></td>
+<td>◆ est déjà brand, bullets, hint — mais pas systématisé.</td>
+<td>L'étendre : état coché du <code>.chk</code> (◆ au lieu de ✓), jalons de barre de progression, marqueur d'onglet
+actif. « Une app single-file n'a droit qu'à un seul ornement — le sien est bon, qu'il soit partout le même. »</td></tr>
+<tr><td><b>GUI-12</b></td><td><span class="prio p2">P2</span></td>
+<td>La jauge de couverture verte <b>percute T∞ vert</b> : dans une app où le vert est une couleur de tier, une
+jauge verte se lit « du T∞ ».</td>
+<td>Jauges neutres (couverture, progression) en or/accent ; vert/rouge réservés aux verdicts ok/alerte textuels,
+où ils sont déjà bien employés.</td></tr>
+<tr><td><b>GUI-13</b></td><td><span class="prio p2">P2</span></td>
+<td>Risque d'importer les codes F2P en « vivifiant » l'app.</td>
+<td><b>Liste de refus explicite</b> : pas de dégradés or sur boutons, lueurs/particules, gemmes skeuomorphiques,
+étoiles multiples, compteurs/FOMO, bannières d'artwork, faux sons de coffre. Ornement <b>statique et
+typographique</b> oui (◆, liserés, small-caps) ; tout ce qui bouge ou brille pour décorer, non. Le seul mouvement
+autorisé : le feedback d'action.</td></tr>
+<tr><td><b>GUI-14</b></td><td><span class="prio p2">P2</span></td>
+<td>« Mes règles 0 » : l'onboarding des outils compagnons, c'est <b>l'exemple</b>, pas le tutoriel.</td>
+<td>Un onglet vide offre 2-3 templates nommés en langue de communauté (« Early game · large », « End game ·
+strict », « Farm GR1 ») en un clic — le pattern des optimiseurs qui convertissent (presets Fribbels). L'empty
+state actuel peut porter les trois boutons sans rien ajouter.</td></tr>
+</table></div>
+
+<div class="panel reco"><h4>Synthèse du game-UI designer</h4>
+<p>Le squelette est sain (tokens, tiers, mono pour la donnée, serif pour le monde). Ce qui manque : un
+<b>pacte de fidélité au jeu</b> — couleurs de tiers = celles du jeu (GUI-1), silhouettes de slots (GUI-2), pièce
+rendue en carte d'item (GUI-9) — et un <b>pacte de sobriété</b> — un seul ornement (◆), un seul accent (or), deux
+registres typographiques ; le reste est du refus (GUI-13).</p></div>
+
+<div class="foot">
+  <a href="index.html">↑ Synthèse du cycle</a>
+  <a href="02-debat.html">Le débat →</a>
+</div>
+</main>
+</div>
+</body>
+</html>

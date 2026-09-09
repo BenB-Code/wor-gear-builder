@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Challenge du rapport 1 · Design Review 2 — WoR Gear Builder</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="shell">
+<nav class="toc">
+  <div class="brand"><span class="d">◆</span> Design Review 2</div>
+  <div class="sub">Cycle brainstorm &amp; challenge · sept. 2026</div>
+  <a href="index.html">Synthèse du cycle</a>
+  <div class="grp">Le cycle</div>
+  <a href="01-analyses.html">Les 3 analyses à froid</a>
+  <a href="02-debat.html">Le débat</a>
+  <a href="03-challenge.html" class="on">Challenge du rapport 1</a>
+  <a href="04-conclusions.html">Conclusions &amp; recommandations</a>
+  <div class="grp">Référence</div>
+  <a href="../rapport-1-audit/index.html">← Rapport 1</a>
+</nav>
+<main>
+
+<span class="kicker">La page critique · cycle 2 vs rapport 1 · modération</span>
+<h1>Challenge du rapport 1</h1>
+<p class="lede">Les trois designers du cycle 2 n'ont <b>pas lu</b> le rapport 1 — seule cette page le confronte
+à leurs travaux. Le protocole rend la comparaison probante : quand un profil neuf retrouve à froid une
+recommandation du rapport 1, c'est une <b>validation indépendante</b> ; quand il la contredit avec un argument
+neuf, l'arbitrage mérite d'être rouvert ; et ce que dix spécialistes ont vu et que trois ont raté dit aussi
+quelque chose — dans les deux sens.</p>
+
+<h2>① Ce que le cycle 2 confirme — les croisements indépendants</h2>
+<p>Sept recommandations du rapport 1 ont été redécouvertes à froid par au moins un profil du cycle 2. Ce sont
+désormais les points les plus solides de tout le corpus : deux équipes, zéro contact, même conclusion.</p>
+<div class="tbl-wrap"><table>
+<tr><th>Recommandation du rapport 1</th><th>Redécouverte du cycle 2</th><th style="width:90px">Statut</th></tr>
+<tr><td>« Onglet » → <b>« Jeu de règles »</b> (décision client n°4) + sélecteur global (arbitrage e)</td>
+<td>IA-2, mot pour mot : renommer partout, sélecteur unique dans le shell — avec l'argument en plus du triple
+widget (tabs / select / select) pour un même concept</td><td><span class="v-ok">renforcé</span></td></tr>
+<tr><td>Vue Règles compactée : actions d'onglet repliées derrière « ⋯ » (décision n°7, chantier 2)</td>
+<td>IA-4, identique : menu « ⋯ » porté par l'onglet actif, objectif « G1 Tank au-dessus de la ligne de
+flottaison »</td><td><span class="v-ok">renforcé</span></td></tr>
+<tr><td>Agrégats <b>avant</b> les 2000 cartes, cap de grille, drill-down (data-viz, arbitrage f)</td>
+<td>IA-8 : verdict global + répartition par tier en stat-cards, pièces en second niveau repliées/paginées —
+même renversement, trouvé par l'axe hiérarchie au lieu de l'axe data-viz</td><td><span class="v-ok">renforcé</span></td></tr>
+<tr><td>Deux territoires typographiques : display réservé au sommet, labels en uppercase sobre (arbitrage b)</td>
+<td>GUI-5 : serif small-caps = objets du monde, labels d'interface en mono uppercase — le même principe
+(« la forme dit le rôle ») par la grammaire gacha</td><td><span class="v-ok">renforcé</span></td></tr>
+<tr><td>Verdict sticky + auto-reset comme correctif immédiat de Pièce manuelle (arbitrage « sticky vs farm »)</td>
+<td>IX-8 : verdict en bandeau sticky bas de viewport, mis à jour en place — spec de motion complète en prime</td>
+<td><span class="v-ok">renforcé</span></td></tr>
+<tr><td>Mode farm mobile 2-4 taps comme « vraie réponse mobile » (chantier 4, parcours chronométré 9-11 taps)</td>
+<td>IA-5/IA-13 : destination « Session » mobile-first, atterrissage mobile par défaut — le cycle 2 va plus loin
+(voir ②) mais confirme le diagnostic : l'usage réel est en jeu, sur téléphone</td><td><span class="v-ok">renforcé</span></td></tr>
+<tr><td>Templates early/mid/end dans l'empty state, Démo → « Early » (chantier 5, décision n°9)</td>
+<td>GUI-14 : 2-3 templates nommés en langue de communauté dans l'onglet vide — « le pattern des optimiseurs qui
+convertissent »</td><td><span class="v-ok">renforcé</span></td></tr>
+</table></div>
+<div class="panel good"><h4>Lecture de modération</h4>
+<p>Les confirmations ne sont pas réparties au hasard : elles se concentrent sur le <b>lexique</b> (« Jeu de
+règles »), la <b>hiérarchie verticale</b> (Règles compactée, agrégats d'abord) et le <b>mobile-en-jeu</b>. Ces
+trois fronts ont maintenant été vus par des UX, des data-viz, un architecte, un motion designer et un game-UI
+designer — les traiter en premier n'est plus une opinion, c'est le consensus de treize regards.</p></div>
+
+<h2>② Ce que le cycle 2 contredit ou nuance</h2>
+
+<div class="panel bad"><h4>Contradiction frontale n°1 — « la nav reste à 4 entrées » (North Star n°4, périmètre refusé)</h4>
+<p>Le rapport 1 en avait fait un principe (« le chrome se finance ») et un refus explicite (« 5ᵉ entrée de nav,
+bannières, chrome permanent »). Le cycle 2 le contredit trois fois : l'architecte propose une nav à
+<b>cinq destinations</b> (Règles · Simulation · Session · Saisie en jeu · Référence, IA-3/IA-5), en fait sa
+<b>colline non négociable</b>, et les deux autres se rallient — le game-UI designer concède même « j'avais raison
+sur l'état, tort sur le lieu ». L'argument neuf : le rapport 1 comptait les entrées, le cycle 2 compte les
+<b>étapes du cycle d'usage</b> — et montre que garder 4 entrées force la raison d'être de l'app (recopier en jeu)
+à vivre dans un pied de sidebar, ce que le rapport 1 lui-même déplorait sans en tirer la conséquence de nav.
+À noter : la contradiction est plus fine qu'un simple « 4 vs 5 » — le cycle 2 <b>dissout</b> aussi des vues
+(Couverture fusionnée dans Règles, Sets éclatée ou repensée), donc le chrome total reste comparable. L'arbitrage
+est à rouvrir sur le fond, pas seulement sur le nombre.</p></div>
+
+<div class="panel bad"><h4>Contradiction frontale n°2 — l'accent configurable (arbitrage g : « conservé, décalé, encadré »)</h4>
+<p>Le rapport 1 avait tranché en faveur du picker : « on ne retire pas une option choisie par des utilisateurs »,
+accent rouge décalé vers un rose froid, deux interdits de charte. GUI-6 le contredit avec un argument que la
+colorimétrie du rapport 1 n'avait pas vu : <b>quatre des cinq accents percutent l'encodage sémantique des
+tiers</b> (violet ≈ T1, bleu ≈ T0, rouge ≈ T3, vert ≈ T∞). Le rapport 1 avait traité la collision accent/rouge
+sémantique — un cas sur quatre. Dans une app où la couleur de tier est une donnée de premier ordre (et que le
+cycle 2 propose d'aligner 1:1 sur le jeu), un accent librement choisi rend l'interface ambiguë par construction.
+Recommandation du cycle 2 : supprimer le picker ou le reléguer en easter egg. L'arbitrage g doit être rejoué avec
+cette donnée sur la table.</p></div>
+
+<div class="panel bad"><h4>Contradiction structurelle — renommer les modes d'un Testeur que le cycle 2 dissout</h4>
+<p>Décision client n°5 du rapport 1 : renommer les trois modes « Audit complet · Simulation de drops · Vérifier
+une pièce ». Le cycle 2 rend cette décision largement caduque : IA-1 sort « Couverture » du Testeur (attribut de
+la règle), IA-5 en sort « Pièce manuelle » (destination Session) — il ne reste qu'une vue Simulation. On ne
+renomme pas les cabines d'un navire qu'on désosse : si la restructuration du cycle 2 est retenue, la décision n°5
+disparaît ; sinon, elle reste valable telle quelle.</p></div>
+
+<div class="tbl-wrap"><table>
+<tr><th>Point du rapport 1</th><th>Nuance apportée par le cycle 2</th><th style="width:90px">Verdict</th></tr>
+<tr><td>Stepper reformé « ①✓ + rail » (arbitrage b/c) — réponse au « mix bizarre »</td>
+<td>Trois positions concurrentes : GUI-10 le re-forme en diamants ◆ I→IV ; IA le juge « voué à déménager » (le
+farm 3-taps n'a pas besoin de stepper cérémonial) ; IX le garde comme rythme du focus auto. Le composant est
+juste, son avenir dépend de la décision Session.</td><td><span class="v-mid">à rejouer</span></td></tr>
+<tr><td>Ordre de saisie <b>Slot → Set → Main → Subs</b> (décision client n°6, « aligné sur la lecture in-game »)</td>
+<td>GUI-10 écrit son stepper <b>Slot → Main → Subs → Set</b> — l'ordre actuel. Un game-UI designer spécialiste
+des compagnons gacha n'a pas ressenti le besoin de réordonner : la décision n°6 mérite une vérification contre
+l'écran réel du jeu avant d'imposer un changement de gestuelle.</td><td><span class="v-mid">à vérifier</span></td></tr>
+<tr><td>« Virtualisation refusée — le cap à 60 + agrégats règle le coût » (périmètre refusé)</td>
+<td>IX-3 ajoute ce que le cap ne règle pas : l'état busy du bouton et l'arrivée du résultat. Et le débat interne
+du cycle 2 (IA contre IX) reproduit l'arbitrage du rapport 1 : hiérarchie d'abord, motion ensuite. Compléter,
+pas contredire.</td><td><span class="v-mid">complété</span></td></tr>
+<tr><td>Table des 48 sets améliorée (chantier 3 : barres, « 3 chips + n »)</td>
+<td>Le cycle 2 conteste l'existence même de la vue dans sa forme actuelle : découpe faits/audit (IA-6) ou codex
+unique trié par angles morts (GUI). Polir la table avant de trancher sa nature serait du travail perdu.</td>
+<td><span class="v-mid">suspendu</span></td></tr>
+<tr><td>Tab bar mobile = « où je vais » (arbitrage e)</td>
+<td>IA-13 ajoute une dimension absente : le <b>point d'atterrissage</b> — desktop sur Règles, mobile sur Session.
+La tab bar du rapport 1 reste bonne ; c'est sa première destination qui change selon le contexte.</td>
+<td><span class="v-mid">enrichi</span></td></tr>
+<tr><td>Share card PNG en vague 3 — une feature d'acquisition isolée (chantier 5)</td>
+<td>Avec la carte d'item vivante, la share card devient un <b>sous-produit gratuit</b> d'un composant P0 : la
+carte figée s'exporte. Sa place en « vague 3, après tout le reste » ne se justifie plus par le coût.</td>
+<td><span class="v-mid">à avancer</span></td></tr>
+</table></div>
+
+<h2>③ Ce que le cycle 2 apporte que le rapport 1 n'avait pas vu</h2>
+<p>Le rapport 1 alignait dix spécialistes — mais aucun motion designer, aucun spécialiste des outils compagnons
+de gacha, et son product designer travaillait <i>dans</i> la structure existante. Les angles morts sont exactement
+là.</p>
+
+<div class="panel good"><h4>Le mouvement fonctionnel — un chapitre entier que le rapport 1 n'a jamais ouvert</h4>
+<p>Rien dans les 10 pages du rapport 1 ne traite le feedback temporel : pas un mot sur l'absence totale
+d'état <code>:active</code> (IX-6 — « la cause principale du feel inerte »), sur les accordéons
+<code>display:none</code> qui font sauter 260&nbsp;px de layout (IX-2), sur le bouton « Générer » muet (IX-3), sur le
+drag &amp; drop HTML5 <b>mort au touch</b> (IX-4 — dans une app dont le rapport 1 lui-même disait l'usage mobile),
+ni sur le kill-switch <code>prefers-reduced-motion</code> qui supprime toute confirmation (IX-11 :
+« reduced-motion ≠ reduced-feedback » — un vrai constat d'accessibilité que la page Couleur &amp; accessibilité
+n'avait pas). S'y ajoute la signature de mouvement (2 durées, 1 easing, flash = « contenu arrivé ») : le rapport 1
+gouvernait les tokens de couleur et de forme, jamais ceux du temps.</p></div>
+
+<div class="panel good"><h4>La sémantique gacha des couleurs — l'audit que la colorimétrie n'a pas fait</h4>
+<p>Le rapport 1 a mesuré tous les contrastes de la palette de tiers ; il n'a jamais demandé si l'échelle était
+<b>juste</b>. GUI-1 : T∞ en vert au-dessus de T3 rouge « viole la grammaire gacha universelle — vert = uncommon,
+jamais le sommet », et l'encodage d'un outil de recopie doit être un miroir 1:1 de l'écran d'équipement in-game.
+Même famille : la jauge de couverture verte qui se lit « du T∞ » (GUI-12), l'accent qui percute les tiers (GUI-6),
+les glyphes de slots absents (GUI-2 — « l'œil trie par silhouette avant de lire »), le refus explicite des codes
+F2P (GUI-13). Le rapport 1 vérifiait la conformité WCAG ; le cycle 2 vérifie la conformité <b>au jeu</b>.</p></div>
+
+<div class="panel good"><h4>Les fusions de vues — là où le rapport 1 réaménageait, le cycle 2 démolit des cloisons</h4>
+<p>Le rapport 1 optimisait chaque vue dans ses frontières (Règles compactée, Testeur renommé, table Sets
+améliorée). Le cycle 2 attaque les frontières elles-mêmes : la couverture est un <b>attribut de la règle</b> et
+non un mode de test (IA-1 — « il n'y a rien à lancer ») ; « Sets &amp; transfo » est « deux vues cousues
+ensemble » (IA-6) ; la modale et la carte dépliée sont « le même formulaire implémenté deux fois » (IA-9) ;
+Référence mélange faits et opinions (IA-11). Aucune de ces fusions n'apparaît dans le rapport 1 — son arbitrage f
+et son chantier 2 amélioraient le Testeur, ils ne questionnaient pas son droit d'exister.</p></div>
+
+<div class="panel good"><h4>La carte d'item vivante — le composant fédérateur</h4>
+<p>Le rapport 1 traitait la pièce comme une donnée à afficher (cartes de l'échantillon, cap 60, verdicts
+lisibles) ; le cycle 2 en fait un <b>objet canonique rendu comme dans le jeu</b> — et les trois profils y
+convergent sans se lire, puis le débat en fait le socle de trois surfaces (Session, Simulation, share card) et
+du verdict lui-même (« un état de l'objet, pas un message à côté de l'objet »). C'est l'apport le plus neuf du
+cycle : ni le mot ni l'idée n'existent dans le rapport 1.</p></div>
+
+<h2>④ Ce que le rapport 1 avait vu — et que le cycle 2 a raté</h2>
+<p>L'honnêteté vaut dans les deux sens : sur cinq fronts, le cycle 2 est en net retrait, et un plan qui ne
+s'appuierait que sur lui régresserait.</p>
+
+<div class="tbl-wrap"><table>
+<tr><th>Ce que le rapport 1 tient</th><th>Ce que le cycle 2 en dit</th></tr>
+<tr><td><b>La mesure.</b> Ratios WCAG calculés (2,9:1 sur les labels, 3,7:1 sur l'or clair), 39 duretés comptées,
+37 styles inline, taps chronométrés — chaque constat cite son sélecteur.</td>
+<td><span class="v-bad">Rien.</span> Pas un ratio de contraste dans les 42 constats. Le game-UI designer repeint
+l'échelle des tiers sans vérifier une seule conformité AA ; le daltonisme n'apparaît qu'une fois, en passant
+(GUI-7). Les specs motion d'IX sont chiffrées en millisecondes, jamais en accessibilité chromatique.</td></tr>
+<tr><td><b>Le mode clair.</b> Diagnostiqué non conforme (accent 3,7:1), palette corrigée, critère de sortie
+« zéro texte &lt; 4,5:1 dans les deux thèmes », signal de bascule Cinzel.</td>
+<td><span class="v-bad">Quasi silence.</span> Une mention en passant (IA-12 range « Mode clair » dans la sidebar).
+Aucun des trois n'a audité le thème clair — tous ont raisonné sur le sombre.</td></tr>
+<tr><td><b>La langue.</b> Lexique canonique FR/EN, calques anglais traqués, 15 tooltips rédigés, le couple
+« gardée/recyclée » identifié comme canon à ne pas toucher, réécritures des messages cryptiques.</td>
+<td><span class="v-bad">Effleuré.</span> IA-10 demande un « lexique source unique » — la plomberie — mais personne
+n'écrit un mot de microcopy, ne vérifie l'EN, ne touche aux messages. Le contenu reste un territoire du
+rapport 1.</td></tr>
+<tr><td><b>Le coût et la gouvernance.</b> Cinq chantiers estimés (4-5 j / 3 sem / …), critères de sortie
+mesurables, 10 décisions listées pour le client, périmètre refusé explicite, règles de design system.</td>
+<td><span class="v-bad">Absent.</span> Aucune estimation, aucun critère de sortie, aucun arbitrage de périmètre —
+le cycle 2 propose, il ne budgète pas. Ses cinq destinations de nav et sa carte d'item sont des semaines de
+travail jamais chiffrées.</td></tr>
+<tr><td><b>L'anatomie des composants.</b> La grille de distinction (rayon = nature, bordure = interactivité,
+marqueur = mécanisme), le seg panel2-sur-panel2 invisible, la validation lazy du dialogue, le paradoxe
+« recyclée mais couverte », les cibles 40&nbsp;px systématisées.</td>
+<td><span class="v-bad">Partiel.</span> GUI-10 retouche le stepper et IX-12 repasse deux steppers à 36&nbsp;px, mais
+la grille anatomique qui avait éteint le « mix bizarre » n'a pas d'équivalent — le cycle 2 la présuppose plus
+qu'il ne la remplace. Le paradoxe « recyclée mais couverte » n'est mentionné nulle part.</td></tr>
+</table></div>
+
+<div class="panel"><h4>Pourquoi ces trous sont logiques — et ce qu'il faut en conclure</h4>
+<p>Trois profils structure/motion/game-feel ne remplacent pas une colorimétriste, une UX writer et un directeur
+de création : les deux cycles sont <b>complémentaires, pas concurrents</b>. Le rapport 1 reste l'autorité sur la
+peau (contraste, typo, tokens, contenu, coût) ; le cycle 2 devient l'autorité sur le squelette (vues, gestes,
+langue du jeu). Les conclusions de la <a href="04-conclusions.html">page 04</a> consolident les deux — et les
+deux contradictions frontales (nav à 4, picker d'accent) sont les seuls endroits où il faut réellement choisir.</p></div>
+
+<h2>Le bilan du challenge</h2>
+<div class="stats">
+  <div class="stat"><div class="n">7</div><div class="l">recommandations du rapport 1 confirmées à froid</div></div>
+  <div class="stat"><div class="n">2</div><div class="l">arbitrages frontalement contredits (nav · accent)</div></div>
+  <div class="stat"><div class="n">1</div><div class="l">décision client rendue caduque (renommage du Testeur)</div></div>
+  <div class="stat"><div class="n">6</div><div class="l">points nuancés, suspendus ou enrichis</div></div>
+  <div class="stat"><div class="n">4</div><div class="l">apports majeurs hors du champ du rapport 1</div></div>
+  <div class="stat"><div class="n">5</div><div class="l">fronts où le cycle 2 est en retrait net</div></div>
+</div>
+
+<div class="quote">Le rapport 1 sait <b>combien</b> — le cycle 2 sait <b>où</b>. L'un mesure la peau au ratio
+près et chiffre chaque chantier ; l'autre déplace les murs et rend à l'app la langue de son jeu. Le vrai
+livrable du challenge n'est ni la victoire d'un cycle ni de l'autre : c'est la courte liste des endroits où ils
+se contredisent — et elle tient sur les doigts d'une main.
+<span class="who">— modération du cycle 2</span></div>
+
+<div class="foot">
+  <a href="02-debat.html">← Le débat</a>
+  <a href="04-conclusions.html">Conclusions &amp; recommandations →</a>
+</div>
+</main>
+</div>
+</body>
+</html>

@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Design Review — WoR Gear Builder</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="shell">
+<nav class="toc">
+  <div class="brand"><span class="d">◆</span> Design Review</div>
+  <div class="sub">WoR Gear Builder · sept. 2026</div>
+  <a href="index.html" class="on">Synthèse exécutive</a>
+  <div class="grp">Fondations</div>
+  <a href="04-typographie.html">Typographie</a>
+  <a href="03-couleur-accessibilite.html">Couleur &amp; accessibilité</a>
+  <a href="05-design-system.html">Design system &amp; tokens</a>
+  <div class="grp">Interface</div>
+  <a href="01-ui-composants.html">Composants UI</a>
+  <a href="07-dataviz.html">Data-visualisation</a>
+  <a href="06-mobile.html">Mobile</a>
+  <div class="grp">Produit</div>
+  <a href="02-ux-parcours.html">UX &amp; parcours</a>
+  <a href="08-contenu.html">Contenu &amp; microcopy</a>
+  <a href="09-integration-features.html">Intégration des features</a>
+  <div class="grp">Direction</div>
+  <a href="10-synthese.html">Synthèse &amp; roadmap</a>
+  <div class="grp">Annexe</div>
+  <a href="00-charte-graphique.html">Charte graphique (v2)</a>
+</nav>
+<main>
+
+<span class="kicker">Design review complète · équipe de 10 · 9 audits + 1 synthèse d'arbitrage</span>
+<h1><span style="color:var(--acc)">◆</span> WoR Gear Builder — Design Review</h1>
+<p class="lede">Une équipe de dix — UI, UX, colorimétrie/accessibilité, typographie, design system, mobile,
+data-visualisation, UX writing, product design, et un directeur de création — a audité l'application sur pièces :
+10 captures d'écran de l'état actuel, le CSS complet, la charte, et les trois plaintes du client. Chaque page de ce
+rapport est l'audit d'un spécialiste ; la dernière est l'arbitrage du directeur.</p>
+
+<h2>Le diagnostic en une phrase</h2>
+<div class="quote" style="font-size:16px">La refonte récente a unifié les <b>apparences</b> sans unifier les
+<b>rôles</b> — une même peau pour quatre natures de composants, une même couleur sous-contrastée pour tout ce qui
+nomme, une même serif d'apparat diluée jusqu'aux micro-labels, un même concept dit en trois mots. Rien de tout cela
+n'exige d'ajouter un pixel : le plan entier se joue en retirant, requalifiant et réaffectant.
+<span class="who">— direction de création</span></div>
+
+<h2>Les trois plaintes, adressées</h2>
+<div class="tbl-wrap"><table>
+<tr><th>Verbatim client</th><th>Cause identifiée</th><th>Réponse</th><th>Où</th></tr>
+<tr><td>« Un truc style Roboto et un truc type Times New Roman »</td><td>La serif d'apparat descend jusqu'aux labels 12 px en small-caps <b>simulées</b>, et 3 familles cohabitent à taille égale</td><td>Display réservé à 2 niveaux (≥ 16 px, jamais interactif), labels en body uppercase, mono = tokens du jeu. Cinzel en option si le Palatino discipliné ne suffit pas</td><td><a href="04-typographie.html">Typographie</a></td></tr>
+<tr><td>« Des noms de sections moins visibles que les éléments qui les composent »</td><td><code>--faint</code> (2,9:1, <b>sous AA</b>) habille tout ce qui nomme ; le contenu titre à 7-11:1</td><td>Échelle de luminance à 5 niveaux, plancher AA garanti dans les deux thèmes, --faint requalifié décor</td><td><a href="03-couleur-accessibilite.html">Couleur</a></td></tr>
+<tr><td>« Les switchs de pièce manuelle deviennent un mix bizarre de step et bouton »</td><td>Étape de saisie, accordéon d'aide, switch et bouton partagent la <b>même anatomie</b> ; le seg panel2 posé sur fond panel2 disparaît</td><td>Grille de distinction : la forme dit le rôle (rayon = nature, bordure = interactivité, marqueur = mécanisme) ; stepper reformé ①✓ + rail, seg pilule creusée, aide = texte dépliable</td><td><a href="01-ui-composants.html">Composants</a></td></tr>
+</table></div>
+
+<h2>Les chiffres de l'audit</h2>
+<div class="stats">
+  <div class="stat"><div class="n">2,9<b>:1</b></div><div class="l">contraste des labels (seuil AA : 4,5)</div></div>
+  <div class="stat"><div class="n">3,7<b>:1</b></div><div class="l">l'accent or du mode clair — non conforme</div></div>
+  <div class="stat"><div class="n">39</div><div class="l">couleurs de familles en dur, 6 alphas différents</div></div>
+  <div class="stat"><div class="n">37</div><div class="l">styles inline dans les templates JS</div></div>
+  <div class="stat"><div class="n">5</div><div class="l">sémantiques portées par l'or</div></div>
+  <div class="stat"><div class="n">6</div><div class="l">coquilles repliables pour 1 besoin</div></div>
+  <div class="stat"><div class="n">9-11</div><div class="l">taps pour vérifier UN drop en farm (cible : 2-4)</div></div>
+  <div class="stat"><div class="n">~2 <b>+1</b></div><div class="l">boutons + glyphe : le chrome total des 12 features à venir</div></div>
+</div>
+
+<h2>Les pages du rapport</h2>
+<div class="cards">
+  <a class="card" href="10-synthese.html"><span class="no">DIRECTION</span><h4>Synthèse &amp; roadmap</h4>
+    <p>Le verdict, la North Star, 11 arbitrages fermes entre spécialistes, la roadmap en 5 chantiers, le périmètre refusé, les 10 décisions client.</p>
+    <div class="tags"><span class="prio p0">à lire en premier</span></div></a>
+  <a class="card" href="04-typographie.html"><span class="no">01</span><h4>Typographie</h4>
+    <p>Pourquoi ça « frotte » : trois voix sans territoire, small-caps simulées. Trois directions, une recommandation ferme, la table d'affectation complète.</p></a>
+  <a class="card" href="03-couleur-accessibilite.html"><span class="no">02</span><h4>Couleur &amp; accessibilité</h4>
+    <p>Tous les ratios WCAG calculés. La hiérarchie inversée chiffrée, le mode clair non conforme, l'or à 5 sens, le daltonisme des verdicts, la palette corrigée.</p></a>
+  <a class="card" href="05-design-system.html"><span class="no">03</span><h4>Design system &amp; tokens</h4>
+    <p>Les fuites entre les lots : 39 duretés, 37 inline, fusions non livrées. Les tokens manquants, la matrice de taxonomie, les 6 règles de gouvernance.</p></a>
+  <a class="card" href="01-ui-composants.html"><span class="no">04</span><h4>Composants UI</h4>
+    <p>Le « mix bizarre » disséqué au sélecteur près. Audit des 11 familles et la grille de distinction des conteneurs.</p></a>
+  <a class="card" href="07-dataviz.html"><span class="no">05</span><h4>Data-visualisation</h4>
+    <p>L'œil doit scanner, pas lire : barres in-cell, chevauchements en barres miroir, agrégats avant les 2 000 cartes, la charte d'encodage inter-vues.</p></a>
+  <a class="card" href="06-mobile.html"><span class="no">06</span><h4>Mobile</h4>
+    <p>Le parcours farm chronométré (9-11 taps → 2-4), la session de farm et la recopie guidée maquettées, tab bar vs tiroir tranché.</p></a>
+  <a class="card" href="02-ux-parcours.html"><span class="no">07</span><h4>UX &amp; parcours</h4>
+    <p>Trois widgets pour un état, le Testeur aux deux intentions, les cinq parcours clés audités pas à pas, le paradoxe « recyclée mais couverte » résolu.</p></a>
+  <a class="card" href="08-contenu.html"><span class="no">08</span><h4>Contenu &amp; microcopy</h4>
+    <p>Le lexique canonique FR/EN, les réécritures des messages cryptiques, les calques anglais, les 15 tooltips prêts à intégrer.</p></a>
+  <a class="card" href="09-integration-features.html"><span class="no">09</span><h4>Intégration des features</h4>
+    <p>Les 12 features du backlog, fiche par fiche : où chacune vit, son point d'entrée, son chrome (≈ zéro), les wireframes, la roadmap en 3 vagues.</p></a>
+</div>
+
+<h2>Comment lire ce rapport</h2>
+<ul>
+<li>Commence par la <a href="10-synthese.html"><b>Synthèse &amp; roadmap</b></a> : elle contient le verdict, les arbitrages et le plan — le reste est la profondeur ;</li>
+<li>Chaque page est priorisée <span class="prio p0">P0</span> casse la cohérence · <span class="prio p1">P1</span> frottement · <span class="prio p2">P2</span> polish ;</li>
+<li>Tous les P0 des neuf audits sont couverts par les <b>chantiers 1 et 2</b> de la roadmap (~4-5 jours + ~3 semaines) ;</li>
+<li>Dix décisions restent au client — elles sont listées en fin de synthèse.</li>
+</ul>
+
+<div class="panel good"><h4>Méthode</h4>
+<p>Chaque spécialiste a travaillé sur pièces : les 10 captures d'écran de l'état actuel (desktop sombre/clair,
+mobile 375 px, les 4 vues, les 3 modes du Testeur, le dialogue), le bloc CSS complet (~560 lignes), les templates JS,
+la charte graphique et le dictionnaire i18n FR/EN intégral. Les ratios de contraste sont calculés, pas estimés ;
+les frictions mobiles sont comptées en taps ; chaque constat cite son sélecteur ou sa clé i18n.</p></div>
+
+<div class="foot">
+  <span>Design Review · WoR Gear Builder · septembre 2026</span>
+  <a href="10-synthese.html">Lire la synthèse →</a>
+</div>
+</main>
+</div>
+</body>
+</html>

@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Composants UI · Design Review — WoR Gear Builder</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="shell">
+<nav class="toc">
+  <div class="brand"><span class="d">◆</span> Design Review</div>
+  <div class="sub">WoR Gear Builder · sept. 2026</div>
+  <a href="index.html">Synthèse exécutive</a>
+  <div class="grp">Fondations</div>
+  <a href="04-typographie.html">Typographie</a>
+  <a href="03-couleur-accessibilite.html">Couleur &amp; accessibilité</a>
+  <a href="05-design-system.html">Design system &amp; tokens</a>
+  <div class="grp">Interface</div>
+  <a href="01-ui-composants.html" class="on">Composants UI</a>
+  <a href="07-dataviz.html">Data-visualisation</a>
+  <a href="06-mobile.html">Mobile</a>
+  <div class="grp">Produit</div>
+  <a href="02-ux-parcours.html">UX &amp; parcours</a>
+  <a href="08-contenu.html">Contenu &amp; microcopy</a>
+  <a href="09-integration-features.html">Intégration des features</a>
+  <div class="grp">Direction</div>
+  <a href="10-synthese.html">Synthèse &amp; roadmap</a>
+</nav>
+<main>
+
+<span class="kicker">Audit spécialiste · UI / composants</span>
+<h1>Composants — quatre natures, une seule peau</h1>
+<p class="lede">Les plaintes du client sont fondées et localisables au sélecteur CSS près. La refonte récente a unifié
+les recettes… au point que des composants de <b>natures différentes</b> — étape de saisie, accordéon d'aide, switch,
+bouton — portent désormais la même livrée. Diagnostic transversal, audit famille par famille, et la grille de
+distinction qui verrouille tout.</p>
+
+<h2>Diagnostic transversal — les trois plaintes expliquées</h2>
+
+<div class="panel bad"><h4>« Les encarts ne se distinguent plus » — la recette hairline appliquée à 4 natures</h4>
+<p><code>.tm-step</code> (étape de saisie interactive) et <code>details.acc</code> (accordéon d'aide passif) partagent
+<b>les six mêmes déclarations à l'identique</b> : fond panel2, hairline, radius 10, margin, overflow. Le <code>.seg</code>
+(switch) et le <code>.btn</code> ne s'en éloignent que d'un cheveu. Résultat : un step replié = rectangle arrondi +
+texte or mono = <b>exactement l'anatomie d'un onglet actif ou d'un filtre coché</b>. D'où le « mix bizarre de step
+et bouton ». La charte pose « la bordure est une affordance »… puis la viole : le header cliquable du step est habillé
+en conteneur passif.</p></div>
+
+<div class="panel bad"><h4>« Des noms de sections moins visibles que leur contenu » — --faint nomme ce qu'il ne devrait pas</h4>
+<p><code>--faint:#6f6880</code> mesure ≈ <b>2,9:1 sur panel2</b> — sous le seuil AA partout — et il habille précisément
+ce qui <i>nomme</i> : les labels Rôles/Sets/Onglet/Scope, les « Slot / Main / Subs / Set » du stepper, les en-têtes de
+tables, les légendes de cartes de chiffres. Pendant ce temps leur <i>contenu</i> (chips ≈ 7:1, valeurs or, ids)
+est deux fois plus contrasté que son propre titre. La hiérarchie perceptuelle est inversée à l'échelle de l'app.</p></div>
+
+<div class="panel bad"><h4>« Manque de cohérence » — trois symptômes précis</h4>
+<ul>
+<li>L'état « actif or » (texte acc + bord acc + fond acc-dim) est la recette de <b>trois natures différentes</b> :
+onglet de navigation, filtre coché, toggle d'aide — l'œil ne peut plus déduire la nature d'un élément de son état ;</li>
+<li>Deux fusions prescrites par la charte n'ont pas été livrées : <code>.stat-card</code> ≠ <code>.cov-card</code>
+(deux styles de légende), <code>.fchip</code> ≠ <code>.chip.pill</code> ;</li>
+<li>Deux conventions de chevron coexistent (<code>›</code> avant, 90° · <code>⌄</code> après, 180°) et les cartes de
+pièces se déplient <b>sans aucun chevron</b>.</li>
+</ul></div>
+
+<h2><span class="prio p0">P0</span> Le stepper de la pièce manuelle — le composant de la plainte</h2>
+<p>Trois problèmes cumulés : peau identique à l'accordéon d'aide ; header cliquable habillé en passif (hairline) ;
+livrée de toggle actif (rectangle arrondi + texte or). Et à l'intérieur, <b>trois contrôles différents pour le même
+geste</b> « choisir une valeur » : un seg pour le slot, des chips pour main et set. Pire : le seg « creusé » a un fond
+panel2… posé sur un corps déjà panel2 — <b>le creux disparaît</b>, il ne reste que des mots flottants.</p>
+<div class="panel reco"><h4>Correctif : redevenir un formulaire par étapes</h4>
+<ul>
+<li><b>Bordure solide</b> (<code>--border-soft</code>, pas hairline) → dit « interactif » ;</li>
+<li><b>Numéro d'étape</b> ①②③④ en pastille mono or (✓ vert quand complétée) → dit « séquence » ;</li>
+<li><b>Rail or à gauche quand ouvert</b> → dit « tu es ici » — trois signaux qu'aucun bouton, seg ni accordéon ne porte ;</li>
+<li>Labels « Slot / Main / Subs / Set » en <code>--muted</code> (plus jamais faint) ;</li>
+<li>Le slot passe en <code>chip.pick</code> comme main et set — un seul pattern de sélection dans tout le wizard ;</li>
+<li>« vider » sort du header cliquable (bouton dans bouton = tap ambigu) → première ligne du corps.</li>
+</ul></div>
+
+<h2><span class="prio p0">P0</span> Le segmented — élévation inversée en dark</h2>
+<p><code>.seg button.on{background:var(--panel)}</code> : or #1d1a24 est <b>plus sombre</b> que le tray #262230 —
+l'ombre dit « au-dessus », la couleur dit « en dessous ». En light le rapport est correct : le composant ne raconte
+pas la même chose selon le thème.</p>
+<pre><code>:root{--well:rgba(0,0,0,.28); --raised:#322d40}
+body.light{--well:rgba(30,25,40,.07); --raised:#ffffff}
+.seg{background:var(--well);border-radius:var(--r-pill);padding:3px}
+.seg button.on{background:var(--raised);color:var(--acc);box-shadow:0 1px 4px rgba(0,0,0,.35)}</code></pre>
+<p>Le tray translucide reste visible sur <b>n'importe quel fond</b> (bg, panel, panel2), la pastille devient plus
+claire que tout — l'élévation redevient vraie dans les deux thèmes. Le passage en <b>pilule</b> sépare définitivement
+le seg des cartes d'étapes.</p>
+
+<h2><span class="prio p0">P0</span> Labels &amp; navigation — les deux gestes qui réparent l'essentiel</h2>
+<pre><code>/* 80 % de la plainte « sections moins visibles » : */
+.lab,.rb-grid .k,.tm-step .step-head .k,.transfo-row .cat{color:var(--muted)}  /* 5,7:1 */
+h3.grp-head{color:var(--ink)}
+/* --faint ne nomme jamais rien — il n'habille que la méta consultative */</code></pre>
+<p>Et désambiguïser « l'or actif » : la <b>navigation</b> (onglets de rulesets) passe au pattern rail — texte or +
+<code>border-bottom:2px solid var(--acc)</code>, sans bord ni fond or — aligné sur <code>nav-btn.active</code>,
+le meilleur « tu es ici » de l'app. L'état « or dim + bord or » reste réservé à la <b>sélection de contenu</b>
+(filtres, chips). Ainsi « où je suis » ≠ « ce que je filtre ».</p>
+
+<h2>Audit par famille — l'essentiel</h2>
+<div class="tbl-wrap"><table>
+<tr><th>Famille</th><th>Ce qui marche</th><th>Ce qui cloche</th><th>Prio</th></tr>
+<tr><td><b>Boutons</b></td><td>fusion réussie, primaire plein unique par zone, focus systématique</td><td>« Supprimer » indistinguable de « Renommer » au repos (danger n'existe qu'au hover) ; « vider » = bouton dans bouton</td><td><span class="prio p1">P1</span></td></tr>
+<tr><td><b>Chips</b></td><td>les familles de couleurs = la vraie force du produit</td><td><code>.pick:not(.sel)</code> à opacité .32 : le dialogue de création est un <b>mur de fantômes illisible</b> (&lt; 2:1) ; le pointillé porte deux sens (sélectionnable ET hors-jeu). Règle : sélectionnable = solide atténué, indisponible = dashed, opacité &lt; .45 interdite sur du texte à lire pour agir</td><td><span class="prio p1">P1</span></td></tr>
+<tr><td><b>Cartes de règles</b></td><td>neutralisation réussie, id porteur du code, drag/flash propres</td><td>« Ensemble 2 pièces » (muted) moins visible que « Tank » dessous ; points ★ vides invisibles (bord --border ≈ 1,3:1 → --faint) ; carte ouverte peu ancrée (→ rail or)</td><td><span class="prio p0">P0</span>/<span class="prio p2">P2</span></td></tr>
+<tr><td><b>Cartes de pièces</b></td><td>point de verdict + opacité : conforme charte, lisible</td><td>dépliables sans chevron (affordance cachée) ; l'opacité .72 atténue aussi les chips (&lt; 3:1) → n'atténuer que l'encre ; verdict multi-lignes casse la grille</td><td><span class="prio p1">P1</span></td></tr>
+<tr><td><b>Cartes de chiffres</b></td><td>—</td><td>fusion <code>.stat-card</code>→<code>.cov-card</code> non faite : deux voix pour un même rôle (Couverture vs Référence) ; légendes --faint sous contraste</td><td><span class="prio p1">P1</span></td></tr>
+<tr><td><b>Accordéons d'aide</b></td><td>le « ? » 19px à zone de tap étendue et état mémorisé : excellent</td><td>la carte <code>details.acc</code> = peau du step. Correctif : l'aide devient du <b>texte qui se déplie</b> (transparent, chevron › avant, filet bas) — plus aucune concurrence avec les cartes interactives</td><td><span class="prio p0">P0</span></td></tr>
+<tr><td><b>Panneaux de verdict</b></td><td>—</td><td>« Gardée par : » porte le rail <b>or</b> du panel.note — l'or dit « information », pas « succès ». → <code>.verdict-ok</code> rail vert / <code>.verdict-rej</code> rail rouge, la langue util/off déjà installée</td><td><span class="prio p1">P1</span></td></tr>
+<tr><td><b>Tables</b></td><td>th discrets, hover, empilage mobile préservé</td><td>th en --faint ≈ 3,2:1 → --muted ; la vue Sets sature d'or (2-6 rulerefs pleins par ligne — l'or redevient un décor) → rulerefs muted au repos, or au hover</td><td><span class="prio p1">P1</span>/<span class="prio p2">P2</span></td></tr>
+<tr><td><b>Inputs</b></td><td>—</td><td><b>quatre recettes pour un champ</b> (fonds panel/panel2, radius 6/10 mélangés dans la même rangée) → norme unique : panel2 + border + r-s ; stepper 24px sous la cible tactile</td><td><span class="prio p1">P1</span></td></tr>
+<tr><td><b>Badges</b></td><td>la règle latente est bonne : statique = fond teinté sans bordure, cliquable = bordure</td><td>T1/T0 en hex durs sans override light (<code>.s-t1 .rc-id</code>, <code>.ruleref.t1r</code> : bleu pastel sur crème ≈ 2,1:1) ; .mini/.p-main passifs avec bordure pleine = costume d'interactif</td><td><span class="prio p1">P1</span></td></tr>
+<tr><td><b>Divers</b></td><td>toasts, sidebar active, progression : RàS</td><td>la clé in-game déguisée en toast permanent (rail or + fond + bordure = anatomie exacte de .toast) ; « + » d'onglet orphelin à 600px de ses onglets</td><td><span class="prio p2">P2</span></td></tr>
+</table></div>
+
+<h2>La grille de distinction des conteneurs — la règle générale</h2>
+<p>Trois axes orthogonaux, chacun ne dit qu'<b>une</b> chose :</p>
+<ul>
+<li><b>Le rayon dit la nature</b> — pilule = choix exclusif/filtre · 10px = contrôle &amp; carte interactive · 16px = contenant passif ;</li>
+<li><b>La bordure dit l'interactivité</b> — solide = on peut agir · hairline = passif · aucune + fond creusé = groupe d'options ;</li>
+<li><b>Le marqueur dit le mécanisme</b> — pastille claire = option active · numéro = étape · ⌄ droite = carte dépliable · › avant = texte dépliable · rail or gauche = « tu es ici / ouvert ».</li>
+</ul>
+<div class="tbl-wrap"><table>
+<tr><th></th><th>(a) Switch exclusif</th><th>(b) Étape repliable</th><th>(c) Accordéon d'aide</th><th>(d) Bouton</th><th>(e) Panneau passif</th></tr>
+<tr><td class="num">Fond</td><td>tray creusé <code>--well</code></td><td>panel2</td><td><b>transparent</b></td><td>transparent (acc si primaire)</td><td>panel</td></tr>
+<tr><td class="num">Bordure</td><td>aucune</td><td><b>solide</b> + rail or si ouvert</td><td>aucune (filet bas)</td><td>solide</td><td>hairline</td></tr>
+<tr><td class="num">Rayon</td><td>pilule</td><td>10px</td><td>—</td><td>10px</td><td>16px</td></tr>
+<tr><td class="num">Marqueur</td><td>pastille <code>--raised</code></td><td>numéro ①/✓ + ⌄</td><td>› avant</td><td>hauteur fixe</td><td>jamais de cursor:pointer</td></tr>
+</table></div>
+<div class="panel reco"><h4>Corollaires</h4>
+<ul>
+<li>L'état « or dim + bord or » est réservé à la <b>sélection de contenu</b> ; la navigation utilise le <b>rail</b> ;</li>
+<li>Aucun composant ne cumule deux natures : pas de bouton dans un header d'étape, pas de carte pour une aide, jamais de bordure solide sur un passif ;</li>
+<li>Tout dépliable montre son chevron — cartes de pièces incluses ;</li>
+<li><code>--faint</code> ne nomme jamais rien.</li>
+</ul></div>
+
+<div class="quote">Deux gestes réparent l'essentiel : la grille de distinction (chaque conteneur redevient
+auto-descriptif — mot pour mot la plainte 1) et la promotion des labels à --muted (la plainte 2). Le reste re-serre
+la cohérence que la refonte avait promise mais laissée inachevée sur trois fusions et deux conventions.
+<span class="who">— spécialiste UI</span></div>
+
+<div class="foot">
+  <a href="07-dataviz.html">Data-visualisation →</a>
+  <a href="index.html">↑ Synthèse exécutive</a>
+</div>
+</main>
+</div>
+</body>
+</html>

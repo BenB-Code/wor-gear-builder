@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Maquette · Recopie téléprompteur · Mobile 375</title>
+<style>
+:root{
+  --bg:#14121a;--panel:#1d1a24;--panel2:#262230;--border:#35303f;--border-soft:#2a2632;--hairline:rgba(255,255,255,.05);
+  --ink:#d9d2c4;--ink-hi:#ece7db;--head:#c4bcd0;--label:#a59dae;--deco:#6f6880;--state:#8a8298;
+  --t3:#e0635a;--t2:#e2b04a;--t1:#a678e8;--t0:#5f9fd6;--t4:#4ef08a;
+  --off:#cf6054;--deff:#5f9fd6;--util:#6fbf8f;
+  --acc:#e2b04a;--acc-bd:rgba(226,176,74,.5);--acc-dim:rgba(226,176,74,.14);
+  --display:"Palatino Linotype","Iowan Old Style",Palatino,"Book Antiqua",Georgia,serif;
+  --body:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --mono:ui-monospace,"SF Mono","Cascadia Code",Menlo,Consolas,monospace;
+  --r-s:6px;--r-m:10px;--r-l:16px;--r-pill:999px;
+  --dur-1:120ms;--dur-2:200ms;--ease-out:cubic-bezier(.2,.7,.3,1);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0d0c12;color:var(--ink);font-family:var(--body);min-height:100vh;
+  display:flex;flex-direction:column;align-items:center;padding:26px 12px 64px}
+
+.banner{font-size:11.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--deco);margin-bottom:18px}
+.banner a{color:var(--acc);text-decoration:none;font-weight:600}
+.banner a:hover{text-decoration:underline}
+.banner .sep{margin:0 8px;color:#3a3444}
+
+.phone{width:375px;flex:0 0 auto;background:#08070b;border:1px solid #2c2836;border-radius:36px;
+  padding:10px;box-shadow:0 30px 70px rgba(0,0,0,.6),0 2px 8px rgba(0,0,0,.5)}
+.screen{background:var(--bg);border-radius:27px;overflow:hidden;display:flex;flex-direction:column;min-height:790px}
+.status{display:flex;justify-content:space-between;align-items:center;padding:8px 20px 0;
+  font-family:var(--mono);font-size:11px;color:var(--deco)}
+
+/* ── Barre du mode (44px) — focus : tab bar masquée ── */
+.tp-bar{display:flex;align-items:center;gap:10px;min-height:44px;padding:4px 8px 4px 4px;margin-top:2px}
+.tp-quit{appearance:none;background:none;border:none;min-width:44px;min-height:44px;color:var(--label);
+  font-family:var(--body);font-size:13px;font-weight:600;cursor:pointer;border-radius:var(--r-m)}
+.tp-title{font-size:11.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--label)}
+.tp-title b{color:var(--head);font-weight:600}
+.tp-count{margin-left:auto;padding-right:12px;font-family:var(--mono);font-size:15px;color:var(--ink-hi)}
+.tp-count small{font-size:11px;color:var(--state)}
+
+/* Jauge de progression 12/18 — ◆ = jalon */
+.gauge{display:flex;align-items:center;gap:8px;padding:0 16px 10px}
+.gauge .track{flex:1;height:5px;border-radius:var(--r-pill);background:var(--panel2);overflow:hidden}
+.gauge .fill{width:66.7%;height:100%;border-radius:var(--r-pill);background:var(--acc)}
+.gauge .end{font-size:10px;color:var(--deco)}
+
+/* ── La règle, plein écran, mono dominant — un écran à LIRE ── */
+.rule{flex:1;display:flex;flex-direction:column;gap:16px;padding:14px 18px 10px;
+  background:var(--panel);border-top:1px solid var(--zenith,rgba(255,255,255,.08));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.07)}
+.rule-head{display:flex;align-items:center;gap:12px}
+.rule-id{font-family:var(--mono);font-size:17px;font-weight:700;color:var(--acc);background:var(--acc-dim);
+  border:1px solid var(--acc-bd);border-radius:var(--r-s);padding:4px 12px}
+.rule-name{font-family:var(--display);font-variant:small-caps;letter-spacing:.03em;
+  font-size:30px;font-weight:600;color:var(--ink-hi);line-height:1.05}
+
+.kv{display:flex;flex-direction:column;gap:4px;padding-bottom:14px;border-bottom:1px solid var(--hairline)}
+.kv:last-of-type{border-bottom:none;padding-bottom:0}
+.kv .k{font-size:11.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--label)}
+.kv .v{font-family:var(--mono);font-size:19px;line-height:1.5;color:var(--ink-hi)}
+.kv .v.sets{font-family:var(--body);font-weight:600;font-size:18px}
+.kv .v .sig{font-size:13px;color:var(--state);font-weight:400}
+.kv .v .star{color:var(--acc)}
+.kv .v .req-note{font-family:var(--body);font-size:13px;color:var(--label);font-weight:400}
+
+/* Micro-barre du requis (arbitrage A2) */
+.req{display:flex;align-items:center;gap:10px}
+.req .bar{width:64px;height:5px;border-radius:var(--r-pill);background:var(--panel2);overflow:hidden}
+.req .bar i{display:block;height:100%;width:100%;background:var(--head)}
+.req .txt{font-family:var(--mono);font-size:17px;color:var(--ink-hi)}
+
+/* Clé in-game — se colle, ne se tape pas */
+.key-row{display:flex;align-items:center;gap:8px;margin-top:auto;background:var(--panel2);
+  border-radius:var(--r-m);padding:8px 8px 8px 14px}
+.key-row .k{font-size:11.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--label)}
+.key-row .val{font-family:var(--mono);font-size:15px;color:var(--ink-hi);letter-spacing:.04em}
+.key-row button{appearance:none;margin-left:auto;min-height:40px;padding:0 14px;background:transparent;
+  border:1px solid var(--border);border-radius:var(--r-s);color:var(--label);font-family:var(--body);
+  font-size:12.5px;font-weight:600;cursor:pointer}
+.key-hint{font-size:11px;color:var(--deco);padding:6px 2px 0;text-align:center}
+
+/* ── Boutons 56px en zone pouce ── */
+.tp-actions{display:flex;gap:10px;padding:12px 14px 6px}
+.tp-actions button{appearance:none;min-height:56px;border-radius:var(--r-m);font-family:var(--body);
+  font-size:15px;font-weight:600;cursor:pointer;transition:filter var(--dur-1) var(--ease-out)}
+.tp-actions button:active{transform:scale(.97)}
+.tp-prev{flex:0 0 108px;background:transparent;border:1px solid var(--border);color:var(--label)}
+.tp-next{flex:1;background:var(--acc);border:1px solid var(--acc);color:#1c1608;font-size:16px}
+.tp-next:hover{filter:brightness(1.08)}
+.tp-resume{font-size:11px;color:var(--deco);text-align:center;padding:0 14px 4px}
+
+.home{height:22px;display:flex;align-items:flex-end;justify-content:center;padding-bottom:8px}
+.home i{display:block;width:118px;height:4px;border-radius:var(--r-pill);background:#3a3444}
+
+.caption{width:375px;margin-top:16px;font-size:12px;line-height:1.6;color:var(--deco)}
+.caption b{color:var(--label);font-weight:600}
+</style>
+</head>
+<body>
+
+<div class="banner">Maquette <span class="sep">·</span> Recopie téléprompteur <span class="sep">·</span> rapport final <span class="sep">·</span> <a href="../04-maquettes.html">04 · maquettes</a></div>
+
+<div class="phone"><div class="screen">
+
+  <div class="status"><span>21:52</span><span>▰▰▰ 61 %</span></div>
+
+  <!-- Barre du mode — focus plein écran, tab bar masquée -->
+  <div class="tp-bar">
+    <button class="tp-quit">✕ Fin</button>
+    <span class="tp-title">Saisie en jeu · <b>End Game | Strict</b></span>
+    <span class="tp-count">12<small>/18</small></span>
+  </div>
+  <div class="gauge">
+    <div class="track"><div class="fill"></div></div>
+    <span class="end">◆ 18</span>
+  </div>
+
+  <!-- LA règle — une seule, en très gros, à lire depuis le jeu -->
+  <section class="rule">
+    <div class="rule-head">
+      <span class="rule-id">G4</span>
+      <span class="rule-name">Heal HP</span>
+    </div>
+
+    <div class="kv">
+      <span class="k">Sets</span>
+      <span class="v sets">Ailes de la grâce · Revitalisation · Asclepius</span>
+    </div>
+
+    <div class="kv">
+      <span class="k">Main</span>
+      <span class="v">PV % <span class="sig">(HP%)</span></span>
+    </div>
+
+    <div class="kv">
+      <span class="k">Subs — ★ obligatoires</span>
+      <span class="v"><span class="star">★</span> PV % <span class="sig">(HP%)</span></span>
+      <span class="v"><span class="star">★</span> Défense % <span class="sig">(DEF%)</span></span>
+      <span class="v">Résistance <span class="sig">(RR)</span></span>
+      <span class="v">Précision <span class="sig">(HE)</span></span>
+    </div>
+
+    <div class="kv">
+      <span class="k">Requis</span>
+      <div class="req">
+        <span class="bar"><i></i></span>
+        <span class="txt">4/4 subs</span>
+        <span class="req-note">— les 4 de la liste, ★ incluses</span>
+      </div>
+    </div>
+
+    <div class="key-row">
+      <span class="k">Clé in-game</span>
+      <span class="val">0DM10TE=</span>
+      <button>copier</button>
+    </div>
+    <p class="key-hint">à coller dans le jeu : Réglages ▸ Tri automatique ▸ Importer</p>
+  </section>
+
+  <!-- Zone pouce : boutons 56px -->
+  <div class="tp-actions">
+    <button class="tp-prev">‹ Précéd.</button>
+    <button class="tp-next">Saisie ✓ Suivant</button>
+  </div>
+  <p class="tp-resume">Reprise automatique à la première règle non cochée · à 18/18 : ◆ Jeu complet</p>
+
+  <div class="home"><i></i></div>
+</div></div>
+
+<p class="caption"><b>Mode focus plein écran</b> (tab bar masquée), wake lock actif. Le seul écran où le mono règne :
+paires clé/valeur en 18-19 px, stats <b>sans abréviation</b> (le sigle du jeu reste en rappel discret).
+« Saisie ✓ Suivant » coche et avance ; swipe horizontal en plus des boutons. La dorure n'arrive qu'au 18/18.</p>
+
+</body>
+</html>

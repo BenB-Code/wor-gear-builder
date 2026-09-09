@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Charte graphique v3 — WoR Gear Builder</title>
+<link rel="stylesheet" href="style.css">
+<style>
+/* ════════════════════════════════════════════════════════════════════
+   Styles scopés des démos de la charte v3 — préfixe .gx
+   Tout ce bloc rend la DA « grimoire d'armurerie » à sa dose arbitrée :
+   il APPLIQUE les tokens qu'il documente.
+   ════════════════════════════════════════════════════════════════════ */
+.gx{
+  --gx-socle:#0f0d15;
+  --gx-carte-hi:#221e2b; --gx-carte-lo:#1b1723;
+  --gx-liseret:rgba(255,255,255,.07);            /* la lumière zénithale */
+  --gx-border:#35303f; --gx-hairline:rgba(255,255,255,.055);
+  --gx-ink-hi:#ece7db; --gx-ink:#d9d2c4; --gx-head:#c4bcd0; --gx-label:#a59dae;
+  --gx-state:#8a8298; --gx-deco:#6f6880;         /* --deco : jamais de texte */
+  --gx-acc:#e2b04a; --gx-acc-dim:rgba(226,176,74,.14); --gx-acc-bd:rgba(226,176,74,.5);
+  --gx-glow:rgba(226,176,74,.07);
+  --gx-util:#6fbf8f; --gx-off:#cf6054; --gx-deff:#5f9fd6;
+  --gx-t3:#e0635a; --gx-t2:#e2b04a; --gx-t1:#a678e8; --gx-t0:#5f9fd6; --gx-t4:#4ef08a;
+  --gx-display:"Palatino Linotype","Iowan Old Style",Palatino,"Book Antiqua",Georgia,serif;
+  --gx-body:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --gx-mono:ui-monospace,"SF Mono","Cascadia Code",Menlo,Consolas,monospace;
+  font-family:var(--gx-body);color:var(--gx-ink);font-size:13px;line-height:1.55;
+}
+/* ── Les trois matières ── */
+.gx .socle{background:var(--gx-socle);border-radius:14px;padding:20px}
+.gx .carte{background:linear-gradient(180deg,var(--gx-carte-hi),var(--gx-carte-lo));
+  border:1px solid var(--gx-hairline);border-radius:10px;
+  box-shadow:inset 0 1px 0 var(--gx-liseret)}       /* liseré interne haut = zénith */
+.gx .encart{background:var(--gx-glow);border-left:3px solid var(--gx-acc);
+  border-radius:0 8px 8px 0;padding:10px 14px}
+.gx .encart.vert{border-left-color:var(--gx-util);background:rgba(111,191,143,.08)}
+.gx .encart.rouge{border-left-color:var(--gx-off);background:rgba(207,96,84,.08)}
+/* ── Typo appliquée (A1) ── */
+.gx .t-display{font-family:var(--gx-display);font-variant:small-caps;letter-spacing:.04em;
+  font-weight:600;color:var(--gx-ink-hi)}           /* jamais < 16px, jamais interactif */
+.gx .lab{display:block;font-family:var(--gx-body);font-size:11.5px;font-weight:600;
+  letter-spacing:.08em;text-transform:uppercase;color:var(--gx-label);margin-bottom:4px}
+.gx .val{font-family:var(--gx-mono);font-variant-numeric:tabular-nums;color:var(--gx-ink)}
+/* ── Chips de stats et de sets (inchangées v2 — le code couleur métier) ── */
+.gx .chip{display:inline-flex;align-items:center;font-family:var(--gx-mono);font-size:11px;
+  padding:3px 9px;border-radius:6px;border:1px solid var(--gx-border);background:rgba(255,255,255,.03);
+  color:var(--gx-ink);white-space:nowrap}
+.gx .chip.off{border-color:rgba(207,96,84,.5);color:#e8968c}
+.gx .chip.deff{border-color:rgba(95,159,214,.5);color:#93c1e8}
+.gx .chip.util{border-color:rgba(111,191,143,.5);color:#9ed9b4}
+.gx .chip.win{background:rgba(111,191,143,.14)}     /* sub gagnant : teinte utilitaire, pas d'or */
+.gx .chip.set{font-family:var(--gx-body);font-size:11.5px;background:transparent}
+.gx .chip.set.t3{border-color:rgba(224,99,90,.55);color:#ef948c}
+.gx .chip.set.t2{border-color:rgba(226,176,74,.55);color:var(--gx-t2)}
+.gx .chip.set.t1{border-color:rgba(166,120,232,.55);color:#c5a5ef}
+.gx .ph{border-style:dashed;color:var(--gx-deco);background:transparent}
+/* ── Ruleref pill (interactif = pilule) ── */
+.gx .ruleref{display:inline-flex;align-items:center;gap:5px;font-family:var(--gx-mono);font-size:11px;
+  font-weight:600;color:var(--gx-acc);background:var(--gx-acc-dim);border-radius:999px;
+  padding:2px 10px;cursor:pointer}
+/* ── Carte de règle finale ── */
+.gx .regle{margin:8px 0;overflow:hidden}
+.gx .regle .head{display:flex;align-items:center;gap:11px;padding:11px 14px;flex-wrap:wrap}
+.gx .chk{appearance:none;flex:0 0 auto;width:17px;height:17px;border:1.5px solid var(--gx-label);
+  border-radius:5px;background:transparent;position:relative}
+.gx .chk:checked{background:var(--gx-acc);border-color:var(--gx-acc)}
+.gx .chk:checked::after{content:"✓";position:absolute;inset:0;display:flex;align-items:center;
+  justify-content:center;color:#1c1608;font-size:12px;font-weight:700}  /* le ✓ confirme — A5 */
+.gx .rid{font-family:var(--gx-mono);font-size:11px;font-weight:600;color:var(--gx-acc);
+  background:var(--gx-acc-dim);border-radius:6px;padding:2px 8px}
+.gx .rid.d{color:#8fbde4;background:rgba(95,159,214,.12)}
+.gx .rname{font-family:var(--gx-display);font-variant:small-caps;letter-spacing:.03em;
+  font-size:16px;font-weight:600;color:var(--gx-ink-hi)}
+.gx .rmeta{margin-left:auto;display:flex;align-items:center;gap:12px;font-family:var(--gx-mono);
+  font-size:11px;color:var(--gx-label)}
+.gx .req{display:inline-flex;align-items:center;gap:7px}          /* A2 : micro-barre + libellé */
+.gx .req .bar{width:40px;height:4px;border-radius:2px;background:rgba(255,255,255,.1);overflow:hidden}
+.gx .req .bar i{display:block;height:100%;background:var(--gx-label);border-radius:2px}
+.gx .cov{font-family:var(--gx-mono);font-variant-numeric:tabular-nums;font-size:11px;color:var(--gx-state)}
+.gx .cov .ok{color:var(--gx-util)}
+/* ── Carte d'item vivante ── */
+.gx .item{width:230px;flex:0 0 auto;overflow:hidden}
+.gx .item .ih{display:flex;align-items:center;gap:7px;padding:10px 12px 6px;flex-wrap:wrap}
+.gx .item .slot{display:inline-flex;align-items:center;gap:5px;font-family:var(--gx-display);
+  font-variant:small-caps;font-size:12.5px;color:var(--gx-label)}
+.gx .item .slot svg{width:13px;height:13px;stroke:var(--gx-deco);fill:none;stroke-width:1.6}
+.gx .item .main{font-family:var(--gx-mono);font-size:15px;font-weight:700;color:var(--gx-ink-hi);
+  margin-left:auto;font-variant-numeric:tabular-nums}
+.gx .item .subs{display:flex;flex-direction:column;gap:4px;padding:2px 12px 8px}
+.gx .item .subs .chip{align-self:flex-start}
+.gx .item .foot{font-family:var(--gx-mono);font-size:11px;padding:0 12px 10px}
+.gx .item.tier{border-bottom:2px solid var(--gx-t3)}              /* filet coloré au tier */
+.gx .item.tier2{border-bottom:2px solid var(--gx-t2)}
+.gx .item.gardee{border-color:var(--gx-acc-bd)}                   /* liseré or : accomplissement */
+.gx .item.gardee .foot{color:var(--gx-util)}
+.gx .item.recyclee{filter:saturate(.35);opacity:.75}
+.gx .item.recyclee .foot{color:var(--gx-state)}
+/* ── Boutons (v2 conservés) ── */
+.gx .btn{appearance:none;height:32px;display:inline-flex;align-items:center;gap:7px;background:transparent;
+  border:1px solid var(--gx-border);color:var(--gx-head);font-family:var(--gx-body);font-size:13px;
+  font-weight:500;padding:0 16px;border-radius:8px;cursor:pointer}
+.gx .btn.primary{background:var(--gx-acc);border-color:var(--gx-acc);color:#1c1608;font-weight:600}
+/* ── 18/18 : la dorure (1er des 2 usages généreux) ── */
+.gx .jauge{border:1px solid var(--gx-hairline);border-radius:10px;padding:12px 14px;max-width:300px}
+.gx .jauge .track{height:6px;border-radius:3px;background:rgba(255,255,255,.08);overflow:hidden;margin-top:8px}
+.gx .jauge .track i{display:block;height:100%;border-radius:3px;background:var(--gx-label)}
+.gx .jauge.full{border-color:var(--gx-acc-bd);box-shadow:0 0 12px var(--gx-acc-dim)}
+.gx .jauge.full .track i{background:linear-gradient(90deg,#a97e2f,var(--gx-acc),#f0d089)}
+.gx .jauge.full .done{color:var(--gx-acc);font-family:var(--gx-display);font-variant:small-caps;
+  font-size:16px;letter-spacing:.04em}
+/* ── Share card (2e usage généreux) ── */
+.gx .share{max-width:560px;aspect-ratio:1200/630;background:var(--gx-socle);border-radius:12px;
+  border:1px solid var(--gx-hairline);box-shadow:inset 0 1px 0 var(--gx-liseret);
+  display:flex;flex-direction:column;padding:26px 30px;position:relative;overflow:hidden}
+.gx .share::before{content:"";position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(ellipse 70% 45% at 50% -10%,rgba(226,176,74,.09),transparent 70%)} /* halo modéré */
+.gx .share .exlibris{font-family:var(--gx-display);font-variant:small-caps;font-size:12px;
+  letter-spacing:.08em;color:var(--gx-label)}
+.gx .share .exlibris .d{color:var(--gx-acc)}
+.gx .share h5{font-family:var(--gx-display);font-variant:small-caps;font-size:24px;font-weight:600;
+  color:var(--gx-ink-hi);letter-spacing:.03em;margin:4px 0 0}
+.gx .share .pct{font-family:var(--gx-display);font-size:44px;line-height:1.1;margin:auto 0 0;
+  background:linear-gradient(180deg,#f0d089,var(--gx-acc) 55%,#b8862f);
+  -webkit-background-clip:text;background-clip:text;color:transparent}
+.gx .share .pct small{font-size:16px;-webkit-text-fill-color:var(--gx-label);color:var(--gx-label);
+  font-family:var(--gx-body)}
+.gx .share .phrase{color:var(--gx-head);font-size:13px;max-width:420px;margin-top:6px}
+.gx .share .pied{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:16px;
+  padding-top:10px;border-top:1px solid var(--gx-hairline);font-family:var(--gx-mono);font-size:10.5px;
+  color:var(--gx-state)}
+/* ── Pastilles d'accents (A4) ── */
+.gx .accs{display:flex;gap:14px;flex-wrap:wrap;margin:12px 0}
+.gx .accp{text-align:center;font-family:var(--gx-mono);font-size:10px;color:var(--gx-label)}
+.gx .accp .dot{width:44px;height:44px;border-radius:50%;margin:0 auto 6px;border:1px solid var(--gx-hairline);position:relative}
+.gx .accp.def .dot::after{content:"◆";position:absolute;inset:0;display:flex;align-items:center;
+  justify-content:center;color:#1c1608;font-size:13px}
+.gx .accp .hex{color:var(--gx-deco)}
+/* ── Thème clair parchemin ── */
+.gx.gx-light{
+  --gx-socle:#e9e4d5;
+  --gx-carte-hi:#fbf8ef; --gx-carte-lo:#f2edde;
+  --gx-liseret:rgba(255,255,255,.85);
+  --gx-border:#c9c2ae; --gx-hairline:rgba(60,50,30,.12);
+  --gx-ink-hi:#2a2418; --gx-ink:#3d3628; --gx-head:#4a4232; --gx-label:#6d644e;
+  --gx-state:#756c56; --gx-deco:#a49a80;
+  --gx-acc:#a5761f; --gx-acc-dim:rgba(165,118,31,.13); --gx-acc-bd:rgba(165,118,31,.5);
+  --gx-glow:rgba(165,118,31,.07);
+  --gx-util:#3d7d55; --gx-off:#a83d31; --gx-deff:#2f6b9e;
+  --gx-t3:#b8433a; --gx-t2:#a5761f; --gx-t1:#7448b3; --gx-t0:#2f6b9e; --gx-t4:#237a48;
+}
+.gx.gx-light .chip{background:rgba(60,50,30,.04)}
+.gx.gx-light .chip.off{border-color:rgba(168,61,49,.6);color:#8e3328}
+.gx.gx-light .chip.deff{border-color:rgba(47,107,158,.6);color:#28587f}
+.gx.gx-light .chip.util{border-color:rgba(61,125,85,.6);color:#336847}
+.gx.gx-light .chip.win{background:rgba(61,125,85,.12)}
+.gx.gx-light .chip.set.t2{border-color:rgba(165,118,31,.6);color:#8a6218}
+/* ── Annotations de démo (chrome de la charte, pas de l'app) ── */
+.gx .note{font-family:var(--gx-mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--gx-deco);margin:10px 0 4px}
+.gx .flex{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-start}
+</style>
+</head>
+<body>
+<div class="shell">
+<nav class="toc">
+  <div class="brand"><span class="d">◆</span> Rapport Final</div>
+  <div class="sub">Synthèse des 4 design reviews · sept. 2026</div>
+  <a href="index.html">Vue d'ensemble</a>
+  <div class="grp">Le rapport</div>
+  <a href="01-synthese.html">Synthèse &amp; arbitrages</a>
+  <a href="02-design-system.html">Design system</a>
+  <a href="03-charte-graphique.html" class="on">Charte graphique v3</a>
+  <a href="04-maquettes.html">Maquettes &amp; wireframes</a>
+  <a href="05-roadmap.html">Roadmap</a>
+  <div class="grp">Les 4 rapports</div>
+  <a href="../rapport-1-audit/index.html">Rapport 1 · audit</a>
+  <a href="../rapport-2-cycle/index.html">Rapport 2 · cycle</a>
+  <a href="../rapport-3-cycle/index.html">Rapport 3 · cycle</a>
+  <a href="../rapport-4-cycle/index.html">Rapport 4 · cycle</a>
+</nav>
+<main>
+
+<span class="kicker">Charte graphique v3 · direction artistique finale · arbitrée</span>
+<h1><span style="color:var(--acc)">◆</span> Le grimoire d'armurerie</h1>
+<p class="lede">La direction artistique de WoR Gear Builder, nommée au cycle 3 et dosée par les arbitrages
+finaux : <b>un grimoire d'armurerie</b> — un outil d'expert relié comme un beau livre, pas un livre déguisé en
+outil. La v3 succède à la charte v2 (qui retirait le bruit) en ajoutant ce que la v2 ne donnait pas : une
+<b>lumière</b>, une <b>matière</b>, et une discipline de l'or. Tout ce qui est montré ici est rendu avec le CSS
+réel de la charte — les démos sont la spécification.</p>
+
+<div class="quote">L'app a un vocabulaire (Palatino small-caps, or, ◆, mono pour la donnée) mais pas de
+grammaire : chaque élément est correct isolément, aucun ne se subordonne aux autres.
+<span class="who">— analyse visual/brand, cycle 3 — le diagnostic que la v3 corrige</span></div>
+
+<!-- ═══════════════ 1 · LA DIRECTION ═══════════════ -->
+<h2>1 · La direction, nommée et dosée</h2>
+<p>« Grimoire d'armurerie » n'est pas un thème décoratif : c'est une <b>règle de subordination</b>. Le monde du
+jeu (tiers, stats, verdicts) garde ses couleurs vives ; tout le reste — fonds, cartes, chrome — se retire dans
+une pénombre de bibliothèque éclairée par le haut, et l'or n'y est pas une couleur d'interface mais une
+<b>dorure</b> : rare, chaude, posée uniquement sur ce qui compte. La dose exacte a été arbitrée (D6) :</p>
+
+<div class="tbl-wrap"><table>
+<tr><th style="width:50%">Retenu</th><th>Refusé (définitif)</th></tr>
+<tr><td>Le liseré zénithal — une seule lumière, venue du haut</td><td>Vignettage bas, brume, halo excessif</td></tr>
+<tr><td>Les 3 matières : socle / carte / encart éditorial</td><td>Grain feTurbulence, toute texture</td></tr>
+<tr><td>La dorure à 3 allumages, généreuse 2 fois (18/18, share card)</td><td>Dégradés or partout ailleurs ; count-up généralisé</td></tr>
+<tr><td>Le mode clair parchemin assumé (AA d'abord)</td><td>Thème clair séparé — le clair se répare par les tokens</td></tr>
+<tr><td>Brand aérée + filet or en sidebar ; ex-libris sur la share card</td><td>◆ en checkbox ; particules, étoiles, FOMO, faux sons</td></tr>
+<tr><td>L'ambition maximale concentrée sur la <b>share card</b></td><td>Toute cérémonie sur un geste fréquent</td></tr>
+</table></div>
+
+<h3>1a · La lumière — une seule source, zénithale</h3>
+<p>Toute l'app est éclairée par le haut, avec trois moyens et trois seulement : le <b>liseré interne haut</b>
+des cartes (<code>inset 0 1px 0 rgba(255,255,255,.07)</code> — la signature immédiate), le <b>fond socle
+assombri</b> (<code>#0f0d15</code>, qui rend la profondeur aux cartes), et un <b>halo modéré</b> en tête de vue
+(radial or à ≤ .09 d'alpha). Le vignettage bas et le grain, proposés au cycle 3, ont été contestés deux fois
+(contraste dégradé là où vivent les jauges ; « du craft pour le portfolio ») et lâchés par leur auteur : le
+liseré et le halo suffisent à tuer le tout-plat. Zéro asset — deux dégradés et une ombre interne.</p>
+
+<h3>1b · La matière — trois niveaux, lisibles sans légende</h3>
+<p>La v2 avait un seul traitement pour cinq natures d'encart (la « hiérarchie inversée » du cycle 3). La v3
+impose trois matières, et la grammaire d'élévation à deux niveaux (conteneur = bordure visible, sous-élément =
+hairline). L'<b>encart éditorial</b> est requalifié <b>slot unique de la pédagogie in-situ</b> : un seul par
+vue, jamais deux.</p>
+
+<div class="demo"><div class="gx">
+  <div class="note">Démo rendue — les 3 matières, imbriquées comme dans l'app</div>
+  <div class="socle">
+    <div class="lab" style="margin-bottom:8px">1 · Le socle — #0f0d15, le fond de la bibliothèque</div>
+    <div class="carte" style="padding:16px 18px">
+      <div class="lab">2 · La carte — dégradé 180° + liseré interne haut : la lumière zénithale</div>
+      <p style="margin:6px 0 12px;color:var(--gx-ink)">Le contenu vit ici. La carte n'a pas d'ombre portée :
+      c'est sa face supérieure qui prend la lumière, comme une reliure sous une lampe de lecture.</p>
+      <div class="encart">
+        <div class="lab" style="color:var(--gx-acc)">3 · L'encart éditorial — filet 3px + fond --acc-glow</div>
+        <span style="color:var(--gx-head)">Le slot unique de la pédagogie in-situ : phrase de règle générée,
+        bandeau-oracle, aide contextuelle. Un seul par vue, priorité import &gt; patch &gt; verdict.</span>
+      </div>
+    </div>
+  </div>
+</div></div>
+
+<h3>1c · L'or est une dorure — la liste exhaustive de ses usages</h3>
+<p>Trois allumages, pas un de plus (principe 1 de la doctrine). Tout usage d'or absent de cette table est un
+écart de charte. Le verdict <i>textuel</i> reste <b>vert</b> (teinte utilitaire) et l'alerte rouge : l'or ne dit
+jamais « correct », il dit « précieux ».</p>
+
+<div class="tbl-wrap"><table>
+<tr><th style="width:130px">Allumage</th><th>Usages — exhaustifs</th><th style="width:170px">Intensité</th></tr>
+<tr><td><b>Marque</b></td><td>Le ◆ de la brand, le filet or de la sidebar (« le premier or vu à l'écran »),
+l'ex-libris d'auteur de la share card.</td><td>aplat, jamais de dégradé</td></tr>
+<tr><td><b>Sélection</b></td><td>L'or est l'<b>accent par défaut</b> : nav active, marqueur ◆ d'onglet actif,
+CTA primaire, id de règle G*, états de sélection. C'est la part que le picker d'accents peut recolorer (§ 4) —
+la marque et l'accomplissement, jamais.</td><td>aplat + teinte à 14 %</td></tr>
+<tr><td><b>Accomplissement</b></td><td>① Le <b>liseré or</b> de la carte d'item gardée — « ✓ Gardée par G5 »,
+le verdict positif cérémoniel, un filet, pas un fond ; ② la <b>dorure du 18/18</b> — dégradé or + halo,
+« ◆ Jeu complet », <b>le seul état lumineux de l'app</b> ; ③ le <b>% gardé doré</b> de la share card, en
+display. ② et ③ sont les deux seuls usages <b>généreux</b> (dégradé autorisé) — l'exception codifiée à la
+doctrine « pas de dégradés or ».</td><td>liseré · dégradé ×2, jamais animé en boucle</td></tr>
+</table></div>
+
+<p>Corollaires en négatif : les subs gagnants d'une pièce gardée sont surlignés en <b>teinte utilitaire, pas
+d'or</b> ; le bandeau-oracle du verdict est <b>◆ vert</b> ; l'or ne touche jamais un contrôle destructif ; et
+comme tout brille = rien ne ressort, la carte de règle reste <b>neutre</b> (acquis v2 conservé : l'id coloré
+suffit).</p>
+
+<h3>1d · Le ◆ — trois usages canoniques, jamais une coche</h3>
+<p>Arbitrage A5, débat clos après deux contestations en deux cycles : <b>le ✓ confirme les gestes, le ◆ décore
+le monde</b>. Le ✓ (rendu via le système SVG <code>ICON</code>, comme tous les glyphes UI) reste sur les
+coches, les états « fait », les validations. Le ◆ a exactement trois emplois :</p>
+<ul>
+<li><b>Marque</b> — le ◆ or de la brand, l'ex-libris de la share card ;</li>
+<li><b>Jalons &amp; pips de jauges</b> — les marqueurs de progression (jauge de recopie, jalons de la scène) ;</li>
+<li><b>Marqueur d'onglet actif</b> — le ◆ des états actifs de navigation (tab bar mobile incluse).</li>
+</ul>
+<p>Une seule taille de puce. Sont supprimés : les ◆ décoratifs des <code>.hint li</code>, les fins de filets de
+section, toute dissémination. Le ◆ plein/creux est aussi <b>exclu de l'encodage du requis</b> (A2) : les ●●●●
+deviennent une micro-barre + libellé texte — aucune information n'est portée uniquement par un glyphe de
+marque.</p>
+
+<h3>1e · Le clair parchemin — le thème de référence identitaire</h3>
+<p>Constat du cycle 3, assumé par D6 : le mode clair crème (<code>#f4f1e8</code>) est « la chose la plus
+identitaire de l'app » — un vrai choix manuscrit là où le dark ressemblait à dix autres outils. La v3 en fait le
+<b>thème de référence</b> de la DA : le parchemin est le grimoire ouvert en plein jour, le dark en est la
+« bibliothèque de nuit » — <b>le même monde</b>, mêmes matières, même lumière zénithale, tokens redéfinis et
+rien d'autre (le « thème clair séparé » est refusé). Discipline : AA d'abord — zéro texte &lt; 4,5:1, chips de
+sets foncées d'un cran (les pastels s'évaporent sur crème), or rabattu à <code>#a5761f</code> pour tenir le
+contraste.</p>
+
+<div class="duo">
+  <div><span class="tag">Bibliothèque de nuit (dark, défaut)</span>
+    <div class="gx"><div class="socle" style="padding:14px">
+      <div class="carte regle"><div class="head">
+        <input type="checkbox" class="chk" checked>
+        <span class="rid">G7</span><span class="rname">Dps ATK</span>
+        <span class="rmeta"><span class="req"><span class="bar"><i style="width:100%"></i></span>4/4 subs · 6 sets</span></span>
+      </div></div>
+    </div></div>
+  </div>
+  <div><span class="tag">Grimoire en plein jour (parchemin)</span>
+    <div class="gx gx-light"><div class="socle" style="padding:14px">
+      <div class="carte regle"><div class="head">
+        <input type="checkbox" class="chk" checked>
+        <span class="rid">G7</span><span class="rname">Dps ATK</span>
+        <span class="rmeta"><span class="req"><span class="bar"><i style="width:100%"></i></span>4/4 subs · 6 sets</span></span>
+      </div></div>
+    </div></div>
+  </div>
+</div>
+
+<!-- ═══════════════ 2 · LES MOMENTS SIGNATURE ═══════════════ -->
+<h2>2 · Les trois moments signature</h2>
+<p>Les cérémonies sont réservées aux événements rares (principe 8) et doublées d'un état statique équivalent
+(reduced-motion ≠ reduced-feedback). Trois moments concentrent toute la théâtralité de l'app — nulle part
+ailleurs.</p>
+
+<h3>2a · La scène du verdict — l'oracle rend son jugement</h3>
+<p><b>Spec visuelle</b> (D3) : fond socle, halo zénithal en tête. Composition de haut en bas — la brand + ◆ ;
+<b>UNE phrase de verdict en display</b> (le seul display de la scène) ; le bandeau-oracle en <b>encart éditorial
+◆ vert</b> (symétrique rouge si le ruleset ne garde rien) ; 2-3 cartes d'item vivantes ; un CTA unique +
+« Partager ce résultat ». Sur les cartes gardées : subs gagnants surlignés en teinte utilitaire, règle gagnante
+en pill cliquable, « ↳ Créer une règle qui garde cette pièce ». Un hero, pas un dashboard qui a commencé sans
+vous.</p>
+
+<div class="demo"><div class="gx">
+  <div class="note">Démo rendue — le panneau de verdict cérémoniel</div>
+  <div class="socle" style="background:radial-gradient(ellipse 75% 40% at 50% -8%,rgba(226,176,74,.09),transparent 70%),#0f0d15">
+    <div style="font-family:var(--gx-display);font-variant:small-caps;font-size:12px;letter-spacing:.08em;color:var(--gx-label)">
+      <span style="color:var(--gx-acc)">◆</span> WoR Gear Builder</div>
+    <div class="t-display" style="font-size:22px;margin:10px 0 14px">Sur 2 000 pièces de Raid 3, tes règles en gardent 48.</div>
+    <div class="encart vert" style="margin-bottom:14px">
+      <span style="color:var(--gx-util)">◆</span>&nbsp; <b style="color:var(--gx-ink-hi)">Toutes les règles attrapent quelque chose.</b>
+      <span style="color:var(--gx-head)"> La plus large : </span><span class="ruleref">G5 · Dps crit</span>
+      <span style="color:var(--gx-head)"> — 36 profils, 2,14 % des drops.</span>
+    </div>
+    <div class="flex" style="margin-bottom:16px">
+      <div class="carte item tier gardee">
+        <div class="ih"><span class="slot"><svg viewBox="0 0 16 16"><path d="M2 14 L11 5 M9 3 l4 4 M2 14 l-1 1"/></svg>Arme</span>
+          <span class="chip set t3">Cataclysme</span><span class="main val">ATK 305</span></div>
+        <div class="subs">
+          <span class="chip off win">ATK% 8,1</span><span class="chip off win">CC 5,9</span>
+          <span class="chip off">CD 11,2</span><span class="chip util">AS 4</span></div>
+        <div class="foot">✓ Gardée par <span class="ruleref" style="font-size:10px">G5 · Dps crit</span></div>
+      </div>
+      <div class="carte item tier2 recyclee">
+        <div class="ih"><span class="slot"><svg viewBox="0 0 16 16"><path d="M8 1 L14 4 V9 C14 12 11 14 8 15 C5 14 2 12 2 9 V4 Z"/></svg>Torse</span>
+          <span class="chip set t2">Seigneur de guerre</span><span class="main val">HP 4 410</span></div>
+        <div class="subs">
+          <span class="chip deff">DEF% 6,4</span><span class="chip off">ATK% 4,8</span>
+          <span class="chip util">HE 22</span><span class="chip util">RES 18</span></div>
+        <div class="foot">⚒ Recyclée — aucune règle ne la garde</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <button class="btn primary">↳ Créer une règle qui garde cette pièce</button>
+      <button class="btn">Partager ce résultat</button>
+    </div>
+  </div>
+</div></div>
+
+<h3>2b · Le 18/18 — la dorure d'accomplissement</h3>
+<p><b>Spec visuelle</b> (D4, V8) : à la fin de la recopie in-game, la jauge passe en dégradé or +
+<code>box-shadow: 0 0 12px var(--acc-dim)</code>, libellé « <b>◆ Jeu complet</b> » en display. C'est <b>le seul
+état lumineux de toute l'app</b> — la seule récompense du rituel hebdomadaire, précieuse parce qu'unique.
+Jamais animée en boucle ; l'état statique EST la cérémonie. Coût : 4 lignes de CSS.</p>
+
+<div class="demo"><div class="gx"><div class="flex">
+  <div class="jauge carte">
+    <span class="lab" style="margin:0 0 2px">Saisie en jeu</span>
+    <span class="val" style="font-size:13px">7<span style="color:var(--gx-state)">/18 règles</span></span>
+    <div class="track"><i style="width:39%"></i></div>
+  </div>
+  <div class="jauge carte full">
+    <span class="done">◆ Jeu complet</span>
+    <span class="val" style="font-size:13px;display:block;margin-top:2px">18<span style="color:var(--gx-state)">/18 règles</span></span>
+    <div class="track"><i style="width:100%"></i></div>
+  </div>
+</div>
+<div class="note" style="margin-top:8px">À gauche l'état courant (sobre, encre) · à droite le seul état lumineux de l'app</div>
+</div></div>
+
+<h3>2c · La share card — le concentré de DA</h3>
+<p><b>Spec visuelle</b> (D10, format 1200×630) : c'est <b>la seule surface vue par des non-utilisateurs</b>,
+donc celle où l'ambition visuelle se concentre. Fond socle, liseré zénithal, halo. Contenu : nom du ruleset en
+display ; <b>crédit d'auteur en ex-libris</b> (◆ + small-caps — la reconnaissance communautaire comme seule
+monnaie) ; nb de règles ; <b>% gardé en display doré</b> (le 2ᵉ usage généreux de l'or) ; la phrase de règle
+générée ; clé in-game en mono ; lien d'import en pied. À l'arrivée via lien : landing d'aperçu avec
+« Adopter » / « Juste regarder ».</p>
+
+<div class="demo"><div class="gx">
+  <div class="note">Démo rendue — la share card telle qu'elle s'embarque dans Discord</div>
+  <div class="share">
+    <div class="exlibris"><span class="d">◆</span> ex-libris · composé par Khalgar</div>
+    <h5>End Game — Strict</h5>
+    <span style="font-family:var(--gx-mono);font-size:11px;color:var(--gx-label)">12 règles · Raid 3 niv. 21</span>
+    <div class="pct">1,8 % <small>des drops gardés</small></div>
+    <div class="phrase">« Garde toute Arme Cataclysme dont le main est ATK et qui aligne 4 subs offensifs
+    dont ATK% et CC. »</div>
+    <div class="pied"><span>clé : WGB-KHLG-7F2A</span><span>wor-gear-builder.app/i/7f2a</span></div>
+  </div>
+</div></div>
+
+<!-- ═══════════════ 3 · TYPOGRAPHIE ═══════════════ -->
+<h2>3 · La typographie finale — trois familles, trois rôles étanches</h2>
+<p>Arbitrage A1, <b>figé</b> après quatre renversements en quatre cycles — tranché par la doctrine (« la police
+est un canal sémantique »), pas par le goût. Cinzel est écarté (D14) : le Palatino discipliné est la direction,
+aucune webfont. Les small-caps synthétiques sont <b>interdites sous 16 px</b> (défaillance mesurée au
+cycle 4).</p>
+
+<div class="tbl-wrap"><table>
+<tr><th style="width:150px">Famille</th><th>Rôle — exclusif</th><th style="width:230px">Spec</th></tr>
+<tr><td><b>Display</b> (Palatino)</td><td>Titres, phrases de verdict, grands chiffres cérémoniels, ex-libris.
+<b>Jamais interactif, jamais sous 16 px</b>, small-caps réelles uniquement.</td>
+<td>small-caps · ≥ 16 px · 600 · letterspacing .04em</td></tr>
+<tr><td><b>Sans</b> (system)</td><td>Tout le reste — corps, boutons, <b>labels d'interface et
+<code>th</code></b> (fin du mono-labeur et des th en display qui concurrençaient les titres).</td>
+<td>labels : uppercase · 11.5 px · 600 · .08em</td></tr>
+<tr><td><b>Mono</b> (system)</td><td><b>Valeurs issues du jeu uniquement</b> : stats, IDs G1-D5, clé in-game,
+chiffres tabulaires alignés à droite. Le canal sémantique le plus précieux de l'app — « si c'est en mono, ça
+vient du jeu ». Un seul écran où il domine : le téléprompteur de recopie. Les sigles des 11 stats restent la
+langue de la communauté — pas d'iconification.</td>
+<td>tabular-nums · text-align:right sur les colonnes</td></tr>
+</table></div>
+
+<div class="duo">
+  <div><span class="tag">Avant — le mono a pris le pouvoir (v2)</span>
+    <div class="gx"><div class="carte" style="padding:14px 16px">
+      <span style="display:block;font-family:var(--gx-mono);font-size:9.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--gx-deco);margin-bottom:4px">Onglet</span>
+      <table style="width:100%;border-collapse:collapse;font-size:12px">
+        <tr>
+          <th style="text-align:left;font-family:var(--gx-display);font-variant:small-caps;font-size:13px;color:var(--gx-label);border-bottom:1px solid var(--gx-border);padding:4px 8px">Set</th>
+          <th style="text-align:left;font-family:var(--gx-display);font-variant:small-caps;font-size:13px;color:var(--gx-label);border-bottom:1px solid var(--gx-border);padding:4px 8px">Gardées</th></tr>
+        <tr><td style="padding:5px 8px;font-family:var(--gx-mono)">Cataclysme</td>
+            <td style="padding:5px 8px;font-family:var(--gx-mono)">36</td></tr>
+      </table>
+      <div class="note" style="margin-bottom:0">Label mono 9.5px illisible · th display qui concurrence les titres · noms de sets en mono sans raison</div>
+    </div></div>
+  </div>
+  <div><span class="tag">Après — A1 appliqué</span>
+    <div class="gx"><div class="carte" style="padding:14px 16px">
+      <span class="lab">Jeu de règles</span>
+      <table style="width:100%;border-collapse:collapse;font-size:12.5px">
+        <tr>
+          <th style="text-align:left;font-family:var(--gx-body);font-size:11.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--gx-label);border-bottom:1px solid var(--gx-border);padding:4px 8px">Set</th>
+          <th style="text-align:right;font-family:var(--gx-body);font-size:11.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--gx-label);border-bottom:1px solid var(--gx-border);padding:4px 8px">Gardées</th></tr>
+        <tr><td style="padding:5px 8px;color:var(--gx-ink)">Cataclysme</td>
+            <td class="val" style="padding:5px 8px;text-align:right">36</td></tr>
+      </table>
+      <div class="note" style="margin-bottom:0">Label sans 11.5/600/.08em · th sans discret · seul le chiffre (valeur du jeu) reste en mono, aligné à droite</div>
+    </div></div>
+  </div>
+</div>
+
+<!-- ═══════════════ 4 · ACCENTS ═══════════════ -->
+<h2>4 · La palette d'accents recomposée</h2>
+<p>Arbitrage A4 : le picker <b>reste</b> (on ne retire pas une option choisie par des utilisateurs), mais sa
+palette est recomposée <b>hors des teintes de tiers</b> — l'ancienne collision (vert/bleu/violet/rouge ≈
+t4/t0/t1/t3) est évitée <b>par construction</b>. Les 5 accents sont dérivés par <code>color-mix()</code> depuis
+une seule <code>--c</code> : coût de maintenance nul. Deux interdits de charte : l'accent ne colore <b>jamais</b>
+un contrôle destructif ni un verdict ; il ne pilote <b>que</b> les états de sélection/interaction — la marque et
+l'accomplissement restent or quel que soit l'accent choisi.</p>
+
+<div class="demo"><div class="gx">
+  <div class="note">Démo rendue — les 5 pastilles du picker (le rouge/rose a disparu des options)</div>
+  <div class="accs">
+    <div class="accp def"><span class="dot" style="background:#e2b04a"></span>or · défaut<br><span class="hex">#e2b04a</span></div>
+    <div class="accp"><span class="dot" style="background:#4fb3a3"></span>sarcelle<br><span class="hex">#4fb3a3</span></div>
+    <div class="accp"><span class="dot" style="background:#8fa8bf"></span>acier<br><span class="hex">#8fa8bf</span></div>
+    <div class="accp"><span class="dot" style="background:#a89ab8"></span>mauve gris<br><span class="hex">#a89ab8</span></div>
+    <div class="accp"><span class="dot" style="background:#c08552"></span>cuivre<br><span class="hex">#c08552</span></div>
+  </div>
+  <div class="note" style="margin-bottom:0">Dérivation : --acc-dim = color-mix(in srgb, var(--c) 14%, transparent) · --acc-bd = 50 % · etc. Une teinte, cinq états.</div>
+</div></div>
+
+<!-- ═══════════════ 5 · COMPOSANTS PORTE-ÉTENDARDS ═══════════════ -->
+<h2>5 · Les deux composants porte-étendards</h2>
+<p>La charte s'incarne dans deux composants que toutes les vues réutilisent. Le design system (page 02) porte
+leur anatomie complète ; voici leur rendu de référence.</p>
+
+<h3>5a · La carte de règle finale</h3>
+<p>Carte <b>neutre</b> sur matière « carte » (l'id coloré dit G-or / D-bleu — acquis v2), nom en display,
+requis en <b>micro-barre + libellé</b> (A2 — auto-porteur, tooltip natif toléré, jamais de légende), et la
+couverture rapatriée <b>sur la règle</b> (D8) : « 36 profils · 2,14 % · ok » en mono, largeur réservée, mise à
+jour au commit du geste. Le ✓ de la coche confirme (A5).</p>
+
+<div class="demo"><div class="gx"><div class="socle" style="padding:14px">
+  <div class="carte regle"><div class="head">
+    <input type="checkbox" class="chk" checked>
+    <span class="rid">G5</span><span class="rname">Dps crit</span>
+    <span class="cov">36 profils · 2,14 % · <span class="ok">ok</span></span>
+    <span class="rmeta">
+      <span>ATK · HP</span>
+      <span class="req"><span class="bar"><i style="width:100%"></i></span>4/4 subs · 6 sets</span>
+      <span style="color:var(--gx-deco)">⌄</span>
+    </span>
+  </div></div>
+  <div class="carte regle"><div class="head">
+    <input type="checkbox" class="chk">
+    <span class="rid d">D2</span><span class="rname">Tank DEF</span>
+    <span class="cov">14 profils · 0,64 % · <span class="ok">ok</span></span>
+    <span class="rmeta">
+      <span>DEF · HP</span>
+      <span class="req"><span class="bar"><i style="width:75%"></i></span>3/4 subs · 2 sets</span>
+      <span style="color:var(--gx-deco)">⌄</span>
+    </span>
+  </div></div>
+</div></div></div>
+
+<h3>5b · La carte d'item vivante — la planche d'états</h3>
+<p>Le composant canonique n°1 (D2, convergence ×3) : glyphe de slot (les 5 glyphes SVG du lexique), main stat
+en gros corps mono, subs en colonne, <b>filet coloré au tier</b> — les couleurs de tiers restent le seul code
+couleur de la carte. <b>Le verdict est un état de l'objet</b>, jamais un panneau à côté : liseré or pour la
+gardée (l'allumage « accomplissement »), désaturation + ⚒ pour la recyclée. Trois usages : bandeau sticky de
+Session (se construit tap après tap), grille de Simulation, source de la share card.</p>
+
+<div class="demo"><div class="gx"><div class="flex">
+  <div>
+    <div class="note">En construction (Session)</div>
+    <div class="carte item">
+      <div class="ih"><span class="slot"><svg viewBox="0 0 16 16"><path d="M2 14 L11 5 M9 3 l4 4 M2 14 l-1 1"/></svg>Arme</span>
+        <span class="chip set t1">Ruine gelée</span><span class="main val">ATK 287</span></div>
+      <div class="subs">
+        <span class="chip off">ATK% 7,4</span><span class="chip off">CD 9,8</span>
+        <span class="chip ph">+ sub 3…</span><span class="chip ph">+ sub 4…</span></div>
+      <div class="foot" style="color:var(--gx-state)">saisie en cours — 2/4 subs</div>
+    </div>
+  </div>
+  <div>
+    <div class="note">Gardée — liseré or, subs gagnants</div>
+    <div class="carte item tier gardee">
+      <div class="ih"><span class="slot"><svg viewBox="0 0 16 16"><path d="M2 14 L11 5 M9 3 l4 4 M2 14 l-1 1"/></svg>Arme</span>
+        <span class="chip set t3">Cataclysme</span><span class="main val">ATK 305</span></div>
+      <div class="subs">
+        <span class="chip off win">ATK% 8,1</span><span class="chip off win">CC 5,9</span>
+        <span class="chip off">CD 11,2</span><span class="chip util">AS 4</span></div>
+      <div class="foot">✓ Gardée par <span class="ruleref" style="font-size:10px">G5 · Dps crit</span></div>
+    </div>
+  </div>
+  <div>
+    <div class="note">Recyclée — désaturée + ⚒</div>
+    <div class="carte item tier2 recyclee">
+      <div class="ih"><span class="slot"><svg viewBox="0 0 16 16"><path d="M8 1 L14 4 V9 C14 12 11 14 8 15 C5 14 2 12 2 9 V4 Z"/></svg>Torse</span>
+        <span class="chip set t2">Seigneur de guerre</span><span class="main val">HP 4 410</span></div>
+      <div class="subs">
+        <span class="chip deff">DEF% 6,4</span><span class="chip off">ATK% 4,8</span>
+        <span class="chip util">HE 22</span><span class="chip util">RES 18</span></div>
+      <div class="foot">⚒ Recyclée</div>
+    </div>
+  </div>
+</div></div></div>
+
+<!-- ═══════════════ 6 · LUMINANCE & MOTION ═══════════════ -->
+<h2>6 · Luminance et motion — les garde-fous chiffrés</h2>
+<p>La DA vit sous deux disciplines non négociables. <b>Luminance</b> (D5) : cinq niveaux d'encre —
+<code>--ink-hi</code> / <code>--ink</code> / <code>--head</code> (#c4bcd0) / <code>--label</code> (#a59dae) /
+<code>--deco</code> (ex-<code>--faint</code>, requalifié décor : <b>jamais de texte</b>) ; textes d'état 11 px
+remontés AA (~#8a8298) ; zéro texte &lt; 4,5:1 dans les deux thèmes ; pas vertical de 8. <b>Motion</b> (D13) :
+deux durées (<code>--dur-1:120ms</code>, <code>--dur-2:200ms</code>), un easing, transitions énumérées (jamais
+<code>all</code>), flash 600 ms = signature unique « contenu arrivé », <code>:active</code> global (scale .97),
+<b>la navigation n'est jamais animée</b>. Chaque animation porteuse de sens a son état statique équivalent.</p>
+
+<!-- ═══════════════ 7 · INTERDITS ═══════════════ -->
+<h2>7 · La liste noire — les interdits consolidés</h2>
+<p>Quatre cycles ont refusé plus qu'ils n'ont ajouté. Cette liste est définitive : y déroger rouvre un débat
+déjà clos.</p>
+
+<div class="panel bad"><h4>Interdits de matière et de lumière</h4>
+<p>Vignettage · grain feTurbulence · brume · halo excessif (&gt; .09) · toute texture · dégradés
+<b>hors</b> l'exception dorure codifiée (18/18 + share card, jamais animés en boucle) · ombres portées sur les
+cartes (la lumière est zénithale, interne).</p></div>
+
+<div class="panel bad"><h4>Interdits de glyphe et de typo</h4>
+<p>◆ en checkbox (refusé deux fois — le ✓ confirme) · ◆ décoratif (puces de hints, filets de section) ·
+information portée uniquement par un glyphe de marque · small-caps synthétiques sous 16 px · display interactif
+ou sous 16 px · mono hors valeurs du jeu · Cinzel / toute webfont (clause dormante D14) · texte en
+<code>--deco</code> · tout texte &lt; 4,5:1.</p></div>
+
+<div class="panel bad"><h4>Interdits de cérémonie et de chrome</h4>
+<p>Count-up généralisé · particules, étoiles, FOMO, faux sons · navigation animée / View Transitions hors
+événements rares · cérémonie sur un geste fréquent · légende permanente et chrome pédagogique permanent ·
+deux encarts éditoriaux dans une même vue (slot unique) · bandeaux multiples à l'ouverture (priorité
+import &gt; patch &gt; verdict).</p></div>
+
+<div class="panel bad"><h4>Interdits de couleur</h4>
+<p>Accent sur un contrôle destructif ou un verdict · or sur un verdict textuel (le verdict est vert, l'alerte
+rouge, le patch neutre, la pédagogie discrète) · or généreux hors 18/18 et share card · accents dans les
+teintes de tiers (le rouge/rose a disparu des options) · liseré or systématique sur les cartes de règles
+(acquis v2) · thème clair séparé — le parchemin se construit par les tokens.</p></div>
+
+<div class="foot">
+  <span>Charte graphique v3 · WoR Gear Builder · rapport final · sept. 2026</span>
+  <a href="04-maquettes.html">Voir les maquettes →</a>
+</div>
+</main>
+</div>
+</body>
+</html>

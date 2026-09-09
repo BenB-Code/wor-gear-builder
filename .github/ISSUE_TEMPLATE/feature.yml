@@ -1,0 +1,17 @@
+name: ✦ Proposer une idée
+description: Une amélioration ou une fonctionnalité qui manque au builder.
+title: "[Idée] "
+labels: [enhancement]
+body:
+  - type: textarea
+    id: besoin
+    attributes:
+      label: Le besoin
+      description: Qu'est-ce que tu cherches à faire que le builder ne permet pas (ou permet mal) ?
+    validations:
+      required: true
+  - type: textarea
+    id: piste
+    attributes:
+      label: Une piste ?
+      description: Si tu imagines déjà à quoi ça pourrait ressembler — optionnel.

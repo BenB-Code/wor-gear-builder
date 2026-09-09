@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=1440">
+<title>Maquette — Share card 1200×630</title>
+<style>
+:root{
+  --bg:#14121a; --bg-side:#100e15; --panel:#1d1a24; --panel2:#262230;
+  --border:#3a3444; --hairline:rgba(255,255,255,.055);
+  --ink-hi:#ece7db; --ink:#d9d2c4; --head:#c4bcd0; --label:#a59dae; --state:#8a8298; --deco:#6f6880;
+  --t3:#e0635a; --t2:#e2b04a; --t1:#a678e8; --t0:#5f9fd6;
+  --util:#6fbf8f;
+  --acc:#e2b04a; --acc-bd:rgba(226,176,74,.5); --acc-dim:rgba(226,176,74,.14);
+  --display:"Palatino Linotype","Iowan Old Style",Palatino,"Book Antiqua",Georgia,serif;
+  --body:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --mono:ui-monospace,"SF Mono","Cascadia Code",Menlo,Consolas,monospace;
+  --r-s:6px; --r-m:10px; --r-l:16px; --r-pill:999px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+/* Fond neutre de présentation : la card se juge telle qu'elle s'embarque dans Discord */
+body{background:#232028;color:var(--ink);font-family:var(--body);font-size:14px;line-height:1.5;min-width:1280px}
+.mq{position:sticky;top:0;z-index:60;display:flex;align-items:center;gap:12px;background:#0b0a10;border-bottom:1px solid var(--hairline);padding:6px 18px;font-family:var(--mono);font-size:11px;color:var(--state)}
+.mq b{color:var(--label);font-weight:600}
+.mq a{margin-left:auto;color:var(--acc);text-decoration:none;font-family:var(--body);font-size:12px}
+
+.wrap{max-width:1260px;margin:0 auto;padding:36px 30px 90px}
+.cap{max-width:900px;margin:0 0 22px}
+.cap h2{font-family:var(--display);font-variant:small-caps;letter-spacing:.04em;font-size:20px;font-weight:600;color:var(--ink-hi)}
+.cap p{color:var(--label);font-size:13px;margin-top:5px}
+.cap p b{color:var(--ink)}
+.legend{display:flex;gap:16px;flex-wrap:wrap;margin:14px 0 40px;font-size:11.5px;color:var(--state)}
+.legend span b{color:var(--label);font-weight:600}
+.legend .n{font-family:var(--mono)}
+
+/* ═══ LA CARD 1200×630 — fond grimoire : socle assombri + liseré zénithal (D6, D10) ═══ */
+.card{width:1200px;height:630px;position:relative;overflow:hidden;border-radius:18px;
+  background:linear-gradient(180deg,#191622 0%,#14121a 46%,#110f16 100%);
+  border:1px solid #322c3e;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.07),0 30px 80px rgba(0,0,0,.5);
+  display:flex;flex-direction:column;padding:38px 64px 0}
+/* Le seul dégradé d'or autorisé hors 18/18 (D6) : un souffle en tête, pas un halo */
+.card::before{content:"";position:absolute;inset:0 0 auto;height:210px;background:radial-gradient(ellipse 70% 100% at 50% -30%,rgba(226,176,74,.1),transparent 70%);pointer-events:none}
+/* Ex-libris d'auteur (D10) */
+.exlibris{display:flex;align-items:center;gap:12px}
+.exlibris .d{color:var(--acc);font-size:17px}
+.exlibris .who{font-family:var(--display);font-variant:small-caps;letter-spacing:.07em;font-size:19px;color:var(--head)}
+.exlibris .role{font-family:var(--body);font-size:12.5px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--state)}
+.exlibris .app{margin-left:auto;font-family:var(--display);font-variant:small-caps;letter-spacing:.06em;font-size:17px;color:var(--label)}
+.exlibris .app .d{font-size:12px}
+/* Filet or fin sous l'ex-libris — l'identité, à sa dose */
+.filet{height:1px;margin:15px 0 0;background:linear-gradient(to right,transparent,rgba(226,176,74,.45) 18%,rgba(226,176,74,.45) 82%,transparent)}
+
+.main{flex:1;display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:48px;align-items:center}
+.title{font-family:var(--display);font-variant:small-caps;letter-spacing:.03em;font-size:47px;font-weight:600;color:var(--ink-hi);line-height:1.12}
+.title .sep{color:var(--deco);font-weight:400}
+.title .ct{display:block;font-size:23px;color:var(--head);font-weight:400;margin-top:6px}
+/* Le % gardé : display DORÉ — l'un des deux moments généreux de l'or (D6/D10) */
+.pct{margin-top:26px;font-family:var(--display);font-size:104px;line-height:1;color:var(--acc);text-shadow:0 0 34px rgba(226,176,74,.28)}
+.pct .u{font-size:46px}
+.pct-l{font-family:var(--body);font-size:14px;font-weight:600;text-transform:uppercase;letter-spacing:.12em;color:var(--label);margin-top:8px}
+/* La phrase de règle générée (D10) */
+.phrase{margin-top:30px;max-width:640px;font-size:19px;color:var(--head);line-height:1.5}
+.phrase .d{color:var(--acc);font-size:12px;margin-right:8px}
+.phrase b{color:var(--ink-hi);font-weight:600}
+/* Sets clés : chips au tier */
+.sets{margin-top:20px;display:flex;gap:9px;flex-wrap:wrap}
+.schip{font-size:15px;padding:5px 15px;border-radius:var(--r-s);border:1px solid var(--border)}
+.schip.t3{border-color:rgba(224,99,90,.55);color:#ef948c}
+.schip.t2{border-color:rgba(226,176,74,.55);color:var(--t2)}
+.schip.t1{border-color:rgba(166,120,232,.55);color:#c3a2ef}
+.schip.more{color:var(--state)}
+
+/* Colonne droite : QR + clé */
+.qrcol{display:flex;flex-direction:column;align-items:center;gap:16px}
+.qr{width:216px;height:216px;background:#0f0d14;border:1px solid #322c3e;border-radius:14px;padding:16px;box-shadow:inset 0 1px 0 rgba(255,255,255,.05)}
+.qr svg{width:100%;height:100%;color:#b7aec6}
+.keybox{text-align:center}
+.keybox .l{font-family:var(--body);font-size:11.5px;font-weight:600;text-transform:uppercase;letter-spacing:.12em;color:var(--state)}
+.keybox .k{font-family:var(--mono);font-size:24px;letter-spacing:.06em;color:var(--ink-hi);margin-top:4px}
+
+/* Pied : lien d'import */
+.cfoot{border-top:1px solid rgba(255,255,255,.07);margin:0 -64px;padding:13px 64px 16px;display:flex;align-items:center;gap:12px;position:relative;z-index:1}
+.cfoot .url{font-family:var(--mono);font-size:15px;color:var(--label)}
+.cfoot .url b{color:var(--acc);font-weight:600}
+.cfoot .hint{margin-left:auto;font-size:12.5px;color:var(--state)}
+
+/* ═══ Variante compacte 800×418 ═══ */
+.card.compact{width:800px;height:418px;padding:24px 44px 0;border-radius:14px}
+.card.compact .exlibris .who{font-size:15px}
+.card.compact .exlibris .d{font-size:13px}
+.card.compact .exlibris .role{font-size:10.5px}
+.card.compact .exlibris .app{font-size:14px}
+.card.compact .filet{margin-top:9px}
+.card.compact .main{grid-template-columns:minmax(0,1fr) 190px;gap:30px}
+.card.compact .title{font-size:30px}
+.card.compact .title .ct{font-size:16px}
+.card.compact .pct{font-size:70px;margin-top:14px}
+.card.compact .pct .u{font-size:28px}
+.card.compact .pct-l{font-size:11px;margin-top:5px}
+.card.compact .sets{margin-top:14px;gap:7px}
+.card.compact .schip{font-size:12px;padding:3px 11px}
+.card.compact .qr{width:142px;height:142px;padding:12px}
+.card.compact .keybox .k{font-size:17px}
+.card.compact .cfoot{margin:0 -44px;padding:9px 44px 11px}
+.card.compact .cfoot .url{font-size:12.5px}
+.card.compact .cfoot .hint{font-size:11px}
+</style>
+</head>
+<body>
+
+<div class="mq"><b>Maquette</b> · Share card 1200×630 (M7) · rapport final <a href="../04-maquettes.html">← retour à l'index des maquettes</a></div>
+
+<div class="wrap">
+
+  <div class="cap">
+    <h2>La share card — l'actif d'acquisition n°1 (D10)</h2>
+    <p>Un artefact <b>composé</b>, pas un export de carte figée : c'est la seule surface vue par des non-utilisateurs,
+    elle concentre l'ambition visuelle maximale (D6). Fond socle grimoire, liseré zénithal, % gardé en display doré — l'un des deux seuls moments
+    généreux de l'or —, la description écrite par l'auteur (ou rien), clé in-game en mono, QR d'import. Rendue ci-dessous à l'échelle 1:1 (1200×630), telle qu'elle s'embarque dans Discord.</p>
+  </div>
+
+  <div class="card">
+    <div class="exlibris">
+      <span class="app"><span class="d">◆</span> Tri d'équipement — Watcher of Realms</span>
+    </div>
+    <div class="filet"></div>
+
+    <div class="main">
+      <div>
+        <div class="title">End Game <span class="sep">|</span> Strict<span class="ct">18 règles · ensembles 2 &amp; 3 pièces</span></div>
+        <div class="pct">1,02<span class="u"> %</span></div>
+        <div class="pct-l">des profils possibles sont gardés — tout le reste part au recyclage</div>
+        <div class="phrase"><span class="d">◆</span><i>«&nbsp;Tri strict end-game&nbsp;: quads uniquement sur les T2+, filet T1 pour les transformations, zéro place pour le tout-venant.&nbsp;»</i></div>
+
+      </div>
+
+      <div class="qrcol">
+        <!-- QR stylisé : placeholder SVG — remplacé par le vrai QR du lien d'import à l'export PNG -->
+        <div class="qr" role="img" aria-label="QR code du lien d'import (placeholder)">
+          <svg viewBox="0 0 29 29" xmlns="http://www.w3.org/2000/svg" fill="currentColor" shape-rendering="crispEdges">
+            <!-- 3 yeux de repère -->
+            <path d="M0 0h7v7H0zM2 2v3h3V2z" fill-rule="evenodd"/>
+            <path d="M22 0h7v7h-7zM24 2v3h3v-3z" fill-rule="evenodd"/>
+            <path d="M0 22h7v7H0zM2 24v3h3v-3z" fill-rule="evenodd"/>
+            <!-- trame de données stylisée -->
+            <path d="M9 0h2v2H9zM13 0h1v3h-1zM16 1h2v1h-2zM19 0h1v2h-1zM9 3h1v2H9zM11 4h3v1h-3zM15 3h1v2h-1zM17 4h2v1h-2zM8 6h2v1H8zM12 6h1v1h-1zM14 7h2v1h-2zM18 6h2v2h-2z"/>
+            <path d="M0 9h2v2H0zM3 9h2v1H3zM6 10h1v2H6zM8 9h1v3H8zM10 10h2v2h-2zM13 9h2v1h-2zM16 9h1v2h-1zM18 10h2v1h-2zM21 9h2v2h-2zM24 9h1v2h-1zM26 10h3v1h-3z"/>
+            <path d="M1 12h2v2H1zM4 13h2v1H4zM7 12h1v2H7zM12 13h2v2h-2zM15 12h2v2h-2zM19 12h1v3h-1zM22 13h2v1h-2zM25 12h2v2h-2zM28 13h1v2h-1z"/>
+            <path d="M0 15h1v2H0zM2 16h2v1H2zM5 15h2v1H5zM9 15h2v2H9zM13 16h1v2h-1zM16 15h2v1h-2zM20 16h2v2h-2zM23 15h1v2h-1zM26 16h2v1h-2z"/>
+            <path d="M1 18h2v2H1zM4 19h1v2H4zM6 18h2v1H6zM10 18h1v3h-1zM12 19h2v1h-2zM15 18h1v2h-1zM17 19h2v1h-2zM24 18h2v2h-2zM27 18h1v2h-1z"/>
+            <path d="M9 22h2v2H9zM12 22h1v2h-1zM14 23h2v1h-2zM17 22h1v3h-1zM19 23h2v1h-2zM22 22h2v2h-2zM25 23h1v2h-1zM27 22h2v1h-2z"/>
+            <path d="M9 25h1v3H9zM11 26h2v1h-2zM14 25h1v2h-1zM16 26h2v2h-2zM19 25h2v1h-2zM22 26h1v2h-1zM24 25h2v2h-2zM27 26h2v2h-2z"/>
+          </svg>
+        </div>
+        <div class="keybox">
+          <div class="l">Clé in-game</div>
+          <div class="k">ODM1OTE=</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="cfoot">
+      <span class="hint">QR = lien d'import du jeu · clé in-game à coller : Réglages ▸ Tri automatique ▸ Importer</span>
+    </div>
+  </div>
+
+  <div class="legend">
+    <span><b>Or :</b> le % gardé et le souffle zénithal — les seuls, aucun autre dégradé d'or (D6).</span>
+    <span><b>Mono :</b> clé <span class="n">ODM1OTE=</span> — valeurs du jeu uniquement (D7).</span>
+    <span><b>QR :</b> placeholder SVG, remplacé par le vrai QR au rendu PNG.</span>
+    <span><b>Landing du lien :</b> aperçu + « Adopter / Fermer sans importer » — jamais d'import silencieux (D10).</span>
+  </div>
+
+  <div class="cap">
+    <h2>Variante compacte — 800×418</h2>
+    <p>Pour les embeds étroits (forum, messagerie) : même grammaire, description retirée — le trio
+    <b>titre · % doré · clé</b> suffit à porter l'invitation. Le QR d'import reste : c'est lui qui convertit.</p>
+  </div>
+
+  <div class="card compact">
+    <div class="exlibris">
+      <span class="app"><span class="d">◆</span> Tri d'équipement — WoR</span>
+    </div>
+    <div class="filet"></div>
+
+    <div class="main">
+      <div>
+        <div class="title">End Game <span class="sep">|</span> Strict<span class="ct">18 règles</span></div>
+        <div class="pct">1,02<span class="u"> %</span></div>
+        <div class="pct-l">des profils possibles sont gardés</div>
+
+      </div>
+
+      <div class="qrcol">
+        <div class="qr" role="img" aria-label="QR code du lien d'import (placeholder)">
+          <svg viewBox="0 0 29 29" xmlns="http://www.w3.org/2000/svg" fill="currentColor" shape-rendering="crispEdges">
+            <path d="M0 0h7v7H0zM2 2v3h3V2z" fill-rule="evenodd"/>
+            <path d="M22 0h7v7h-7zM24 2v3h3v-3z" fill-rule="evenodd"/>
+            <path d="M0 22h7v7H0zM2 24v3h3v-3z" fill-rule="evenodd"/>
+            <path d="M9 0h2v2H9zM13 0h1v3h-1zM16 1h2v1h-2zM19 0h1v2h-1zM9 3h1v2H9zM11 4h3v1h-3zM15 3h1v2h-1zM17 4h2v1h-2zM8 6h2v1H8zM12 6h1v1h-1zM14 7h2v1h-2zM18 6h2v2h-2z"/>
+            <path d="M0 9h2v2H0zM3 9h2v1H3zM6 10h1v2H6zM8 9h1v3H8zM10 10h2v2h-2zM13 9h2v1h-2zM16 9h1v2h-1zM18 10h2v1h-2zM21 9h2v2h-2zM24 9h1v2h-1zM26 10h3v1h-3z"/>
+            <path d="M1 12h2v2H1zM4 13h2v1H4zM7 12h1v2H7zM12 13h2v2h-2zM15 12h2v2h-2zM19 12h1v3h-1zM22 13h2v1h-2zM25 12h2v2h-2zM28 13h1v2h-1z"/>
+            <path d="M0 15h1v2H0zM2 16h2v1H2zM5 15h2v1H5zM9 15h2v2H9zM13 16h1v2h-1zM16 15h2v1h-2zM20 16h2v2h-2zM23 15h1v2h-1zM26 16h2v1h-2z"/>
+            <path d="M1 18h2v2H1zM4 19h1v2H4zM6 18h2v1H6zM10 18h1v3h-1zM12 19h2v1h-2zM15 18h1v2h-1zM17 19h2v1h-2zM24 18h2v2h-2zM27 18h1v2h-1z"/>
+            <path d="M9 22h2v2H9zM12 22h1v2h-1zM14 23h2v1h-2zM17 22h1v3h-1zM19 23h2v1h-2zM22 22h2v2h-2zM25 23h1v2h-1zM27 22h2v1h-2z"/>
+            <path d="M9 25h1v3H9zM11 26h2v1h-2zM14 25h1v2h-1zM16 26h2v2h-2zM19 25h2v1h-2zM22 26h1v2h-1zM24 25h2v2h-2zM27 26h2v2h-2z"/>
+          </svg>
+        </div>
+        <div class="keybox">
+          <div class="l">Clé in-game</div>
+          <div class="k">ODM1OTE=</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="cfoot">
+      <span class="hint">QR = lien d'import du jeu</span>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

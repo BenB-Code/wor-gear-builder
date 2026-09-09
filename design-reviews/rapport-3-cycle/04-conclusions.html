@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Conclusions &amp; recommandations · Design Review 3 — WoR Gear Builder</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="shell">
+<nav class="toc">
+  <div class="brand"><span class="d">◆</span> Design Review 3</div>
+  <div class="sub">Cycle brainstorm &amp; challenge · sept. 2026</div>
+  <a href="index.html">Synthèse du cycle</a>
+  <div class="grp">Le cycle</div>
+  <a href="01-analyses.html">Les 3 analyses à froid</a>
+  <a href="02-debat.html">Le débat</a>
+  <a href="03-challenge.html">Challenge du rapport 2</a>
+  <a href="04-conclusions.html" class="on">Conclusions &amp; recommandations</a>
+  <div class="grp">Référence</div>
+  <a href="../rapport-2-cycle/index.html">← Rapport 2</a>
+  <a href="../rapport-1-audit/index.html">← Rapport 1</a>
+</nav>
+<main>
+
+<span class="kicker">Consolidation · nouvelles entrées au corpus · révisions du rapport 2 · cycle 4</span>
+<h1>Conclusions &amp; recommandations</h1>
+<p class="lede">Ce que le cycle 3 verse au corpus commun : les recommandations consolidées après débat (chacune
+avec son origine et ses confirmations croisées — y compris celles venues des cycles précédents), les points du
+rapport 2 à réviser à la lumière du challenge, et les questions que le cycle 4 devra trancher. Les entrées
+ci-dessous intègrent les amendements du débat — c'est la version <b>négociée</b>, pas la version phase 1. Ordre
+des P0 hérité de la révision growth : <b>par dépendance fonctionnelle</b>, pas seulement par priorité.</p>
+
+<h2>Les nouvelles entrées au corpus</h2>
+
+<h3>P0 — le cœur (dans cet ordre : chaque entrée est le prérequis de la suivante)</h3>
+<div class="tbl-wrap"><table>
+<tr><th style="width:56px">Prio</th><th>Recommandation consolidée</th><th style="width:150px">Origine</th><th style="width:180px">Confirmée / amendée par</th></tr>
+<tr><td><span class="prio p0">P0</span></td>
+<td><b>1 · Fondations de lisibilité du verdict.</b> Verdicts et états sains formulés <b>en positif</b>
+(« Toutes les règles attrapent quelque chose ✓ »), « 1,02 % » traduit en lecture ordinale (% au survol),
+micro-labels d'état au clic-cycle du chip sub (un seul style codifié : small-caps <code>--fs-1</code>, fond
+panel2, jamais de couleur d'état — « éphémère pour nommer, persistant pour décider »), phrase de règle générée
+en langage naturel <b>dans l'éditeur et la carte dépliée uniquement</b> (composée en encart éditorial), warning
+« injouable » seulement après première interaction. Prérequis assumé de tout le reste : « le verdict d'abord n'a
+de valeur que si le verdict est compréhensible ».</td>
+<td>Cognitif (C1, C2, C3, C10)</td><td>Growth (requalifiés prérequis de son G1) ; Visual (amende C2 : éditeur
+seulement ; codifie le style des micro-labels) ; rapport 2 (hint transitoire GUI-8/IX-5, remplacé par cette
+spec)</td></tr>
+<tr><td><span class="prio p0">P0</span></td>
+<td><b>2 · Les trois matières + le pas de 8.</b> Socle assombri, carte au liseré zénithal, encart éditorial
+requalifié <b>slot officiel de la pédagogie in-situ</b> (règle d'unicité par vue) ; toutes les marges sur les
+tokens <code>--s-2/3/4/5</code> existants. Prérequis de la hiérarchie sémantique : « un verdict reformulé en
+positif reste un panel parmi d'autres » sans hiérarchie de matière. <b>Sans vignettage ni grain</b> (contestés
+×2, sortis du plan).</td>
+<td>Visual (V1, V2)</td><td>Cognitif (révision : intégrés comme prérequis de ses fixes ; refus de la brume
+maintenu) ; Growth (accepté une fois vignettage/grain retirés)</td></tr>
+<tr><td><span class="prio p0">P0</span></td>
+<td><b>3 · La scène du verdict.</b> Première visite : simulation <b>échantillon</b> auto-lancée sur le ruleset
+démo (pas la Couverture — colline growth), rendue en <b>scène d'ouverture composée</b> (brand + ◆, UNE phrase de
+verdict en display, 2-3 cartes pièces, un CTA — « un hero, pas un dashboard qui a déjà commencé sans vous »).
+Sur les cartes gardées : subs gagnants surlignés (teinte utilitaire, pas d'or), ★ satisfaite, règle gagnante en
+<code>.ruleref</code> pill cliquable, « ↳ Créer une règle qui garde cette pièce ». Bandeau-oracle en encart
+éditorial (◆ vert / symétrique rouge), stat-cards cliquables (drill-down doublons), « Partager ce résultat » sur
+le même écran. <b>Se construit avec les cartes d'item vivantes du rapport 2</b> — le composant du cycle 2, le
+moment du cycle 3.</td>
+<td>Fusion A (G1 × V7 × C4/C7/C8 + G10 + G4)</td><td>Les trois, explicitement ; rapport 2 (carte d'item P0 ;
+« bandeau résultat d'abord » IX-3/IA-8 ; Simulation ouvre sur le dernier résultat IA-14)</td></tr>
+<tr><td><span class="prio p0">P0</span></td>
+<td><b>4 · La share card PNG, concentré de DA + landing d'import.</b> La card porte la preuve : nom du ruleset,
+crédit d'auteur en ex-libris, nb règles, % gardé, <b>la phrase générée</b> (fusion « la phrase voyage »), clé
+in-game en mono, lien d'import en pied — fond socle, liseré zénithal, % en display <b>doré</b> (l'unique surface
+où l'or a le droit d'être généreux). Générée depuis l'écran de résultat. À l'arrivée via lien : landing d'aperçu
+(« Ruleset de Khalgar — 12 règles, garde 1,8 % ») avec « Adopter » / « Juste regarder » — fin de l'import muet.</td>
+<td>Fusion B (G5/G6 × V2/V7) + Fusion C (C2 × G3/G5)</td><td>Les trois (résolution du front growth vs visual) ;
+rapport 2 (« share card à avancer » — promue artefact de premier ordre)</td></tr>
+<tr><td><span class="prio p0">P0</span></td>
+<td><b>5 · La recopie téléprompteur + reprise.</b> Une règle à la fois, plein écran, mono dominant en
+<code>--fs-5+</code> (l'unique écran où le mono règne légitimement), clés en small-caps discrètes, fond socle
+sans carte concurrente, ordre de saisie imposé, cocher-suivant ; au retour : « Il te reste 7 règles à saisir —
+reprendre ». À 18/18 : la dorure (dégradé or + halo) et « ◆ Jeu complet » — <b>le seul état lumineux de l'app</b>.
+S'implante sur la destination « Saisie en jeu » du rapport 2.</td>
+<td>Cognitif (C5) + Growth (G8) + Visual (V8 + scène mono)</td><td>Convergence ×3 au cycle 3, après ×3 au
+cycle 2 — le point le plus validé du corpus ; growth le remonte au-dessus de sa propre session de farm</td></tr>
+<tr><td><span class="prio p0">P0</span></td>
+<td><b>6 · Templates proéminents + créer-depuis-pièce — jamais de gate.</b> « Mes règles » vide : templates
+Early/Mid/End en premier + « Dupliquer la démo », <b>l'éditeur direct toujours visible</b> (amendement cognitif).
+Sur toute pièce vérifiée : « ↳ Créer une règle qui garde cette pièce » — chaque champ pré-rempli d'une valeur
+qu'on vient de voir (exemple travaillé).</td>
+<td>Growth (G2, G4)</td><td>Cognitif (appui + amendement anti-gate) ; rapport 2 (GUI-14, Session) ; rapport 1
+(chantier 5) — troisième cycle consécutif sur les templates</td></tr>
+</table></div>
+
+<h3>P1 — grammaire, boucles, gouvernance</h3>
+<div class="tbl-wrap"><table>
+<tr><th style="width:56px">Prio</th><th>Recommandation consolidée</th><th style="width:150px">Origine</th><th style="width:180px">Confirmée / amendée par</th></tr>
+<tr><td><span class="prio p1">P1</span></td>
+<td><b>Trois familles typographiques, trois rôles étanches</b> : display small-caps = titres, nav, clés ;
+<b>mono = valeurs issues du jeu uniquement</b> (stats, IDs, clé in-game) ; sans = tout le reste, <b>y compris les
+th</b>. <i>Contredit la reco « labels en mono uppercase » du rapport 2 — arbitrage à rejouer, voir plus bas.</i></td>
+<td>Visual (V5)</td><td>Cognitif (« la police devient un canal sémantique gratuit » ; remonte mécaniquement ses
+clés C13)</td></tr>
+<tr><td><span class="prio p1">P1</span></td>
+<td><b>La dorure à trois allumages + accents hors des teintes de tier.</b> L'or : marque, sélection,
+accomplissement — rien d'autre (le verdict est vert, l'alerte rouge, le patch neutre, la pédagogie faint).
+Picker conservé mais recomposé (sarcelle, acier, mauve gris, cuivre) ; l'accent ne pilote que les états de
+sélection. <i>Sous réserve de la vérification in-game Q1 du rapport 2, toujours pendante.</i></td>
+<td>Visual (V6 + colline)</td><td>Cognitif (collision accent/tier = erreur sémantique) ; rapport 2 (révision de
+l'arbitrage g — 3ᵉ option précisée)</td></tr>
+<tr><td><span class="prio p1">P1</span></td>
+<td><b>Badge patch + diff, sous la règle du slot unique.</b> À l'ouverture après changement de données :
+« Patch X : 2 nouveaux sets, taux réévalués » + « ces 2 sets ne sont couverts par aucune de tes règles ».
+Règle de composition : <b>un seul bandeau d'ouverture à la fois, priorité import &gt; patch &gt; verdict</b> —
+les autres rétrogradés en ligne discrète.</td>
+<td>Growth (G7)</td><td>Visual (contestation « inflation de bandeaux » intégrée en règle)</td></tr>
+<tr><td><span class="prio p1">P1</span></td>
+<td><b>Toute mention de règle est cliquable + on explique le succès partout.</b> <code>.ruleref</code> (en pill —
+grammaire V13 : pill = interactif, rect = donnée) sur chaque verdict, table, carte ; « il suffisait d'une : G5 »
+quand plusieurs règles matchent ; subs gagnants surlignés au-delà de la scène du verdict (mode échantillon
+complet).</td>
+<td>Cognitif (C6, C7, C8)</td><td>Visual (fusion D + grammaire pill/rect) ; growth (la boucle d'itération de
+l'expert)</td></tr>
+<tr><td><span class="prio p1">P1</span></td>
+<td><b>Presets 1-tap sur l'échantillon</b> (« 1 semaine de farm Raid 1 niv. 21 ») compressant 4 choix, contrôles
+fins dessous ; la Couverture devient l'étape 2 de l'expert (plus jamais un point d'atterrissage). Converge avec
+la « session de farm 3-taps » du backlog et la dissolution du mode Couverture du rapport 2.</td>
+<td>Cognitif (C9) amendé Growth</td><td>Growth (colline : l'atterrissage est un échantillon concret) ;
+rapport 2 (IA-1)</td></tr>
+<tr><td><span class="prio p1">P1</span></td>
+<td><b>Contribution Discord-friendly.</b> « Contribuer mes taux » : issue GitHub pré-remplie pour qui a un
+compte, <b>et</b> « copier le rapport » formaté pour le canal Discord. Tooltips jargon priorisés sur les ~6
+termes qui bloquent la première règle (main, sub, ★, requis, tier, set).</td>
+<td>Growth (G11) + Cognitif (C11)</td><td>rapport 1 (tooltips, lexique) — périmètre resserré</td></tr>
+<tr><td><span class="prio p1">P1</span></td>
+<td><b>Crédit d'auteur dans le lien/JSON</b> (« Ruleset de Khalgar » à l'import, sur la card, dans la future
+bibliothèque) — la reconnaissance communautaire comme seule monnaie, zéro dark pattern, zéro infra.</td>
+<td>Growth (G6)</td><td>Visual (« comme un ex-libris » — composé sur la card)</td></tr>
+</table></div>
+
+<h3>P2 — finitions gouvernées</h3>
+<div class="tbl-wrap"><table>
+<tr><th style="width:56px">Prio</th><th>Recommandation consolidée</th><th style="width:150px">Origine</th><th style="width:180px">Confirmée / amendée par</th></tr>
+<tr><td><span class="prio p2">P2</span></td>
+<td><b>◆ codifié — identité, jauges, ponctuation ; jamais les coches.</b> Une seule taille de puce, fin des
+filets de section en ◆, suppression du ◆ des <code>.hint li</code>. L'encodage de la force de règle (●●●● → ◆ ?)
+reste ouvert — voir Q3.</td>
+<td>Visual (V3, V4)</td><td>Cognitif (le ✓ reste — colline) ; growth (rétrogradé de P0 à P2 : « l'affiche d'un
+cinéma sans séance ») ; rapport 2 (même verdict sur les coches, ×2)</td></tr>
+<tr><td><span class="prio p2">P2</span></td>
+<td><b>Mode clair parchemin assumé</b> : liseré interne clair, chips de sets foncées d'un cran ; le dark
+réaligné comme « bibliothèque de nuit » du même monde. <i>Toute retouche du light repasse par le critère AA du
+rapport 1 (zéro texte &lt; 4,5:1).</i></td>
+<td>Visual (V12)</td><td>— (le seul regard porté sur le light depuis le rapport 1)</td></tr>
+<tr><td><span class="prio p2">P2</span></td>
+<td><b>Sidebar : utilitaires rétrogradés</b> en liens texte sous « Apparence », brand aérée + filet or —
+« le premier or vu à l'écran ». Décisions persistantes sorties des toasts (conseil JSON inline près de
+Partager).</td>
+<td>Visual (V14) + Cognitif (C14)</td><td>Compatible avec le bloc « Mes données » du rapport 2 (IA-12)</td></tr>
+<tr><td><span class="prio p2">P2</span></td>
+<td><b>PWA proposée au 2ᵉ retour</b>, après une session de farm ou une recopie terminée — un service rendu, pas
+un prompt. Confirme la prudence « PWA en tout dernier » du rapport 1 en y ajoutant le bon moment.</td>
+<td>Growth (G12)</td><td>rapport 1 (décision n°10)</td></tr>
+<tr><td><span class="prio p2">P2</span></td>
+<td><b>Onboarding minimal réordonné</b> : overlay de première visite « comprendre (verdict auto) → s'approprier
+(template ou pièce) → recopier » — plus jamais « pars de la config ». Micro-barres proportionnelles dans « Ce que
+chaque règle attrape » (sous réserve de Q3).</td>
+<td>Cognitif (C12 révisé, C15)</td><td>Growth (l'ordre vient de sa démonstration)</td></tr>
+</table></div>
+
+<div class="panel bad"><h4>Périmètre refusé par le cycle 3</h4>
+<p><b>Vignettage bas et grain feTurbulence</b> (V11 partiel, V15) — contestés indépendamment par le cognitif
+(contraste effectif dégradé là où vivent la jauge 0/18 et les pieds de listes ; bruit payé d'abord par les
+profils dys) et par le growth (« du craft pour le portfolio »), et lâchés par leur auteur (« au moindre doute, on
+s'en passe »). Le liseré zénithal et le halo modéré suffisent. <b>Templates en gate</b> (G2 version stricte) —
+l'éditeur direct reste toujours accessible. <b>◆ en checkbox</b> (V3 partiel) — refusé pour la deuxième fois en
+deux cycles.</p></div>
+
+<h2>Les points du rapport 2 à réviser</h2>
+<div class="tbl-wrap"><table>
+<tr><th>Point du rapport 2</th><th>Révision recommandée</th><th style="width:110px">Nature</th></tr>
+<tr><td><b>P1 « labels d'interface en mono uppercase letterspacé »</b> (GUI-5, noté convergent avec le
+rapport 1)</td>
+<td>Rejouer. Le cycle 3 démontre que le mono est déjà la police en surnombre (« une 2ᵉ police de labeur ») et
+propose l'inverse : labels et th en <b>sans</b>, mono réservé aux valeurs du jeu. Trois écoles en trois cycles —
+trancher une fois pour toutes, avec maquettes A/B des th de tables.</td>
+<td><span class="v-bad">contredit</span></td></tr>
+<tr><td><b>P1 « ●●●● → texte explicite "4 subs · 4 sets" »</b> (GUI-7)</td>
+<td>Rouvrir : trois encodages concurrents (texte — rapport 2 ; ◆ plein/creux — visual ; micro-barres —
+cognitif). La colline cognitive (« aucune info portée uniquement par un glyphe de marque ») disqualifie le ◆ seul ;
+un hybride barre + texte est probable. Voir Q3.</td>
+<td><span class="v-bad">contredit</span></td></tr>
+<tr><td><b>P2 liste de refus « pas de dégradés or »</b> (GUI-13 × IX-7, doctrine commune)</td>
+<td>Amender d'une <b>exception codifiée</b> : la dorure d'accomplissement (18/18, share card) — un seul état,
+jamais animé en boucle, contresigné par le growth. Le pacte de sobriété survit si l'exception est écrite.</td>
+<td><span class="v-mid">à amender</span></td></tr>
+<tr><td><b>« Atterrissage : desktop sur Règles, mobile sur Session »</b> (IA-13 / arbitrage e enrichi)</td>
+<td>Compléter avec la variable manquante : <b>l'ancienneté</b>. Première visite = scène du verdict (tous
+contextes) ; visites suivantes = la règle du rapport 2 (+ reprise de saisie si en cours, + bandeau patch le cas
+échéant, sous la règle du slot unique).</td>
+<td><span class="v-mid">enrichi</span></td></tr>
+<tr><td><b>« Share card = sous-produit gratuit de la carte d'item »</b> (révision du rapport 1 par le cycle 2)</td>
+<td>Promouvoir : ce n'est plus un export de la carte figée mais un <b>artefact composé</b> (preuve + phrase
+générée + crédit + DA concentrée) avec sa propre spec. Le « sous-produit » aurait été un lien nu en image ; la
+version cycle 3 est l'actif d'acquisition n°1.</td>
+<td><span class="v-mid">à promouvoir</span></td></tr>
+<tr><td><b>P2 « ◆ systématisé — sauf sur les coches »</b> (GUI-11 amendé IX)</td>
+<td>Figer définitivement : deux cycles, deux contestations internes (IX au cycle 2, cognitif au cycle 3), même
+verdict. Entrée de charte, plus jamais de débat.</td>
+<td><span class="v-ok">confirmé ×2 — à figer</span></td></tr>
+<tr><td><b>Nav à 5 destinations</b> (P0 du cycle 2, contradiction assumée avec le rapport 1)</td>
+<td>Ni confirmée ni infirmée — le cycle 3 n'a pas travaillé la nav. Mais la scène du verdict crée un fait
+nouveau : elle est candidate à <b>être</b> la vue Simulation du cycle 2 (même écran, même bandeau-résultat).
+À trancher en Q1.</td>
+<td><span class="v-mid">non traité — fait nouveau</span></td></tr>
+</table></div>
+
+<h2>Les questions ouvertes pour le cycle 4</h2>
+<div class="cards">
+  <div class="card"><span class="no">Q1</span><h4>Trancher la 5ᵉ destination — la scène du verdict est-elle
+  Simulation ?</h4>
+  <p>Le rapport 2 propose Règles · Simulation · Session · Saisie en jeu · Référence ; le cycle 3 ajoute un écran
+  d'atterrissage verdict-first sans le situer dans la nav. Une seule question à trancher : la scène du verdict
+  <b>est</b>-elle la vue Simulation (atterrissage compris), ou un état d'accueil au-dessus de la nav ? La réponse
+  ferme aussi Q2 du cycle 2 (chrome mobile).</p></div>
+  <div class="card"><span class="no">Q2</span><h4>Le sort du picker d'accents</h4>
+  <p>Trois écoles au corpus : conservé + décalé (rapport 1), supprimé / easter egg (cycle 2), conservé mais
+  recomposé hors des teintes de tier + limité aux états de sélection (cycle 3). Décision bloquée par la
+  vérification in-game des couleurs de tiers (Q1 du cycle 2, toujours pendante) — la faire enfin, puis trancher
+  les deux ensemble.</p></div>
+  <div class="card"><span class="no">Q3</span><h4>◆ vs ✓ — et l'encodage de la force de règle</h4>
+  <p>Le ✓ sur les coches est réglé (confirmé ×2 — à figer en charte). Reste ●●●● : texte (« 4 subs · 4 sets »),
+  ◆ plein/creux, ou micro-barres ? La colline cognitive impose que le glyphe seul ne porte jamais l'info ; le
+  visual veut sa signature. Un hybride (barre + libellé, ◆ réservé aux jalons) est à maquetter.</p></div>
+  <div class="card"><span class="no">Q4</span><h4>La temporalité des cérémonies</h4>
+  <p>Le cycle 3 a spécifié des scènes (bandeau-oracle, dorure, micro-labels) sans une milliseconde : durées,
+  easing, doublures reduced-motion — tout est à écrire avec les tokens de mouvement du rapport 2
+  (<code>--dur-1/2</code>, flash = « contenu arrivé »). Les micro-labels éphémères ont besoin d'une spec
+  d'extinction accessible.</p></div>
+  <div class="card"><span class="no">Q5</span><h4>Qui teste, enfin ? (reconduite — 3ᵉ fois)</h4>
+  <p>Trois cycles, dix-neuf regards experts, zéro donnée utilisateur. Le cycle 3 fournit les hypothèses les plus
+  testables du corpus : l'atterrissage verdict-first se mesure (temps au premier aha, taux d'adoption d'un
+  template), la landing d'import aussi. 5 sessions d'observation + les liens Discord différenciés (G13) comme
+  instrumentation minimale.</p></div>
+  <div class="card"><span class="no">Q6</span><h4>Le chiffrage (reconduite) — et l'ordre des dépendances</h4>
+  <p>Troisième cycle sans un chiffre. Le cycle 4 doit produire la roadmap des chantiers du cœur — fondations de
+  lisibilité → matières → scène du verdict → share card → téléprompteur — avec efforts, critères de sortie, et
+  les dépendances croisées vers les chantiers du squelette (carte d'item, Session, Saisie en jeu) explicites.</p></div>
+</div>
+
+<h2>Le mot de la fin</h2>
+<div class="quote" style="font-size:16px">Le cycle 1 a rendu à chaque forme un rôle ; le cycle 2 a rendu à chaque
+vue un moment du jeu ; le cycle 3 rend à l'app son premier moment tout court — la preuve avant la configuration,
+la leçon dans le verdict, la fierté dans le partage. Ses trois legs — la scène du verdict, la DA concentrée sur
+la share card, le séquencement par dépendance — partagent un même principe : <b>chaque investissement doit avoir
+un destinataire</b> — le novice qui comprend, le joueur qui recopie, le membre du Discord qui voit passer la
+card. Le cycle 4 hérite d'un corpus qui sait quoi construire et dans quel ordre ; il lui reste à vérifier le jeu,
+rencontrer les joueurs, et chiffrer — les trois dettes que trois cycles de brainstorm n'ont toujours pas payées.
+<span class="who">— modération du cycle 3</span></div>
+
+<div class="foot">
+  <a href="03-challenge.html">← Challenge du rapport 2</a>
+  <a href="index.html">↑ Synthèse du cycle</a>
+</div>
+</main>
+</div>
+</body>
+</html>

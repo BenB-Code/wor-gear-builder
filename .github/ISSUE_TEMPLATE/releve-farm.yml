@@ -1,0 +1,41 @@
+name: 📊 Relevé de farm
+description: Partage tes observations de drop pour affiner les taux du simulateur.
+title: "[Farm] "
+labels: [farm-data]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Merci ! Plus les relevés s'accumulent, plus les taux du simulateur collent au jeu.
+        Un relevé = **un** endroit farmé sur **une** période — ouvre plusieurs issues si besoin.
+  - type: input
+    id: stage
+    attributes:
+      label: Stage / mode farmé
+      placeholder: "ex. 12-7 Difficile, Donjon de l'or niveau 9"
+    validations:
+      required: true
+  - type: input
+    id: runs
+    attributes:
+      label: Nombre de runs
+      placeholder: "ex. 60"
+    validations:
+      required: true
+  - type: textarea
+    id: butin
+    attributes:
+      label: Pièces obtenues
+      description: "Une ligne par sorte : Tiers · nombre."
+      placeholder: |
+        T1 · 7
+        T2 · 1
+        T~ · 12
+        T3 · 12
+    validations:
+      required: true
+  - type: input
+    id: periode
+    attributes:
+      label: Version du jeu / période
+      placeholder: "ex. patch 1.5.x, septembre 2026"

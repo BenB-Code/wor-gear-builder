@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Challenge du rapport 2 · Design Review 3 — WoR Gear Builder</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="shell">
+<nav class="toc">
+  <div class="brand"><span class="d">◆</span> Design Review 3</div>
+  <div class="sub">Cycle brainstorm &amp; challenge · sept. 2026</div>
+  <a href="index.html">Synthèse du cycle</a>
+  <div class="grp">Le cycle</div>
+  <a href="01-analyses.html">Les 3 analyses à froid</a>
+  <a href="02-debat.html">Le débat</a>
+  <a href="03-challenge.html" class="on">Challenge du rapport 2</a>
+  <a href="04-conclusions.html">Conclusions &amp; recommandations</a>
+  <div class="grp">Référence</div>
+  <a href="../rapport-2-cycle/index.html">← Rapport 2</a>
+  <a href="../rapport-1-audit/index.html">← Rapport 1</a>
+</nav>
+<main>
+
+<span class="kicker">La page critique · cycle 3 vs rapport 2 · modération</span>
+<h1>Challenge du rapport 2</h1>
+<p class="lede">Les trois designers du cycle 3 n'ont <b>pas lu</b> le rapport 2 — seule cette page le confronte à
+leurs travaux. Même protocole que le challenge précédent : quand un profil neuf retrouve à froid une conclusion du
+rapport 2, c'est une <b>validation indépendante</b> ; quand il la contredit avec un argument neuf, la
+recommandation mérite d'être rejouée ; et ce que le squelette du cycle 2 avait vu et que le cycle 3 a raté compte
+autant que l'inverse.</p>
+
+<h2>① Ce que le cycle 3 confirme — les croisements indépendants</h2>
+<p>Six conclusions du rapport 2 ont été redécouvertes à froid par au moins un profil du cycle 3 — dont deux par
+des chemins si différents que la convergence vaut démonstration.</p>
+
+<div class="panel good"><h4>L'atterrissage-résultat (growth G1) × « tuer le mode Couverture » (architecte,
+cycle 2) — deux attaques du même bastion</h4>
+<p>Le rapport 2 avait conclu : la couverture est un <b>attribut de la règle</b>, pas un test (« il n'y a rien à
+lancer ») ; Simulation s'ouvre sur le dernier résultat en cache ; « Générer » livre un bandeau-résultat-d'abord.
+Le growth du cycle 3, sans avoir rien lu, arrive au même verdict par le funnel : <b>la configuration ne doit
+jamais être la porte d'entrée</b> — et il enfonce le même clou que le cognitif (« la Couverture produit quatre
+nombres abstraits ; le vrai aha est une carte pièce concrète »), ce qui rejoint la dissolution du mode Couverture
+décidée au cycle 2. Deux cycles, quatre profils (architecte, interaction, growth, cognitif), zéro contact :
+<b>l'app doit s'ouvrir sur un résultat, et la couverture n'est pas un écran</b>. C'est désormais le point le plus
+validé de tout le corpus après la carte d'item.</p></div>
+
+<div class="panel good"><h4>La carte d'item vivante (cycle 2) × la scène du verdict (cycle 3) — même objet ?</h4>
+<p>La question mérite d'être posée frontalement : le signal n°1 du cycle 2 (« le verdict est un état de l'objet
+qu'on regarde depuis le début ») et le P0 commun du cycle 3 (« un seul écran : aha, cérémonie, leçon ») décrivent-ils
+la même chose ? <b>Presque — et c'est précisément leur valeur.</b> La carte d'item est l'<i>acteur</i> : l'objet
+canonique de la pièce, rendu comme dans le jeu, dont « gardée/recyclée » est un état. La scène du verdict est le
+<i>théâtre</i> : l'écran d'atterrissage où cet état devient cérémonie (bandeau, ◆ vert), pédagogie (subs gagnants
+surlignés — une spec que le cycle 2 n'avait pas : il disait <i>que</i> la pièce est gardée, le cycle 3 dit
+<i>pourquoi</i>) et point de départ du partage. Le cycle 2 avait conçu le composant sans son moment d'entrée en
+scène ; le cycle 3 a conçu le moment sans nommer le composant. <b>L'implémentation est une : la scène du verdict
+se construit AVEC des cartes d'item vivantes.</b> Aucun des deux cycles ne se suffit — ensemble ils font une spec
+complète.</p></div>
+
+<div class="tbl-wrap"><table>
+<tr><th>Conclusion du rapport 2</th><th>Redécouverte du cycle 3</th><th style="width:90px">Statut</th></tr>
+<tr><td>P0 « Saisie en jeu devient une destination + quest log » — sortie du pied de sidebar, célébration unique
+à 18/18</td>
+<td>C5 (téléprompteur plein écran, « la seule tâche écran contre écran ») + G8 (reprise « il te reste 7 règles »)
++ V8 (dorure à 18/18, « un seul état lumineux »). <b>Convergence ×3 au cycle 3, après ×3 au cycle 2</b> : six
+regards indépendants condamnent le même pied de sidebar — le point le plus solide du corpus, trois cycles
+confondus.</td><td><span class="v-ok">renforcé</span></td></tr>
+<tr><td>P1 « hint transitoire du clic-cycle » (GUI-8/IX-5) — l'encodage muet du chip ★</td>
+<td>C1, plus complet : micro-labels éphémères aux 3 états, libellés déjà présents dans i18n, règle « éphémère
+pour nommer, persistant pour décider ». La spec du cycle 3 est plus fine (auto-extinction après 3 affichages) —
+elle remplace celle du cycle 2.</td><td><span class="v-ok">renforcé + précisé</span></td></tr>
+<tr><td>P2 « ◆ systématisé — sauf sur les coches » (contestation IX retenue : « le ◆ décore le monde, il ne
+confirme pas les gestes »)</td>
+<td>Le même débat s'est rejoué à l'identique : le visual propose ◆ en checkbox, le cognitif le tue avec les mêmes
+armes plus une (discriminabilité plein/creux à 10 px, basse vision). <b>Deux cycles, deux contestations internes,
+un seul verdict : le ✓ reste.</b> Arbitrage mûr pour être figé définitivement.</td>
+<td><span class="v-ok">confirmé ×2</span></td></tr>
+<tr><td>« Share card à avancer » (révision du rapport 1 : sous-produit gratuit de la carte d'item)</td>
+<td>G5 la promeut P0 de boucle virale (portée par la preuve, générée depuis le résultat) et la fusion B y
+concentre toute la DA. Le cycle 3 va plus loin que « avancer » : il en fait un artefact de premier ordre avec sa
+propre spec — voir ②.</td><td><span class="v-ok">renforcé + promu</span></td></tr>
+<tr><td>« Templates dans l'empty state » (GUI-14, convergent avec le rapport 1)</td>
+<td>G2, avec l'argument funnel (« la démo ne se recopie pas, elle s'admire ») — amendé au débat par le cognitif :
+proéminents mais jamais gate. Troisième cycle consécutif à converger sur les templates : plus rien à débattre,
+tout à construire.</td><td><span class="v-ok">renforcé</span></td></tr>
+<tr><td>« Session absorbera créer-une-règle-depuis-cette-pièce » (P0 Session, cycle 2)</td>
+<td>G4 en fait le levier d'activation n°1 (« l'éditeur inversé existe déjà à 90 % ») et le cognitif le requalifie
+en <i>exemple travaillé</i> — la théorie de l'apprentissage derrière l'intuition d'architecture du cycle 2.</td>
+<td><span class="v-ok">renforcé</span></td></tr>
+<tr><td>« Verdict gardée/recyclée cérémonialisé » (P1, GUI-3 + IX)</td>
+<td>V7 (bandeau-oracle, symétrique rouge) + C8 (expliquer le succès). Le cycle 3 ajoute la dimension que le
+cycle 2 n'avait pas : la cérémonie est aussi une <b>leçon</b> — les subs qui ont compté, surlignés.</td>
+<td><span class="v-ok">renforcé + enrichi</span></td></tr>
+</table></div>
+
+<div class="panel good"><h4>Lecture de modération</h4>
+<p>Comme au challenge précédent, les confirmations ne tombent pas au hasard : elles se concentrent sur <b>le
+verdict comme centre de gravité</b>, <b>la recopie in-game</b> et <b>l'appropriation par l'exemple</b> (templates,
+créer-depuis-pièce). Ces trois fronts ont maintenant été vus par seize regards sur trois cycles sans jamais être
+démentis — les traiter en premier n'est plus une opinion ni même un consensus : c'est un fait de corpus.</p></div>
+
+<h2>② Ce que le cycle 3 contredit ou nuance</h2>
+
+<div class="panel bad"><h4>Contradiction frontale n°1 — « labels d'interface en mono uppercase » (GUI-5, P1 du
+rapport 2)</h4>
+<p>Le rapport 2 avait consolidé en P1 : « serif small-caps réservé aux objets du monde, <b>labels d'interface en
+mono uppercase letterspacé</b> » — et le notait même « converge avec le rapport 1 » (arbitrage b : body uppercase).
+Le visual du cycle 3 contredit frontalement : <b>le mono est précisément la police qui a pris le pouvoir</b> —
+compteurs, th, labels, verdicts, badges — et c'est de là que vient le reproche « polices trop éloignées ». Sa
+règle : mono = <b>valeurs issues du jeu uniquement</b> ; tout le reste des labels passe en <b>sans</b> 11px
+(« le mono uppercase en th est le plus gros point de friction »). Le cognitif contresigne avec l'argument
+sémantique : quand le mono ne signifie plus qu'une seule chose, la police devient un canal d'information gratuit.
+Trois positions en trois cycles (rapport 1 : sans uppercase ; rapport 2 : mono uppercase ; cycle 3 : sans, mono
+réservé au jeu) — le cycle 3 retourne en fait vers le rapport 1 avec un argument plus fort. <b>À rejouer, et
+cette fois pour de bon.</b></p></div>
+
+<div class="panel bad"><h4>Contradiction frontale n°2 — « ●●●● → 4 subs · 4 sets » (P1 du rapport 2) : trois
+solutions concurrentes pour un composant</h4>
+<p>Le rapport 2 avait tranché : les pastilles muettes deviennent du <b>texte explicite</b> (« un encodage privé
+promu langage public »). Le cycle 3 apporte deux réponses <i>différentes</i> au même constat : le visual veut des
+<b>◆ plein/creux</b> (le geste signature), le cognitif veut des <b>micro-barres proportionnelles</b> (C15, lecture
+ordinale sans code à apprendre) — et sa colline (« aucune info portée uniquement par un glyphe de marque ») rejette
+implicitement la solution du visual, comme la solution texte du rapport 2 rejoint sa doctrine. Trois cycles, trois
+encodages : texte, losanges, barres. Le composant est minuscule, la question doctrinale ne l'est pas (marque vs
+lisibilité) — <b>à trancher au cycle 4</b>.</p></div>
+
+<div class="panel bad"><h4>Contradiction doctrinale — la dorure du 18/18 contre la liste de refus (GUI-13 ×
+IX-7, P2 du rapport 2)</h4>
+<p>La liste de refus co-signée du rapport 2 était sans ambiguïté : « <b>pas de dégradés or</b>, particules,
+étoiles […] l'ornement est statique et typographique, le seul mouvement est le feedback d'action ». Le visual du
+cycle 3 spécifie exactement un dégradé or + halo (<code>box-shadow: 0 0 12px</code>) sur le 18/18 — et le growth,
+pourtant le procureur du « craft sans destinataire », le contresigne (« le rare point où le craft visuel EST de la
+métrique »). La contradiction est réelle mais étroite : le cycle 2 lui-même prévoyait une « unique célébration à
+18/18 ». Résolution proposée : <b>amender la liste de refus d'une exception codifiée</b> — la dorure
+d'accomplissement, un seul état, jamais animée en boucle. Le pacte de sobriété survit si l'exception est écrite ;
+il meurt si elle est tacite.</p></div>
+
+<div class="tbl-wrap"><table>
+<tr><th>Point du rapport 2</th><th>Nuance apportée par le cycle 3</th><th style="width:90px">Verdict</th></tr>
+<tr><td>« Atterrissage : desktop sur Règles, mobile sur Session » (IA-13, enrichi à l'arbitrage e)</td>
+<td>G1 contredit pour la <b>première visite</b> : personne n'atterrit sur de la configuration, desktop compris —
+on atterrit sur un verdict auto-simulé. La règle du cycle 2 reste valable pour les visites <i>suivantes</i>. La
+variable manquante des deux cycles précédents : <b>l'ancienneté de l'utilisateur</b>.</td>
+<td><span class="v-mid">enrichi</span></td></tr>
+<tr><td>Picker d'accents : « supprimer, easter egg, ou palette recomposée hors tiers » (révision de l'arbitrage g)</td>
+<td>V6 choisit et précise la 3ᵉ option : picker conservé, 4 accents décalés hors des teintes de tier (sarcelle,
+acier, mauve gris, cuivre), et — ajout neuf — <b>l'accent ne pilote que les états de sélection</b>, l'or restant
+non-négociable sur les zones de marque. Le cognitif contresigne (collision accent/T1 = erreur sémantique). La
+question à trois positions du corpus se réduit à une : laquelle des trois écoles gagne — voir cycle 4.</td>
+<td><span class="v-mid">précisé</span></td></tr>
+<tr><td>« Simulation s'ouvre sur le dernier résultat en cache » (P1, IA-14)</td>
+<td>Confirmé et étendu : le cycle 3 ajoute le cas <i>zéro cache, zéro visite</i> — l'auto-simulation de première
+visite — et l'amendement du visual : une scène d'ouverture composée, pas un strip. « Un hero, pas un dashboard qui
+a déjà commencé sans vous. »</td><td><span class="v-mid">complété</span></td></tr>
+<tr><td>Empty state : templates nommés (GUI-14) — « + Nouvelle règle » implicitement conservé</td>
+<td>G2 voulait remplacer le bouton par les templates ; l'amendement du cognitif (jamais de gate) ramène à la
+position du cycle 2 en la durcissant : l'éditeur direct <b>toujours visible</b>. La version consolidée du cycle 3
+est plus précise que celle du cycle 2.</td><td><span class="v-mid">précisé</span></td></tr>
+<tr><td>« Bloc Mes données en sidebar » (P2, IA-12) — Importer/Exporter/Partager groupés</td>
+<td>G5 déplace la moitié du problème : « Partager » ne vit plus (seulement) dans la sidebar mais <b>sur l'écran de
+résultat</b> — on partage un chiffre dont on est fier, pas un fichier. Le bloc sidebar reste pour
+l'import/export ; le partage a désormais deux adresses dont une émotionnelle.</td>
+<td><span class="v-mid">enrichi</span></td></tr>
+<tr><td>Q3 du cycle 2 : « Sets : codex ou découpe ? »</td>
+<td>Aucun profil du cycle 3 n'a traité la vue Sets. La question reste ouverte telle quelle — reconduite au
+cycle 4.</td><td><span class="v-mid">non traité</span></td></tr>
+</table></div>
+
+<h2>③ Ce que le cycle 3 apporte que le rapport 2 n'avait pas vu</h2>
+<p>Le rapport 2 alignait un architecte, un interaction designer et un game-UI designer — personne ne portait la
+science de l'apprentissage, personne ne portait la direction artistique d'ensemble, personne ne portait le funnel.
+Les trois apports du cycle 3 sont exactement là.</p>
+
+<div class="panel good"><h4>La charge cognitive et l'apprentissage par l'usage — un chapitre entier</h4>
+<p>Le rapport 1 avait la microcopy, le rapport 2 avait le geste ; <b>aucun n'avait la théorie de ce qui rend le
+système apprenable</b>. Le cycle 3 l'apporte avec son appareillage : reconnaissance vs rappel (les ids G1/D3, le
+jargon résolu « une navigation plus loin »), mémoire de travail (les 4 items interdépendants de « Requis », les
+~10 items de la recopie écran-contre-écran), doubles négations (« 0 règles qui ne gardent rien »), fausse
+précision (« 1,02 % » → lecture ordinale), exemple travaillé (créer-depuis-pièce), et surtout deux mécanismes
+inédits dans le corpus : la <b>phrase de règle générée en langage naturel</b> (« Garde une pièce si… » — qui
+externalise la simulation mentale ET devient le contenu de la share card) et <b>expliquer le succès</b> (les subs
+gagnants surlignés — le corpus entier expliquait l'échec, jamais pourquoi une pièce est gardée). Le principe
+transversal « l'explication vit au point d'action » donne un critère de recevabilité à toutes les specs
+pédagogiques passées et futures.</p></div>
+
+<div class="panel good"><h4>La direction artistique comme système — la lumière, les matières, la dorure</h4>
+<p>Le rapport 1 gouvernait des tokens, le rapport 2 des pactes (fidélité au jeu, sobriété) — <b>personne n'avait
+posé une DA d'ensemble</b> : le diagnostic « un vocabulaire sans grammaire », la lumière unique venue du haut
+(liseré zénithal), les trois matières (socle/carte/encart éditorial — dont le débat a fait le prérequis de la
+hiérarchie sémantique), le pas vertical de 8 (les tokens <code>--s-*</code> déclarés puis ignorés — un constat
+d'audit que deux cycles avaient manqué), l'or théorisé comme <b>dorure</b> à trois allumages, et la trouvaille la
+plus contre-intuitive du cycle : <b>le mode clair parchemin est aujourd'hui la chose la plus identitaire de
+l'app</b> — le rapport 1 l'avait audité (contraste), le rapport 2 l'avait ignoré, personne ne l'avait regardé
+comme un actif de marque dont le dark devrait s'inspirer (« bibliothèque de nuit du même monde »).</p></div>
+
+<div class="panel good"><h4>Le funnel et les boucles — l'app pensée comme un système vivant</h4>
+<p>Angle 100 % absent des deux premiers cycles : <b>où les utilisateurs entrent, où ils fuient, pourquoi ils
+reviennent</b>. Le moment aha chronométré (~90 s et 5+ clics — la fuite principale), la seconde fuite (« la démo
+prouve mais ne se recopie pas, elle s'admire »), le lien-qui-importe identifié comme actif viral n°1 et sa landing
+d'import, le crédit d'auteur comme monnaie communautaire, le badge patch (« ces 2 nouveaux sets ne sont couverts
+par aucune de tes règles → recyclés silencieusement » — la seule raison de revenir qu'une app locale sans compte
+puisse fabriquer honnêtement), le pont de contribution Discord-friendly, la PWA au 2ᵉ retour, et l'instrumentation
+sans télémétrie. Le rapport 1 avait un chantier « Acquisition » — une liste de features ; le cycle 3 apporte la
+<b>mécanique</b> : trois boucles nommées (app→jeu→app, contribution, virale) et leurs points d'ancrage dans
+l'existant.</p></div>
+
+<div class="panel good"><h4>Le séquencement par dépendance — « prérequis, pas parallèles »</h4>
+<p>Apport de méthode né du débat : le growth a réalisé que son inversion d'atterrissage <i>dépend</i> des
+fondations de lisibilité du cognitif (« afficher plus vite un résultat toujours illisible »), et le cognitif que
+sa hiérarchie sémantique dépend des matières du visual. Les cycles précédents ordonnaient les chantiers par effort
+et par priorité ; le cycle 3 introduit l'ordre par <b>dépendance fonctionnelle</b> — une logique dont la roadmap
+consolidée (page 04) hérite directement.</p></div>
+
+<h2>④ Ce que le rapport 2 avait vu — et que le cycle 3 a raté</h2>
+<p>L'honnêteté vaut dans les deux sens : sur cinq fronts, le cycle 3 est en retrait net sur le rapport 2 — et sur
+deux d'entre eux, il répète exactement le grief que le challenge précédent adressait au cycle 2.</p>
+
+<div class="tbl-wrap"><table>
+<tr><th>Ce que le rapport 2 tient</th><th>Ce que le cycle 3 en dit</th></tr>
+<tr><td><b>Le squelette.</b> Cinq destinations calées sur le cycle d'usage, la fusion Couverture→Règles, la
+destination Session mobile-first, la dissolution du Testeur, « l'information vit sur l'objet qu'elle décrit ».</td>
+<td><span class="v-bad">Non questionné.</span> Les trois profils raisonnent <b>dans</b> la structure existante :
+le growth inverse l'atterrissage mais garde les vues, le cognitif note « une navigation plus loin » sans jamais
+proposer de fusion, le visual redécore le Testeur que l'architecte du cycle 2 avait dissous. Personne ne demande
+si la scène du verdict est une vue, un mode ou la nouvelle Simulation — la question de nav reste entière
+(Q2 reconduite).</td></tr>
+<tr><td><b>Le mouvement.</b> Les 4 gestes muets, <code>:active</code> global, accordéons 0fr→1fr, tokens de
+durée, « reduced-motion ≠ reduced-feedback ».</td>
+<td><span class="v-bad">Zéro constat.</span> Le cycle 3 spécifie des cérémonies (bandeau-oracle, dorure 18/18,
+micro-labels éphémères) <b>sans une milliseconde de spec temporelle</b> — et les micro-labels du cognitif n'ont ni
+durée ni doublure reduced-motion, ironique pour un profil accessibilité dont le cycle 2 avait justement posé la
+règle (« chaque animation porteuse de sens double d'un état statique »).</td></tr>
+<tr><td><b>Le mobile et le touch.</b> Session conçue « pour une main et un pouce », cibles 44 px, drag mort au
+touch, tab bar contextuelle, atterrissage mobile différencié.</td>
+<td><span class="v-bad">Effleuré.</span> Une mention d'écran au soleil (cognitif), la PWA au 2ᵉ retour (growth) —
+mais le téléprompteur, feature reine du cycle, n'a <b>aucune spec touch</b>, et l'inversion d'atterrissage n'est
+jamais déclinée mobile vs desktop alors que le cycle 2 avait montré que les deux contextes n'ont pas le même point
+d'entrée.</td></tr>
+<tr><td><b>La vérification contre le jeu réel (Q1).</b> Couleurs de tiers en miroir 1:1, ordre de lecture d'une
+pièce — « vérification factuelle bloquante » avant carte d'item et chips.</td>
+<td><span class="v-bad">Ignoré.</span> Le visual redéfinit la palette d'accents par rapport aux tiers <b>sans
+citer une seule fois l'écran d'équipement in-game</b>, et le cycle entier spécifie des cartes pièces (scène du
+verdict) sans mentionner la vérification que le cycle 2 avait déclarée bloquante pour exactement ce composant.</td></tr>
+<tr><td><b>Le chiffrage et la mesure (Q6 + l'héritage du rapport 1).</b> Le cycle 2 était déjà en défaut ; sa
+page conclusions demandait au cycle 3 « l'équivalent de la roadmap du rapport 1 pour les chantiers
+structurels ».</td>
+<td><span class="v-bad">Toujours rien — troisième cycle sans un chiffre.</span> Aucune estimation, aucun critère
+de sortie, aucun ratio de contraste (le visual assombrit le fond et propose un vignettage sans mesurer un seul
+impact AA — le grief exact que le challenge précédent faisait au game-UI designer). Et le growth invoque « le
+budget temps famélique du dev solo » sans chiffrer ses propres P0. Q5 (« qui teste, enfin ? ») reste lettre morte :
+<b>trois cycles, dix-neuf regards experts, zéro donnée utilisateur</b>.</td></tr>
+</table></div>
+
+<div class="panel"><h4>Pourquoi ces trous sont logiques — et ce qu'il faut en conclure</h4>
+<p>Un cognitif, un brand designer et un growth ne remplacent ni un architecte d'information, ni un motion
+designer, ni une colorimétriste : chaque cycle éclaire sa lanterne et laisse les autres dans l'ombre. Le corpus a
+maintenant trois autorités : le rapport 1 sur la <b>peau</b> (contraste, typo, tokens, contenu, coût), le
+rapport 2 sur le <b>squelette</b> (vues, gestes, langue du jeu), le cycle 3 sur le <b>cœur</b> (le moment de
+preuve, l'apprentissage, les boucles). Les contradictions réelles entre rapport 2 et cycle 3 tiennent en trois
+points — le mono des labels, l'encodage ●●●●, l'exception dorée — et les <a href="04-conclusions.html">conclusions</a>
+proposent un règlement pour chacun.</p></div>
+
+<h2>Le bilan du challenge</h2>
+<div class="stats">
+  <div class="stat"><div class="n">7</div><div class="l">conclusions du rapport 2 confirmées à froid</div></div>
+  <div class="stat"><div class="n">2</div><div class="l">recos frontalement contredites (mono · ●●●●)</div></div>
+  <div class="stat"><div class="n">1</div><div class="l">doctrine à amender (la dorure d'exception)</div></div>
+  <div class="stat"><div class="n">6</div><div class="l">points nuancés, précisés ou enrichis</div></div>
+  <div class="stat"><div class="n">4</div><div class="l">apports majeurs hors du champ du rapport 2</div></div>
+  <div class="stat"><div class="n">5</div><div class="l">fronts où le cycle 3 est en retrait net</div></div>
+</div>
+
+<div class="quote">Le rapport 2 savait <b>où</b> — le cycle 3 sait <b>pourquoi on reste</b>. L'un a déplacé les
+murs pour que chaque vue soit un moment du jeu ; l'autre a trouvé le moment qui manquait à tous les plans : celui
+où l'app fait sa preuve avant de demander d'être apprise. Leur intersection est déjà écrite — la scène du verdict
+se joue avec des cartes d'item vivantes — et leurs vraies contradictions tiennent en trois lignes d'une charte.
+<span class="who">— modération du cycle 3</span></div>
+
+<div class="foot">
+  <a href="02-debat.html">← Le débat</a>
+  <a href="04-conclusions.html">Conclusions &amp; recommandations →</a>
+</div>
+</main>
+</div>
+</body>
+</html>

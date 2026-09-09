@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Intégration des features · Design Review — WoR Gear Builder</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="shell">
+<nav class="toc">
+  <div class="brand"><span class="d">◆</span> Design Review</div>
+  <div class="sub">WoR Gear Builder · sept. 2026</div>
+  <a href="index.html">Synthèse exécutive</a>
+  <div class="grp">Fondations</div>
+  <a href="04-typographie.html">Typographie</a>
+  <a href="03-couleur-accessibilite.html">Couleur &amp; accessibilité</a>
+  <a href="05-design-system.html">Design system &amp; tokens</a>
+  <div class="grp">Interface</div>
+  <a href="01-ui-composants.html">Composants UI</a>
+  <a href="07-dataviz.html">Data-visualisation</a>
+  <a href="06-mobile.html">Mobile</a>
+  <div class="grp">Produit</div>
+  <a href="02-ux-parcours.html">UX &amp; parcours</a>
+  <a href="08-contenu.html">Contenu &amp; microcopy</a>
+  <a href="09-integration-features.html" class="on">Intégration des features</a>
+  <div class="grp">Direction</div>
+  <a href="10-synthese.html">Synthèse &amp; roadmap</a>
+</nav>
+<main>
+
+<span class="kicker">Audit spécialiste · product design</span>
+<h1>Intégrer 12 features sans regonfler l'UI</h1>
+<p class="lede">Principe directeur : la refonte a payé pour retirer du chrome — le backlog doit se financer sur
+l'existant. Trois leviers, dans l'ordre : <b>réutiliser un point d'entrée déjà présent</b> (le « + » d'onglet, le
+bouton Partager, la ligne de sauvegarde…), <b>contextuel plutôt que permanent</b>, <b>overlay plutôt que vue</b>.
+Bilan de chrome permanent sur les 12 features : <b>~2 boutons et 1 glyphe d'état</b>. Tout le reste est à coût zéro.</p>
+
+<h2>Le pattern transversal : le « focus mode »</h2>
+<p>Recopie guidée et session de farm sont <b>deux instances d'un même composant</b>, à construire une seule fois :
+overlay plein viewport au-dessus de tout, en-tête d'une ligne (titre + progression + ✕/Échap), corps géant,
+pied d'actions. Ni sidebar, ni onglets : on est <i>dans</i> une tâche, on en sort d'un geste, sans confirmation
+(rien n'est perdu — tout se coche/logge au fil de l'eau). Le focus mode est par définition du chrome zéro.</p>
+
+<h2>Fiche par fiche</h2>
+<div class="tbl-wrap"><table>
+<tr><th>Feature</th><th>Vit dans</th><th>Point d'entrée</th><th>Chrome ajouté</th><th class="num">Effort</th></tr>
+<tr><td><b>1 · Recopie guidée</b></td><td>focus mode</td><td><b>le bloc « Saisie en jeu 0/18 » devient cliquable</b> — l'affordance, la donnée et le lieu existent déjà</td><td>zéro</td><td class="num">M</td></tr>
+<tr><td><b>2 · Session de farm</b></td><td>focus mode</td><td>bouton « ▶ Session de farm » en tête du mode Vérifier une pièce (remonté en tête du Testeur sur mobile)</td><td><b>1 bouton</b></td><td class="num">M</td></tr>
+<tr><td><b>3 · Créer la règle depuis la pièce</b></td><td>dialogue existant pré-rempli</td><td>bouton dans le panneau de verdict ✗ uniquement (jamais sur un ✓)</td><td>zéro (contextuel)</td><td class="num">S</td></tr>
+<tr><td><b>4 · Templates early/mid/end</b></td><td>création d'onglet</td><td>le « + » ouvre un menu : Vide · Early · Mid · End · Importer un JSON</td><td>zéro (menu sur bouton existant)</td><td class="num">S-M (coût éditorial !)</td></tr>
+<tr><td><b>5 · Onboarding 5 min</b></td><td>l'empty state de Règles</td><td>automatique à 0 règle ; « le template EST l'onboarding » + 2 toasts d'étape (→ Couverture → Recopie)</td><td>zéro par construction</td><td class="num">S</td></tr>
+<tr><td><b>6 · Tooltips jargon</b></td><td>surimpression, adossée au Lexique (source unique)</td><td>souligné pointillé dans les textes d'aide UNIQUEMENT — jamais dans les chips/tables, 1 occurrence par bloc</td><td>quasi zéro</td><td class="num">S-M</td></tr>
+<tr><td><b>7 · Jauge stricte/permissive</b></td><td>la colonne diagnostic de la Couverture</td><td>remplace le « ok » texte — jauge neutre ▮▮▯▯▯ (stricte n'est pas mauvaise), alertes prioritaires</td><td>zéro net</td><td class="num">S — <b>à livrer en premier</b></td></tr>
+<tr><td><b>8 · Sandbox de désactivation</b></td><td>table de Couverture, mode simulation volatile</td><td>icône ⊘ au survol de ligne ; bandeau « SIMULATION — sans G4 · [Rétablir] » + deltas (« 1 767 → 1 214 »)</td><td>zéro (bandeau temporaire)</td><td class="num">M</td></tr>
+<tr><td><b>9 · Notes par règle</b></td><td>carte dépliée + dialogue d'édition</td><td>glyphe ¶ en méta <b>uniquement si une note existe</b> ; exclues du lien de partage (format figé), incluses dans l'export et la recherche</td><td>zéro sans note</td><td class="num">S</td></tr>
+<tr><td><b>10 · Export mis en avant</b></td><td>la save-line de la sidebar</td><td>« ● local · exporté il y a 3 j » cliquable = export COMPLET (tous onglets) ; nudge en toast, max 1/semaine — <b>jamais de bannière</b></td><td>zéro (la ligne existe)</td><td class="num">S</td></tr>
+<tr><td><b>11 · Share card PNG</b></td><td>le bouton Partager → menu</td><td>« Lien » (actuel) / « Image PNG » (canvas offscreen : titre, n règles, sets, clé, QR)</td><td>zéro (menu)</td><td class="num">M (pixel-work)</td></tr>
+<tr><td><b>12 · PWA</b></td><td>hors UI à 95 %</td><td>« Installer l'app » dans l'accordéon Apparence, rendu seulement si installable</td><td>1 bouton conditionnel replié</td><td class="num">M — <b>risque SW</b></td></tr>
+</table></div>
+
+<h2>Les deux écrans clés</h2>
+<pre class="wire">RECOPIE GUIDÉE                            SESSION DE FARM
+┌─────────────────────────────────┐      ┌─────────────────────────────┐
+│ ◆ Recopie — End Game   3/18  ✕ │      │ ▶ Session — End Game    ✕  │
+│─────────────────────────────────│      │  gardées 2 · jetées 11      │
+│  G4 · HEAL HP    Ens. 2 pièces  │      │─────────────────────────────│
+│  1. RÔLES   Heal                │      │ SLOT [Arme][Torse][Brac.]…  │
+│  2. SETS    Crinière d'or ·     │      │ MAIN  HP (auto — torse)     │
+│             Grâce · Salut       │      │ SET  [grille du côté choisi]│
+│  3. MAIN(S) ATK / HP            │      │ SUBS [ATK][ATK%][CC][CD]…   │
+│  4. SUBS    ★DEF% ★HP% HP·RR·AS │      │─────────────────────────────│
+│  5. REQUIS  4                   │      │ verdict live : 3 règles     │
+│  (ordre exact du builder,       │      │ encore possibles…           │
+│   gros caractères, ★ accent)    │      │ → ✗ JETTE plein écran rouge │
+│─────────────────────────────────│      │   [＋ règle depuis pièce]   │
+│ ‹ Préc.  [✓ Saisie — suiv. ›]   │      │   [Pièce suivante →]        │
+└─────────────────────────────────┘      └─────────────────────────────┘
+✓ coche ENTERED et avance ;               slot/set pré-sélectionnés d'une
+démarre à la 1ʳᵉ non cochée ;             pièce à l'autre → croisière
+fin = clé in-game à copier                4-5 taps, 3 quand décidable tôt</pre>
+
+<h2>Trois arbitrages transversaux</h2>
+<div class="panel reco"><h4>Templates ↔ onboarding : ne pas construire deux choses</h4>
+<p>L'onboarding n'est que la vitrine des templates au premier contact + deux toasts d'étape qui enchaînent
+template → couverture → recopie. Conséquences : la fiche 4 se livre avant la 5 ; le contenu éditorial des templates
+est le seul « script » d'onboarding à écrire ; l'onglet Démo actuel peut <b>devenir</b> le template Early.</p></div>
+<div class="panel reco"><h4>La sidebar n'accueille AUCUNE nouvelle entrée</h4>
+<p>2 focus modes (hors nav par définition), 6 contextuelles, 3 absorbées par des contrôles existants, 1 dans
+l'accordéon Apparence. La nav reste à 4 entrées. Deux upgrades d'existant seulement : la progression devient
+interactive (fiche 1), la save-line devient parlante (fiche 10). Si un jour une 5ᵉ vue s'impose, la règle est :
+elle remplace ou absorbe, elle ne s'additionne pas.</p></div>
+<div class="panel bad"><h4>Deux garde-fous à ne pas négocier</h4>
+<p><b>Fiche 3</b> : une règle calquée sur UNE pièce est par construction ultra-stricte — le dialogue pré-rempli doit
+le dire (« élargis les sets/subs ») sinon on industrialise la création de règles sur-ajustées, contraire à la
+doctrine. <b>Fiche 8</b> : une simulation qui a l'air d'un état réel est un bug de confiance — bandeau inratable,
+état volatil, reset à chaque sortie de vue.</p></div>
+
+<h2>Roadmap en 3 vagues</h2>
+<div class="tbl-wrap"><table>
+<tr><th>Vague</th><th>Contenu</th><th>Dépendances</th></tr>
+<tr><td><b>1 · « Lire mieux ce qui existe »</b></td><td>7 jauge → 9 notes → 10 save-line/export → 6 tooltips — quatre livraisons indépendantes, zéro chrome, valeur immédiate pour l'utilisateur actuel</td><td>aucune ; la 6 réutilise les corps d'aide du lot C</td></tr>
+<tr><td><b>2 · « Les deux boucles de valeur »</b></td><td>focus mode (composant commun) → 1 recopie (instance simple, lecture seule) → 2 session de farm → 3 créer-depuis-pièce → 8 sandbox</td><td>1 et 2 dépendent du focus mode ; 3 des panneaux de verdict</td></tr>
+<tr><td><b>3 · « Acquisition &amp; installation »</b></td><td>4 templates (éditorial en parallèle) → 5 onboarding → 11 share card → 12 PWA en dernier (seule feature à risque de régression globale via le service worker)</td><td>5→4 ; 12 gagne son sens avec 2 (farm offline)</td></tr>
+</table></div>
+<p>Fil rouge : après chaque lot, re-vérifier les invariants (couverture 172 410, FR/EN, imports) et le rendu 375 px.
+<b>La contrainte du client est tenue</b> : au terme des 12 features, le chrome permanent ajouté se résume à un bouton
+« Session de farm », un bouton d'installation conditionnel replié, un glyphe ¶ par règle annotée et deux menus
+sur des boutons existants.</p>
+
+<div class="foot">
+  <a href="10-synthese.html">Synthèse &amp; roadmap →</a>
+  <a href="index.html">↑ Synthèse exécutive</a>
+</div>
+</main>
+</div>
+</body>
+</html>

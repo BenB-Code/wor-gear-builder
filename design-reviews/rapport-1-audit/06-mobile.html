@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mobile · Design Review — WoR Gear Builder</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="shell">
+<nav class="toc">
+  <div class="brand"><span class="d">◆</span> Design Review</div>
+  <div class="sub">WoR Gear Builder · sept. 2026</div>
+  <a href="index.html">Synthèse exécutive</a>
+  <div class="grp">Fondations</div>
+  <a href="04-typographie.html">Typographie</a>
+  <a href="03-couleur-accessibilite.html">Couleur &amp; accessibilité</a>
+  <a href="05-design-system.html">Design system &amp; tokens</a>
+  <div class="grp">Interface</div>
+  <a href="01-ui-composants.html">Composants UI</a>
+  <a href="07-dataviz.html">Data-visualisation</a>
+  <a href="06-mobile.html" class="on">Mobile</a>
+  <div class="grp">Produit</div>
+  <a href="02-ux-parcours.html">UX &amp; parcours</a>
+  <a href="08-contenu.html">Contenu &amp; microcopy</a>
+  <a href="09-integration-features.html">Intégration des features</a>
+  <div class="grp">Direction</div>
+  <a href="10-synthese.html">Synthèse &amp; roadmap</a>
+</nav>
+<main>
+
+<span class="kicker">Audit spécialiste · mobile &amp; responsive</span>
+<h1>Mobile — le téléphone est le terrain de jeu</h1>
+<p class="lede">Contexte assumé partout : le joueur tient son téléphone en portrait, une main, pouce droit, et
+alterne jeu ↔ app toutes les 20-60 secondes pendant le farm. <b>Tout ce qui coûte un scroll, un tap en haut d'écran
+ou une re-saisie est facturé à ce tarif-là.</b></p>
+
+<h2>Ce qui marche — à conserver tel quel</h2>
+<ul>
+<li>Le fix anti-scroll-latéral (<code>minmax(0,1fr)</code>), documenté dans le CSS ;</li>
+<li>Les inputs 16 px anti-zoom iOS ; le tiroir en <code>100dvh</code> + transform (60 fps) ;</li>
+<li>Les tables empilées en cartes (<code>.rtable</code>) — pattern solide, avec le raffinement des 3 chiffres en ligne ;</li>
+<li>Les grilles uniformes de chips (6 col stats / 2 col sets) — mémoire musculaire : ATK% est toujours au même endroit ;</li>
+<li>Boutons 40 px, primaire pleine largeur, zones de tap du « ? » étendues, fondu de débord des filtres.</li>
+</ul>
+
+<h2><span class="prio p0">P0</span> Les fragilités de l'existant</h2>
+<ul>
+<li><b>La rangée d'onglets scrolle sans indice de débord</b> — le fondu n'est posé que sur les filtres, pas sur la
+rangée la plus importante de la vue ; et le « + » (créer un onglet) vit dans la zone scrollable : avec 4+ onglets
+il devient inatteignable sans savoir qu'il faut scroller. → masque étendu, « + » sorti du flux, fondu gauche conditionnel ;</li>
+<li><b>Le contenu utile démarre sous la ligne de flottaison</b> : burger + titre + lede + onglets + 5 outils en wrap +
+clé in-game + filtres + CTA = la première règle apparaît à ~460 px sur 812. Or Renommer/Dupliquer/Supprimer/Exporter
+sont des actions <i>rares</i> qui paient un loyer permanent. → replier les 5 outils derrière « ⋯ » sur l'onglet actif,
+clé in-game repliée. Gain ~120 px ;</li>
+<li><b>Le « vider » manuel entre chaque drop</b> de la pièce manuelle : friction n°1 du flux réel → auto-reset après verdict.</li>
+</ul>
+
+<h2><span class="prio p0">P0</span> Le parcours farm, chronométré</h2>
+<p>Vérifier UN drop aujourd'hui : alt-tab → (burger haut-gauche, <b>la zone la plus hostile au pouce droit</b> +
+Testeur) → mode Pièce manuelle → slot → main → « vider » → 4 subs → set (grille de ~25 + scroll) → <b>scroll vers
+le verdict</b>, qui est sous les 4 étapes — avec un layout shift à 2 subs quand le panneau des règles couvrantes
+s'insère. Total : <b>9-11 taps + 2 scrolls par drop</b>, verdict hors écran au moment où il tombe.</p>
+<div class="panel reco"><h4>Le vrai levier : le verdict n'a pas besoin de la saisie complète</h4>
+<p>Le moteur sait déjà raisonner sur une pièce partielle (« règles encore possibles »). Il suffit d'inverser la charge :
+<b>tap 1 — Set</b> : si le set n'est dans aucune règle → RECYCLE, verdict en 1 tap (statistiquement le cas le plus
+fréquent : 1-2 % de gardées) ; <b>tap 2 — Slot·Main fusionnés</b> (mains légales dépendent du slot ; slot mémorisé
+du drop précédent) ; <b>taps 3+ — subs, verdict au fil de l'eau</b> : la saisie s'arrête au verdict, pas à la
+complétude. Médiane réaliste : <b>2-4 taps par drop</b>.</p></div>
+<pre class="wire">┌─────────────────────────────────────┐
+│ ✕ Fin        SESSION · End Game     │ ← barre 44px
+│ 12 vues · 2 gardées · 10 recyclées  │
+├─────────────────────────────────────┤
+│         ██   RECYCLER   ██          │ ← ZONE VERDICT ~180px, aplat
+│      exclue après 2 subs —          │   plein, lisible EN JEU
+│      aucune règle ne veut CC        │   (coup d'œil, pas lecture)
+│  ─── auto-reset dans ●●○ 1,5 s ───  │
+├─────────────────────────────────────┤
+│ SET (récents du raid d'abord)       │
+│ [Tourbillon] [Salut] [S. de guerre] │ ← chips ≥48px, sheet « tous »
+├─────────────────────────────────────┤
+│ SLOT·MAIN   Arme ▸ (mémorisé)       │
+│ [ATK][HP][DEF][ATK%][HP%][AS]       │
+├─────────────────────────────────────┤
+│ SUBS                          2/4   │
+│ grille 6 col — chips 48px de haut   │
+└─────────────────────────────────────┘
+  Tout ce qui se TAPE vit dans les 2/3 BAS ;
+  le verdict (lecture seule) vit en HAUT.</pre>
+<p>Auto-reset au verdict (timer 1,5 s annulable : subs vidées, set/slot conservés), zéro scroll, état persistant
+au retour d'alt-tab, wake lock pendant le mode.</p>
+
+<h2><span class="prio p1">P1</span> La recopie guidée — une règle par écran</h2>
+<p>Ressaisir 18 règles en alternant les deux apps : aujourd'hui il faut <i>retrouver</i> sa règle après chaque
+alt-tab et cocher une case de 17 px. Le mode plein écran : id + nom en 24 px, paires clé/valeur en 18-20 px
+<b>sans abréviation ni chip</b> — un écran à LIRE en coup d'œil depuis le jeu, pas une UI à manipuler.
+« Saisie ✓ Suivant » (56 px, bas d'écran) coche et avance ; reprise automatique à la première non-cochée ;
+swipe horizontal en plus des boutons ; wake lock.</p>
+
+<h2><span class="prio p1">P1</span> Navigation : tab bar basse plutôt que tiroir</h2>
+<p>Verdict tranché : <b>le tiroir est le mauvais pattern pour cette app sur ce contexte</b>.</p>
+<ul>
+<li>4 vues = le sweet spot d'une tab bar (un tiroir se justifie à 7+) ;</li>
+<li>l'alternance Règles ↔ Testeur est un geste cœur : 2 taps dont un burger haut-gauche aujourd'hui, 1 tap en zone
+de pouce demain ;</li>
+<li>la navigation devient <i>visible</i> (le tiroir cache l'existence même du Testeur à un nouvel utilisateur) ;</li>
+<li>coût ~56 px + safe-area, remboursé par les 64 px du burger et les ~120 px d'outils repliés ;</li>
+<li>ce qui reste dans le tiroir (import, thème, langue, accents) est du <i>réglage</i>, pas de la navigation →
+sheet « ⋯ » ; les modes plein écran masquent la tab bar (cohérent : ce sont des modes, pas des vues) ;
+desktop inchangé.</li>
+</ul>
+
+<h2>Check-list actionnable</h2>
+<div class="tbl-wrap"><table>
+<tr><th>Prio</th><th>Friction</th><th>Fix</th></tr>
+<tr><td><span class="prio p0">P0</span></td><td>Onglets scrollables sans fondu, « + » inatteignable</td><td>masque sur .tabs-scroll, + hors zone, fondu gauche conditionnel</td></tr>
+<tr><td><span class="prio p0">P0</span></td><td>Verdict pièce manuelle sous le pli + layout shift</td><td>verdict sticky top ; à terme le mode farm</td></tr>
+<tr><td><span class="prio p1">P1</span></td><td>Checkbox 17 px / drag 16 px / stepper 24 px — trois contrôles cœur sous les 40 px</td><td>zone 40×40 sur .chk, drag masqué sur pointer:coarse (réordonner via menu), stepper 36 px</td></tr>
+<tr><td><span class="prio p1">P1</span></td><td>Sticky grp-head coupé (top:-26px calibré desktop)</td><td>top:0 dans le bloc 920</td></tr>
+<tr><td><span class="prio p1">P1</span></td><td>La clé in-game ouvre un clavier pour rien (elle se colle, ne se tape pas)</td><td>readonly + copier/coller explicites</td></tr>
+<tr><td><span class="prio p1">P1</span></td><td>Recherche : clavier masque les résultats, pas d'effacement</td><td>type="search" + blur au scroll</td></tr>
+<tr><td><span class="prio p1">P1</span></td><td>Safe areas iOS absentes (toasts sur la home indicator)</td><td>viewport-fit=cover + env() sur toasts/tiroir/future tab bar</td></tr>
+<tr><td><span class="prio p2">P2</span></td><td>Toasts bottom-right sous le pouce</td><td>pleine largeur en bas, 1 seul visible, au-dessus de la barre</td></tr>
+<tr><td><span class="prio p2">P2</span></td><td>Smooth-scroll long des liens de règles désorientant</td><td>scroll instantané + flash sur pointer:coarse</td></tr>
+<tr><td><span class="prio p2">P2</span></td><td>Grille de sets longue</td><td>tri « récemment utilisés » (préfigure le mode farm)</td></tr>
+</table></div>
+
+<div class="foot">
+  <a href="02-ux-parcours.html">UX &amp; parcours →</a>
+  <a href="index.html">↑ Synthèse exécutive</a>
+</div>
+</main>
+</div>
+</body>
+</html>

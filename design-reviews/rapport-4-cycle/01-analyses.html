@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Les 3 analyses à froid · Design Review 4 — WoR Gear Builder</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="shell">
+<nav class="toc">
+  <div class="brand"><span class="d">◆</span> Design Review 4</div>
+  <div class="sub">Cycle brainstorm &amp; challenge · sept. 2026</div>
+  <a href="index.html">Synthèse du cycle</a>
+  <div class="grp">Le cycle</div>
+  <a href="01-analyses.html" class="on">Les 3 analyses à froid</a>
+  <a href="02-debat.html">Le débat</a>
+  <a href="03-challenge.html">Challenge du rapport 3</a>
+  <a href="04-conclusions.html">Conclusions &amp; recommandations</a>
+  <div class="grp">Référence</div>
+  <a href="../rapport-3-cycle/index.html">← Rapport 3</a>
+  <a href="../rapport-2-cycle/index.html">← Rapport 2</a>
+  <a href="../rapport-1-audit/index.html">← Rapport 1</a>
+</nav>
+<main>
+
+<span class="kicker">Phase 1 · trois analyses étanches · la matière brute du cycle</span>
+<h1>Les 3 analyses à froid</h1>
+<p class="lede">Restitution fidèle des trois analyses, produites sans lecture croisée ni accès aux rapports
+antérieurs. Le design engineer audite le <b>code du rendu</b> (CSS, templates, routeur, listeners) ; l'avocat du
+power-user audite le <b>coût en gestes</b> des dix actions les plus fréquentes de l'utilisateur intensif ;
+le critique heuristique passe l'app à la <b>grille de Nielsen</b>, notée heuristique par heuristique.</p>
+
+<h2>① Design engineer — « là où le rendu trahit l'intention »</h2>
+<div class="quote">Le design system est bon sur le papier, c'est l'exécution du rendu qui le trahit — 80 % du gain
+perçu tient en ~60 lignes, à condition de les livrer dans l'ordre.
+<span class="who">— design engineer, thèse d'ouverture</span></div>
+<p>Fichier audité : <code>wor-regles-tri.html</code> — CSS l.15-560, templates l.1440-2060, routeur l.2352-2418,
+listeners l.3040-3105. Chaque constat est localisé et chiffré contre cette base.</p>
+
+<h3>P0 — les trahisons visibles</h3>
+<div class="tbl-wrap"><table>
+<tr><th style="width:56px">Prio</th><th>Constat</th><th>Fix spécifié</th><th class="num">Effort</th></tr>
+<tr><td><span class="prio p0">P0</span></td>
+<td><b>1 · <code>color-scheme</code> absent.</b> Scrollbar native claire sur toutes les captures dark, popups
+système clairs des <code>&lt;select&gt;</code> (Onglet, Niveau, Pièces). Le bug « cheap » n°1 : zéro effort,
+énorme gain de cohérence perçue.</td>
+<td><code>:root{color-scheme:dark}</code> + <code>body.light{color-scheme:light}</code></td>
+<td class="num">1 ligne</td></tr>
+<tr><td><span class="prio p0">P0</span></td>
+<td><b>2 · <code>rerenderRule()</code> détruit le bouton qu'on vient de cliquer.</b> <code>el.outerHTML =
+ruleRow(r)</code> (l.1653) : chaque toggle de sub, +/− du stepper ou chip de rôle régénère la carte entière et le
+focus retombe sur <code>&lt;body&gt;</code>. Un utilisateur clavier ne peut pas incrémenter « Requis » deux fois
+à l'Entrée.</td>
+<td>Restauration du focus par sélecteur ; idéalement <b>patch-in-place</b> des toggles (classe +
+<code>aria-pressed</code> + <code>.val</code>) — le HTML est déjà déterministe.</td>
+<td class="num">~15 lignes</td></tr>
+<tr><td><span class="prio p0">P0</span></td>
+<td><b>3 · Navigation qui « glisse » au lieu de changer de page.</b> <code>main#view{scroll-behavior:smooth}</code>
+(l.101) s'applique au <code>scrollTop=0</code> du routeur : chaque changement de vue anime le retour en haut.
+Pire : changer d'onglet dans le Testeur repasse par <code>renderView()</code> et remet le scroll à zéro.</td>
+<td><code>scrollTo({top:0,behavior:"instant"})</code> ; smooth réservé au <code>scrollIntoView</code>
+explicite.</td>
+<td class="num">3 lignes</td></tr>
+<tr><td><span class="prio p0">P0</span></td>
+<td><b>4 · Le dialogue « Nouvelle règle » n'est pas un <code>&lt;dialog&gt;</code>.</b> Div + <code>hidden</code>
+(l.424) : Tab s'échappe dans la page floutée, Échap géré à la main, scroll du fond non verrouillé.</td>
+<td><code>&lt;dialog&gt;</code> + <code>showModal()</code> : trap, <code>inert</code>, Échap et
+<code>::backdrop</code> gratuits, zéro dépendance.</td>
+<td class="num">~30 lignes</td></tr>
+</table></div>
+
+<h3>P1 — cohérence typographique et chromatique</h3>
+<div class="tbl-wrap"><table>
+<tr><th style="width:56px">Prio</th><th>Constat</th><th>Fix spécifié</th></tr>
+<tr><td><span class="prio p1">P1</span></td>
+<td><b>5 · Deux grammaires de labels concurrentes</b> — c'est ÇA l'« incohérence des polices » du client : sur la
+même vue Testeur, « Onglet/Mode » en Palatino small-caps et « RÈGLE / PIÈCES GARDÉES » en mono uppercase.</td>
+<td>Trancher : <b>une seule</b> grammaire de label technique (mono uppercase, la plus lisible à 11&nbsp;px) ;
+serif small-caps réservé aux titres ≥ 15&nbsp;px.</td></tr>
+<tr><td><span class="prio p1">P1</span></td>
+<td><b>6 · Small-caps synthétiques à 11-13&nbsp;px : rendu boueux garanti.</b> La feature <code>smcp</code> n'est
+pas exploitée sur la stack fallback : le navigateur synthétise des capitales ~80&nbsp;% aux fûts amaigris par
+l'anti-aliasing sur fond sombre — le rendu « cheap » des <code>.lab</code>.</td>
+<td><code>font-synthesis:none</code> pour l'honnêteté ; labels en <code>text-transform:uppercase</code> +
+<code>letter-spacing:.08em</code> ; small-caps uniquement ≥ 15&nbsp;px où la synthèse tient.</td></tr>
+<tr><td><span class="prio p1">P1</span></td>
+<td><b>7 · La jungle des ~40 <code>rgba()</code> dupliqués dark/light.</b> Chaque teinte existe en 3-5 variantes
+codées en dur ; la moitié seulement a un override light (t3/t1/t0 redéfinis, t2/t4 comptent sur la var) —
+incohérence structurelle.</td>
+<td>Dérivation par <code>color-mix(in oklab, …)</code> depuis une seule <code>--c</code> par famille. Support
+acquis. <b>−60 lignes</b>, thèmes et 5 accents automatiquement cohérents.</td></tr>
+<tr><td><span class="prio p1">P1</span></td>
+<td><b>8 · Les « encarts indiscernables » sont mesurables.</b> <code>--hairline: rgba(255,255,255,.05)</code> sur
+un delta de fond de ~3&nbsp;% de luminance : sous le seuil de discrimination sur la plupart des dalles.</td>
+<td>Grammaire d'élévation à <b>2 niveaux</b> (conteneurs = <code>--border-soft</code> visible, sous-éléments =
+hairline) + ombre courte sur <code>.rule</code> — sur fond sombre, l'ombre sépare mieux qu'une bordure.</td></tr>
+<tr><td><span class="prio p1">P1</span></td>
+<td><b>9-10 · View Transitions + <code>@starting-style</code>.</b> Le swap <code>innerHTML</code> produit un cut
+sec ; la sortie des toasts est un hack <code>.out</code> + setTimeout.</td>
+<td><code>startViewTransition</code> en enhancement progressif (réservé aux changements de vue) ; entrées/sorties
+déclaratives via <code>transition-behavior:allow-discrete</code>.</td></tr>
+<tr><td><span class="prio p1">P1</span></td>
+<td><b>11 · Les 3 détails qui font « fini ».</b> Orphelins des ledes ; <code>.rc-name</code> sans ellipsis qui
+casse l'alignement des jauges ; chips gonflées par le <code>line-height:1.6</code> hérité du body.</td>
+<td><code>text-wrap:balance/pretty</code> ; <code>min-width:0</code> + ellipsis ; <code>line-height:1.2</code> sur
+<code>.chip,.mini,.fchip,.btn</code>.</td></tr>
+</table></div>
+
+<h3>P2 — le poli</h3>
+<div class="tbl-wrap"><table>
+<tr><th style="width:56px">Prio</th><th>Constat &amp; fix</th></tr>
+<tr><td><span class="prio p2">P2</span></td><td><b>12 · Glyphes texte pour l'UI</b> (⠿ ＋ ▾ ◆ ✓) rendus par la
+loterie des fallbacks système — les remplacer par le système <code>ICON</code> SVG déjà présent partout ailleurs.</td></tr>
+<tr><td><span class="prio p2">P2</span></td><td><b>13 · Bordures 1.5px</b> (<code>.chk</code>, <code>.dot</code>) :
+arrondi inégal en 125/150&nbsp;% Windows — passer à 1&nbsp;px + outline, ou SVG.</td></tr>
+<tr><td><span class="prio p2">P2</span></td><td><b>14 · Alignement des colonnes label entre cartes ouvertes</b> :
+<code>grid-template-columns:7ch 1fr</code> suffit — subgrid et container queries explicitement <b>non
+recommandés</b> sur cette base.</td></tr>
+<tr><td><span class="prio p2">P2</span></td><td><b>15 · Print</b> : bon squelette (le <code>#print-view</code>
+dédié est une vraie qualité, rare) ; manquent <code>orphans/widows</code> et
+<code>print-color-adjust:exact</code> sur les accents.</td></tr>
+<tr><td><span class="prio p2">P2</span></td><td><b>16 · Premier paint</b> : correct (CSS inline, pas de fonts
+réseau, JS en fin de body) ; seul risque à terme, le <code>#view</code> vide avant <code>route()</code>.</td></tr>
+</table></div>
+
+<h2>② Avocat du power-user — « la lecture d'un outil pro, l'écriture d'un formulaire »</h2>
+<div class="quote">Tout le backlog visible (jauge, notes, tooltips) est cosmétique à côté du vrai déficit : un
+modèle de commande — undo universel, palette, sélection multiple, flux Entrée. Aucune de ces quatre briques
+n'ajoute un pixel au repos ; ensemble elles divisent par 5 à 10 le coût des boucles hebdomadaires.
+<span class="who">— avocat du power-user, thèse</span></div>
+<p>Angle : l'utilisateur intensif — 2-4 onglets, 18+ règles, itération hebdomadaire, recopie in-game complète à
+chaque refonte. Le clavier existant se résume à <code>/</code> (recherche, vue Règles seulement), Échap, et
+Espace/Entrée sur une ligne focusée : « un début de modèle clavier — pas un modèle ».</p>
+
+<h3>L'audit des 10 actions les plus fréquentes</h3>
+<div class="tbl-wrap"><table>
+<tr><th>#</th><th>Action expert</th><th>Coût actuel</th><th>Raccourci manquant</th></tr>
+<tr><td class="num">1</td><td>Cycler une sub (pool→★→off)</td><td>1 clic <b>si dépliée</b> ; sinon déplier + scroll + clic</td><td>ligne compacte éditable sans dépliage</td></tr>
+<tr><td class="num">2</td><td>Cocher « saisie en jeu » ×18</td><td>18 clics + scroll sur toute la liste</td><td>flux recopie : Entrée = coché → suivante</td></tr>
+<tr><td class="num">3</td><td>Modifier les sets d'une règle</td><td>déplier → modifier → dialogue → clics → enregistrer ≈ 5</td><td>édition inline des sets (comme les subs)</td></tr>
+<tr><td class="num">4</td><td>Ajuster « requis »</td><td>déplier + n clics stepper</td><td>+/− au clavier sur la ligne focusée</td></tr>
+<tr><td class="num">5</td><td>Dupliquer une règle</td><td>déplier + 1 clic</td><td><code>d</code> sur la ligne focusée</td></tr>
+<tr><td class="num">6</td><td>Aller au Testeur et générer</td><td>3 clics (nav, mode, Générer)</td><td><code>g t</code>, Entrée relance le dernier échantillon</td></tr>
+<tr><td class="num">7</td><td>Changer d'onglet de règles</td><td>1 clic (souris obligatoire)</td><td><code>1..4</code> ou <code>[</code>/<code>]</code></td></tr>
+<tr><td class="num">8</td><td>Post-patch : ajouter 1 set à 6 règles</td><td>≈ 5 clics × 6 = <b>30 gestes</b></td><td>édition en masse (P0-3)</td></tr>
+<tr><td class="num">9</td><td>Comparer 2 onglets</td><td><b>impossible</b> (bascule de select, mémoire humaine)</td><td>delta de couverture A vs B</td></tr>
+<tr><td class="num">10</td><td>Chercher partout</td><td><code>/</code> marche <b>uniquement</b> vue Règles</td><td><code>/</code> global + syntaxe de requête</td></tr>
+</table></div>
+
+<h3>Constats &amp; propositions</h3>
+<div class="tbl-wrap"><table>
+<tr><th style="width:56px">Prio</th><th>Proposition</th><th>Argument</th></tr>
+<tr><td><span class="prio p0">P0</span></td><td><b>1 · Undo global Ctrl+Z</b> — pile de snapshots par mutation
+(déjà centralisées via <code>scheduleSave</code>), Ctrl+Z / Ctrl+Shift+Z.</td>
+<td>Le toast « annuler » ne couvre que 3 opérations ; le mis-clic le plus probable (sub cyclée, requis incrémenté)
+n'a <b>aucun</b> filet. « Un power-user qui édite vite fait des erreurs vite. » Zéro chrome ajouté.</td></tr>
+<tr><td><span class="prio p0">P0</span></td><td><b>2 · Palette de commandes Ctrl+K</b> avec fuzzy — « G7 » saute
+et flash (le mécanisme <code>data-goto</code>+<code>.flash</code> existe), « échantillon » → Testeur/mode.</td>
+<td>4 vues, 3 modes, 4 onglets, 18+ règles nommées : la surface dépasse ce qu'une sidebar peut porter. « LA
+fonctionnalité invisible par définition — les pros ne vivront que dedans. »</td></tr>
+<tr><td><span class="prio p0">P0</span></td><td><b>3 · Édition à l'échelle</b> — shift-clic / <code>x</code>
+sélectionne des règles → barre d'action contextuelle (n'apparaît que s'il y a sélection) ; trouver/remplacer un
+set via la palette.</td>
+<td>Le scénario post-patch coûte ~30 gestes pour 6 règles, ~90 pour 18. « Sans ça, l'app punit exactement
+l'utilisateur qui itère chaque semaine. »</td></tr>
+<tr><td><span class="prio p0">P0</span></td><td><b>4 · Flux « recopie guidée » piloté à l'Entrée</b> — une règle
+plein écran, clé copiable, <b>Entrée = saisie ✓ → suivante</b>, ←/→, jauge 0/18 comme seul indicateur.</td>
+<td>LE moment de douleur récurrent : 18 règles à retaper dans l'ordre du jeu. De 18 clics + scroll à 18 Entrée,
+les yeux sur le jeu. (Backlog validé : le prioriser.)</td></tr>
+<tr><td><span class="prio p0">P0</span></td><td><b>5 · Modèle j/k sur la liste de règles</b> — <code>j/k</code>
+focus, <code>o</code> déplie, <code>x</code> coche, <code>e</code> édite, <code>d</code> duplique,
+<code>+/−</code> requis, Suppr arme.</td>
+<td>Le socle existe (row-head focusable). Coût visuel : nul — l'outline focus existe déjà.</td></tr>
+<tr><td><span class="prio p1">P1</span></td><td><b>6 · Syntaxe de recherche</b> <code>set:salut sub:AS req:4
+role:tank</code> + <code>/</code> étendu aux 4 vues.</td>
+<td>Les préfixes transforment la recherche en requête sans toucher aux 7 contrôles de filtres. « Son confinement à
+Règles est un bug d'attente, pas un choix. »</td></tr>
+<tr><td><span class="prio p1">P1</span></td><td><b>7 · Navigation g-puis-x</b> (<code>g r/t/s/f</code>),
+<code>1..9</code> pour les onglets, <code>?</code> = cheat-sheet.</td>
+<td>Le power-user à 3 onglets bascule des dizaines de fois par session ; chaque bascule est un aller-retour souris
+vers une rangée scrollable.</td></tr>
+<tr><td><span class="prio p1">P1</span></td><td><b>8 · Alt-clic « édition verticale »</b> — appliquer le même état
+de sub/set à toutes les règles filtrées (toast + Ctrl+Z en filet).</td>
+<td>« Le geste pro par excellence : invisible, découvrable par tooltip » — résout 80&nbsp;% des cas d'édition en
+masse. <i>(Rétrogradé au débat par son auteur — voir page 02.)</i></td></tr>
+<tr><td><span class="prio p1">P1</span></td><td><b>9 · Un vrai cran « tableur »</b> — le mode compact ne compresse
+que du vide ; troisième cran : une règle = une ligne, chips de subs cyclables inline, sets en abrégé.</td>
+<td>L'expert veut <b>scanner</b> ses 18 règles ; la vue Sets &amp; transfo prouve que cette densité est déjà dans
+l'ADN de l'app. <i>(Contesté au débat par le design engineer.)</i></td></tr>
+<tr><td><span class="prio p1">P1</span></td><td><b>10 · Comparaison d'onglets par delta</b> — second select
+« comparer à » dans Testeur/Couverture : colonnes delta, règles muettes ici et pas là.</td>
+<td>Répond au vrai besoin (« mon Strict jette-t-il ce que mon Large garde ? ») sans split-screen ni layout
+nouveau.</td></tr>
+<tr><td><span class="prio p2">P2</span></td><td><b>11-13 · Micro-gestes</b> — Alt+↑/↓ réordonne au clavier ;
+double-clic « créer une règle depuis cette pièce » (Échantillon) ; <code>c</code> copie la clé in-game.</td>
+<td>Le réordonnancement clavier est accessoirement un gain d'accessibilité ; micro-geste × fréquence élevée =
+réel.</td></tr>
+</table></div>
+
+<h2>③ Critique heuristique — la grille Nielsen notée</h2>
+<div class="quote">2,6 / 4 en moyenne inversée — app solide, au-dessus de la médiane du genre, plombée par un
+déficit de cohérence de surface (H4) et de reconnaissance (H6) : les mécaniques profondes sont excellentes, mais
+l'habillage demande un apprentissage que rien ne guide.
+<span class="who">— critique heuristique, verdict global</span></div>
+<p>Évaluation sur les 10 heuristiques de Nielsen, sévérités 0-4. Matière : 9 captures, CSS l.15-560, i18n FR.</p>
+
+<div class="tbl-wrap"><table>
+<tr><th style="width:190px">Heuristique</th><th class="num">Note</th><th>Violations principales (sévérité)</th><th>Ce qui dépasse le standard</th></tr>
+<tr><td><b>H1 · Visibilité de l'état</b></td><td class="num">1</td>
+<td>Save-line en 11&nbsp;px <code>--faint</code> tout en bas de sidebar — l'info la plus rassurante est la moins
+visible, absente en mobile (2) ; « restauré » / « session seule » sans explication — risque de perte silencieuse
+(2) ; recalcul des 172&nbsp;410 profils sans indicateur (1, à vérifier).</td>
+<td>Sauvegarde matérialisée en continu, progression 0/18, compteurs partout, filtre actif visible.</td></tr>
+<tr><td><b>H2 · Monde réel</b></td><td class="num">1</td>
+<td>« Clé in-game <code>ODM1OTE=</code> » : un artefact Base64 sans dire <i>où</i> le saisir dans le jeu (2) ;
+« Scope », « profils » : vocabulaire d'ingénieur (1).</td>
+<td>Le lexique (Main, Subs, T∞, GR1, ★) est le jargon <b>exact</b> du jeu : une force pour la cible, pas une
+faute.</td></tr>
+<tr><td><b>H3 · Contrôle et liberté</b></td><td class="num">2</td>
+<td><b>Undo uniquement par toast éphémère : toast raté = 18 règles perdues sans recours, pas de Ctrl+Z, pas de
+corbeille (3)</b> ; dialogue sans « × », Échap non vérifiable (2, conditionnel) ; pas de sortie visible du mode
+« armé » (1).</td>
+<td>Undo par toast sur suppressions — mieux que le standard ; import = nouvel onglet, jamais d'écrasement.</td></tr>
+<tr><td><b>H4 · Cohérence &amp; standards</b></td><td class="num">3 ⚠</td>
+<td><b>Le même objet « onglet » a deux représentations — pills dans Règles, <code>&lt;select&gt;</code> natif dans
+Testeur et Sets (3) : très probablement la racine du « app jugée incohérente »</b> ; onglets identiques aux boutons
+d'outils juste dessous — même forme, deux natures (2) ; trois systèmes d'aide sans logique de répartition (1) ;
+deux patterns d'accordéon (1).</td>
+<td>Libellé du toggle de thème conforme à la convention.</td></tr>
+<tr><td><b>H5 · Prévention des erreurs</b></td><td class="num">2</td>
+<td>Warning « injouable » affiché sans que « Créer la règle » soit bloqué (2) ; le stepper Requis modifie la règle
+<b>sans confirmation ni trace</b> — un clic de trop change silencieusement le tri de tout un set (2) ; conseil
+« préfère le fichier JSON » <i>après</i> la copie (1).</td>
+<td>Garde « injouable » en direct ; suppression en deux temps ; « requis effectif n (★ obligatoires) ».</td></tr>
+<tr><td><b>H6 · Reconnaissance &gt; rappel</b></td><td class="num">3 ⚠</td>
+<td><b>« ATK · HP ●●●● 4 sets » : les dots encodent le requis sans aucune légende ; tri-état des chips subs par
+nuances d'opacité (0.28 / plein / ★), à mémoriser (3)</b> ; chips grisées à 28&nbsp;% confondues avec du
+désactivé alors qu'elles sont cliquables — contre-affordance (2) ; codes « G1/D3 » jamais expliqués (1).</td>
+<td>—</td></tr>
+<tr><td><b>H7 · Flexibilité &amp; efficacité</b></td><td class="num">1</td>
+<td>« / » est le seul accélérateur (1) ; réordonner = drag seul, aucune alternative clavier — bloquant en
+accessibilité (2).</td>
+<td><b>Au-dessus du standard</b> : export/import JSON + lien + fallback, densité compacte, 5 accents, FR/EN,
+<code>focus-visible</code> soigné partout.</td></tr>
+<tr><td><b>H8 · Esthétique &amp; minimalisme</b></td><td class="num">1</td>
+<td><code>--faint</code> #6f6880 ≈ 3,5:1 sur des textes de 11&nbsp;px — sous AA, exactement là où sont les états
+système (2) ; 6 zones empilées avant la première règle (1).</td>
+<td>DA remarquable et tenue ; densité maîtrisée ; hints lourds dépliables.</td></tr>
+<tr><td><b>H9 · Récupération d'erreurs</b></td><td class="num">1</td>
+<td>« Téléchargement impossible dans cet environnement » sans piste (1) ; erreurs en toasts éphémères, non
+ré-affichables (1).</td>
+<td>Messages exemplaires : cause précise en langage clair, fallbacks actifs (« le lien long a été copié à la
+place »).</td></tr>
+<tr><td><b>H10 · Aide &amp; documentation</b></td><td class="num">1</td>
+<td>Pas d'onboarding : premier lancement sur « Mes règles 0 » vide, rien ne pointe vers la démo (2) ; aucune aide
+sur les raccourcis ni le workflow global (1).</td>
+<td>Aide en couches (« ? », hints, Référence complète avec sources et limites) — rare à ce niveau.</td></tr>
+</table></div>
+
+<h3>Le TOP 5 des violations</h3>
+<div class="panel bad"><h4>Cinq correctifs qui coûtent peu et traitent directement le grief client</h4>
+<ol>
+<li><b>Sélecteur d'onglet incohérent entre vues</b> (pills vs <code>&lt;select&gt;</code>) — H4, sev 3 ;</li>
+<li><b>Encodages non légendés</b> (dots de requis, tri-état des chips) — H6, sev 3 : « l'app se lit comme un code
+à déchiffrer » ;</li>
+<li><b>Undo uniquement par toast éphémère</b> sur suppression d'onglet — H3, sev 3 ;</li>
+<li><b>Contraste sous AA sur les textes d'état</b> (<code>--faint</code> 11&nbsp;px ≈ 3,5:1) — H8, sev 2-3 pour un
+public qui joue de nuit ;</li>
+<li><b>Modification inline silencieuse du requis</b> + warning « injouable » sans blocage avéré — H5, sev 2.</li>
+</ol></div>
+
+<div class="panel good"><h4>Où l'app dépasse le standard — trois territoires</h4>
+<p><b>Les diagnostics du Testeur</b> (« ne garde rien », « doublon », pédagogie anti-fausse-alerte : « c'est voulu,
+pas cassé ») — de l'évaluation heuristique intégrée au produit. <b>Les messages système</b> : erreurs causales,
+fallbacks actifs, honnêteté épistémique sur les taux de drop — peu d'apps professionnelles font aussi bien.
+<b>Les finitions transverses</b> : print view dédiée, <code>prefers-reduced-motion</code>,
+<code>focus-visible</code> systématique, thème clair réellement retravaillé, i18n complet à la clé près.</p></div>
+
+<div class="foot">
+  <a href="index.html">← Synthèse du cycle</a>
+  <a href="02-debat.html">Le débat →</a>
+</div>
+</main>
+</div>
+</body>
+</html>

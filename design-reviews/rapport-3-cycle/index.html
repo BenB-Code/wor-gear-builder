@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Synthèse du cycle · Design Review 3 — WoR Gear Builder</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="shell">
+<nav class="toc">
+  <div class="brand"><span class="d">◆</span> Design Review 3</div>
+  <div class="sub">Cycle brainstorm &amp; challenge · sept. 2026</div>
+  <a href="index.html" class="on">Synthèse du cycle</a>
+  <div class="grp">Le cycle</div>
+  <a href="01-analyses.html">Les 3 analyses à froid</a>
+  <a href="02-debat.html">Le débat</a>
+  <a href="03-challenge.html">Challenge du rapport 2</a>
+  <a href="04-conclusions.html">Conclusions &amp; recommandations</a>
+  <div class="grp">Référence</div>
+  <a href="../rapport-2-cycle/index.html">← Rapport 2</a>
+  <a href="../rapport-1-audit/index.html">← Rapport 1</a>
+</nav>
+<main>
+
+<span class="kicker">Cycle 3 · 3 profils neufs · analyses à froid + débat contradictoire</span>
+<h1><span style="color:var(--acc)">◆</span> Design Review 3 — le troisième regard</h1>
+<p class="lede">Trois profils absents des deux premiers cycles — un spécialiste de l'<b>accessibilité cognitive</b>,
+un <b>visual / brand designer</b> et un designer <b>growth &amp; rétention</b> — ont analysé l'application
+<b>à froid</b>, sans lire les reviews antérieures, sur les mêmes pièces (9 captures + CSS complet + i18n).
+Puis ils ont débattu : appuis, contestations frontales, fusions, révisions. Ce rapport restitue leur travail
+et le confronte au <b>rapport 2</b> — celui du squelette — pour dire ce qu'il confirme, ce qu'il contredit,
+ce qu'il apporte, et ce qu'il a raté.</p>
+
+<h2>Trois thèses, trois moteurs</h2>
+<div class="panel"><h4>Accessibilité cognitive — « l'app explique avant ou à côté, jamais pendant »</h4>
+<p>L'app documente admirablement son système (hints, Référence, doctrine) mais l'enseigne <b>par la doc, pas par
+l'usage</b>. Les trois états du chip sub ne s'apprennent que dans une légende repliée, « Requis » force à simuler
+l'algorithme de tête, le Testeur ouvre sur quatre nombres dont l'app avoue elle-même qu'ils ne sont pas le signal,
+et la recopie in-game — la tâche finale, écran contre écran — n'a aucun mode dédié. Le remède est partout le
+même : <b>déplacer l'explication au point d'action</b> — micro-labels d'état au clic, phrase de règle générée en
+langage naturel, subs gagnants surlignés sur les pièces gardées, verdicts formulés en positif. Tout est additif,
+en lecture seule, et ne coûte rien à l'expert.</p></div>
+
+<div class="panel"><h4>Visual / brand — « un vocabulaire sans grammaire »</h4>
+<p>L'app a un vocabulaire (Palatino small-caps, or, ◆, mono) mais <b>aucune grammaire</b> : tout est éclairé
+pareil, bordé pareil, espacé presque-pareil. Résultat : un outil sombre compétent et <b>anonyme</b> — dont la
+chose la plus identitaire est, paradoxalement, le mode clair parchemin. Thèse : assumer une DA « grimoire
+d'armurerie » — une seule lumière venue du haut (liseré zénithal, trois matières socle/carte/encart), l'or traité
+comme une <b>dorure</b> (marque, sélection, accomplissement, rien d'autre), le ◆ codifié en trois usages, le mono
+rétrogradé au rang de « chiffre de jeu », et un pas vertical de 8. Zéro ajout de contenu : on redistribue la
+lumière.</p></div>
+
+<div class="panel"><h4>Growth &amp; rétention — « mettre le verdict avant la règle »</h4>
+<p>L'app possède déjà son moteur viral (le lien qui importe, la clé in-game) et son moteur de rétention (les
+cycles du jeu : patch, farm, recopie) — mais elle les <b>cache derrière la configuration</b>. Le nouvel arrivant
+du lien Discord atterrit sur une liste de règles expertes ; le moment aha — la carte pièce « ✓ Gardée par G7 » —
+est à 60-90 s et 5+ clics. Les leviers : atterrir sur un <b>verdict auto-simulé</b>, créer sa première règle
+<b>depuis une pièce réelle</b>, partager <b>depuis un chiffre dont on est fier</b> (share card PNG), revenir parce
+que le jeu a bougé et que l'app l'a remarqué (badge patch, reprise de saisie). Aucune feature lourde : on
+réordonne ce qui existe.</p></div>
+
+<h2>Les convergences du cycle — trois angles, une scène</h2>
+<p>Les trois profils n'ont rien lu les uns des autres pendant l'analyse. Leurs croisements — et la résolution de
+leur unique conflit frontal — sont le signal du cycle.</p>
+
+<div class="panel good"><h4>① « La scène du verdict » — le P0 commun, financé trois fois</h4>
+<p>Chacun arrive au même écran par son propre chemin : le growth veut un <b>atterrissage auto-simulé</b> (première
+visite = simulation lancée seule, 2-3 cartes pièces vertes/rouges, aha à ~5 s et zéro clic) ; le visual veut une
+<b>cérémonie</b> (bandeau-oracle en encart éditorial, ◆ vert — jamais le ✓ système ni l'or —, symétrique rouge,
+stat-cards enfin cliquables) ; le cognitif veut une <b>leçon</b> (subs gagnants surlignés sur la carte, toute
+mention de règle cliquable, verdicts en positif, « 1,02 % » traduit en lecture ordinale). Au débat, les trois
+fusionnent explicitement : <b>un seul écran</b> fait l'activation, l'apprentissage du modèle mental, le moment
+signature de la DA — et le point de départ du partage (« Partager ce résultat »). Quatre agendas, une scène.</p></div>
+
+<div class="panel good"><h4>② Le conflit growth vs visual — résolu par « toute la DA sur la share card »</h4>
+<p>Le growth a attaqué frontalement les P0 « atmosphère » du visual — halo, vignettage, grain, codification du ◆ :
+« du craft pour le portfolio, pas pour le joueur ; aucune fuite d'activation n'est touchée ». La sortie de crise
+est une fusion, pas un compromis : <b>concentrer toute l'ambition visuelle sur la share card PNG</b> — fond socle,
+liseré zénithal, brand ◆ + Palatino, % gardé en display doré, crédit d'auteur en ex-libris, lien d'import en pied.
+C'est l'unique surface vue par des non-utilisateurs (l'embed Discord) : le seul endroit où « reconnaissable en un
+screenshot » est <b>littéralement la spec fonctionnelle</b>. Le brand obtient sa vitrine, le growth un embed qui
+convertit, le coût reste borné à un template.</p></div>
+
+<div class="panel good"><h4>③ La recopie téléprompteur — la meilleure feature rétention, votée trois fois</h4>
+<p>Le cognitif la fonde (double tâche écran-contre-écran = pire condition de mémoire de travail : une règle à la
+fois, plein écran, typo énorme, cocher-suivant) ; le growth la remonte au-dessus de sa propre session de farm
+(« la boucle app→jeu→app la plus courte, déjà à moitié construite ») et y ajoute la reprise (« il te reste
+7 règles — reprendre ») ; le visual lui offre sa scène (l'unique écran où le mono règne légitimement, et à 18/18
+la dorure tombe exactement où elle doit : sur l'accomplissement).</p></div>
+
+<div class="panel good"><h4>④ Les fixes de lisibilité sont des prérequis, pas des chantiers parallèles</h4>
+<p>La révision la plus structurante du débat vient du growth lui-même : « simulation automatique au premier
+chargement » sans le scaffolding cognitif (labels d'état, phrase générée, verdicts en positif) <b>risque
+d'afficher plus vite un résultat toujours illisible</b>. Le verdict d'abord n'a de valeur que si le verdict est
+compréhensible. Re-séquencement acté : fondations de lisibilité du cognitif, puis inversion d'atterrissage.
+Symétriquement, le cognitif concède que sa hiérarchie sémantique a besoin de la hiérarchie de matière du visual
+(3 couches) pour être lue — et le visual abandonne son « zéro ajout de contenu » : l'encart éditorial devient
+<b>le slot officiel de la pédagogie in-situ</b>.</p></div>
+
+<div class="panel bad"><h4>⑤ La contestation qui reste : le ◆ ne remplacera pas le ✓</h4>
+<p>Le visual voulait étendre le losange aux jauges <i>et</i> aux checkbox ; le cognitif oppose un refus de
+colline : le ✓ est l'un des rares symboles à lecture universelle instantanée, le remplacer par la marque
+réintroduit du rappel là où il n'existait pas — et des ◆ plein/creux à 10 px sont moins discriminables que
+plein/vide (basse vision, mobile au soleil). La marque sur les jauges, oui ; sur l'état « fait », non. Le
+rapport 2 avait rendu <b>le même arbitrage</b> (« le ◆ décore le monde, il ne confirme pas les gestes ») —
+deux cycles, deux contestations internes, un seul verdict.</p></div>
+
+<h2>Le cycle en chiffres</h2>
+<div class="stats">
+  <div class="stat"><div class="n">43</div><div class="l">constats à froid (15 + 15 + 13)</div></div>
+  <div class="stat"><div class="n">4</div><div class="l">convergences majeures, dont la scène du verdict (×3)</div></div>
+  <div class="stat"><div class="n">9</div><div class="l">contestations argumentées au débat</div></div>
+  <div class="stat"><div class="n">4</div><div class="l">fusions créatives (scène, share card, phrase, pièce)</div></div>
+  <div class="stat"><div class="n">7</div><div class="l">révisions assumées par leurs auteurs</div></div>
+  <div class="stat"><div class="n">2</div><div class="l">recos du rapport 2 frontalement contredites</div></div>
+</div>
+
+<h2>Le verdict du cycle face au rapport 2</h2>
+<div class="quote" style="font-size:16px">Le rapport 1 a réparé la <b>peau</b>, le rapport 2 a redessiné le
+<b>squelette</b> ; le cycle 3 démontre qu'il manque encore un <b>battement de cœur</b> — un moment où l'app prouve
+sa valeur avant d'exiger d'être comprise : la scène du verdict, où l'activation du growth, la pédagogie du
+cognitif et l'identité du brand se financent mutuellement — et où la carte d'item vivante du cycle 2 trouve
+enfin sa raison d'entrer en scène.
+<span class="who">— modération du cycle 3</span></div>
+
+<h2>Les pages du rapport</h2>
+<div class="cards">
+  <a class="card" href="01-analyses.html"><span class="no">01</span><h4>Les 3 analyses à froid</h4>
+    <p>Les 43 constats restitués persona par persona : thèse, tableaux P0/P1/P2, fixes spécifiés. La matière brute du cycle, avant tout débat.</p></a>
+  <a class="card" href="02-debat.html"><span class="no">02</span><h4>Le débat</h4>
+    <p>Appuis, contestations nommées (growth vs visual, cognitif vs visual), les deux grandes fusions, les révisions concédées — et la colline de chacun.</p></a>
+  <a class="card" href="03-challenge.html"><span class="no">03</span><h4>Challenge du rapport 2</h4>
+    <p>La page critique : ce que le cycle 3 confirme du rapport 2, ce qu'il contredit, ce qu'il apporte de neuf — et ce que le rapport 2 avait vu qu'il a raté.</p>
+    <div class="tags"><span class="prio p0">à lire en premier</span></div></a>
+  <a class="card" href="04-conclusions.html"><span class="no">04</span><h4>Conclusions &amp; recommandations</h4>
+    <p>Les entrées consolidées (P0/P1/P2, origine et confirmations croisées), les points du rapport 2 à réviser, les questions pour le cycle 4.</p></a>
+</div>
+
+<h2>Méthode du cycle</h2>
+<div class="panel"><h4>Deux phases, étanches puis contradictoires</h4>
+<p><b>Phase 1 — à froid</b> : chaque designer a travaillé sur les mêmes pièces que les cycles précédents
+(9 captures, CSS lignes 15-560, i18n FR, backlog des features), <b>sans lire les reviews antérieures ni les
+analyses des deux autres</b>. C'est ce qui rend les convergences probantes — notamment quand elles retrouvent des
+conclusions du rapport 2 que personne n'a lues. <b>Phase 2 — débat</b> : chacun a lu les deux autres analyses et
+produit une réaction structurée : j'appuie / je conteste / je fusionne / je révise / ma colline. Le présent
+rapport est la seule pièce du cycle 3 qui a lu les rapports 1 et 2 — le challenge (page 03) est donc l'œuvre du
+modérateur, pas des designers.</p></div>
+
+<div class="foot">
+  <span>Design Review 3 · WoR Gear Builder · septembre 2026</span>
+  <a href="03-challenge.html">Lire le challenge →</a>
+</div>
+</main>
+</div>
+</body>
+</html>
