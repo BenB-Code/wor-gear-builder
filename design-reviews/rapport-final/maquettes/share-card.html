@@ -37,7 +37,7 @@ body{background:#232028;color:var(--ink);font-family:var(--body);font-size:14px;
   background:linear-gradient(180deg,#191622 0%,#14121a 46%,#110f16 100%);
   border:1px solid #322c3e;
   box-shadow:inset 0 1px 0 rgba(255,255,255,.07),0 30px 80px rgba(0,0,0,.5);
-  display:flex;flex-direction:column;padding:52px 64px 0}
+  display:flex;flex-direction:column;padding:38px 64px 0}
 /* Le seul dégradé d'or autorisé hors 18/18 (D6) : un souffle en tête, pas un halo */
 .card::before{content:"";position:absolute;inset:0 0 auto;height:210px;background:radial-gradient(ellipse 70% 100% at 50% -30%,rgba(226,176,74,.1),transparent 70%);pointer-events:none}
 /* Ex-libris d'auteur (D10) */
@@ -48,18 +48,18 @@ body{background:#232028;color:var(--ink);font-family:var(--body);font-size:14px;
 .exlibris .app{margin-left:auto;font-family:var(--display);font-variant:small-caps;letter-spacing:.06em;font-size:17px;color:var(--label)}
 .exlibris .app .d{font-size:12px}
 /* Filet or fin sous l'ex-libris — l'identité, à sa dose */
-.filet{height:1px;margin:22px 0 0;background:linear-gradient(to right,transparent,rgba(226,176,74,.45) 18%,rgba(226,176,74,.45) 82%,transparent)}
+.filet{height:1px;margin:15px 0 0;background:linear-gradient(to right,transparent,rgba(226,176,74,.45) 18%,rgba(226,176,74,.45) 82%,transparent)}
 
 .main{flex:1;display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:48px;align-items:center}
 .title{font-family:var(--display);font-variant:small-caps;letter-spacing:.03em;font-size:47px;font-weight:600;color:var(--ink-hi);line-height:1.12}
 .title .sep{color:var(--deco);font-weight:400}
 .title .ct{display:block;font-size:23px;color:var(--head);font-weight:400;margin-top:6px}
 /* Le % gardé : display DORÉ — l'un des deux moments généreux de l'or (D6/D10) */
-.pct{margin-top:22px;font-family:var(--display);font-size:88px;line-height:1;color:var(--acc);text-shadow:0 0 34px rgba(226,176,74,.28)}
-.pct .u{font-size:40px}
+.pct{margin-top:26px;font-family:var(--display);font-size:104px;line-height:1;color:var(--acc);text-shadow:0 0 34px rgba(226,176,74,.28)}
+.pct .u{font-size:46px}
 .pct-l{font-family:var(--body);font-size:14px;font-weight:600;text-transform:uppercase;letter-spacing:.12em;color:var(--label);margin-top:8px}
 /* La phrase de règle générée (D10) */
-.phrase{margin-top:26px;max-width:640px;font-size:17.5px;color:var(--head);line-height:1.5}
+.phrase{margin-top:30px;max-width:640px;font-size:19px;color:var(--head);line-height:1.5}
 .phrase .d{color:var(--acc);font-size:12px;margin-right:8px}
 .phrase b{color:var(--ink-hi);font-weight:600}
 /* Sets clés : chips au tier */
@@ -72,36 +72,36 @@ body{background:#232028;color:var(--ink);font-family:var(--body);font-size:14px;
 
 /* Colonne droite : QR + clé */
 .qrcol{display:flex;flex-direction:column;align-items:center;gap:16px}
-.qr{width:196px;height:196px;background:#0f0d14;border:1px solid #322c3e;border-radius:14px;padding:16px;box-shadow:inset 0 1px 0 rgba(255,255,255,.05)}
+.qr{width:216px;height:216px;background:#0f0d14;border:1px solid #322c3e;border-radius:14px;padding:16px;box-shadow:inset 0 1px 0 rgba(255,255,255,.05)}
 .qr svg{width:100%;height:100%;color:#b7aec6}
 .keybox{text-align:center}
 .keybox .l{font-family:var(--body);font-size:11.5px;font-weight:600;text-transform:uppercase;letter-spacing:.12em;color:var(--state)}
 .keybox .k{font-family:var(--mono);font-size:24px;letter-spacing:.06em;color:var(--ink-hi);margin-top:4px}
 
 /* Pied : lien d'import */
-.cfoot{border-top:1px solid rgba(255,255,255,.07);margin:0 -64px;padding:16px 64px 20px;display:flex;align-items:center;gap:12px;position:relative;z-index:1}
+.cfoot{border-top:1px solid rgba(255,255,255,.07);margin:0 -64px;padding:13px 64px 16px;display:flex;align-items:center;gap:12px;position:relative;z-index:1}
 .cfoot .url{font-family:var(--mono);font-size:15px;color:var(--label)}
 .cfoot .url b{color:var(--acc);font-weight:600}
 .cfoot .hint{margin-left:auto;font-size:12.5px;color:var(--state)}
 
 /* ═══ Variante compacte 800×418 ═══ */
-.card.compact{width:800px;height:418px;padding:34px 44px 0;border-radius:14px}
+.card.compact{width:800px;height:418px;padding:24px 44px 0;border-radius:14px}
 .card.compact .exlibris .who{font-size:15px}
 .card.compact .exlibris .d{font-size:13px}
 .card.compact .exlibris .role{font-size:10.5px}
 .card.compact .exlibris .app{font-size:14px}
-.card.compact .filet{margin-top:14px}
+.card.compact .filet{margin-top:9px}
 .card.compact .main{grid-template-columns:minmax(0,1fr) 190px;gap:30px}
 .card.compact .title{font-size:30px}
 .card.compact .title .ct{font-size:16px}
-.card.compact .pct{font-size:58px;margin-top:12px}
+.card.compact .pct{font-size:70px;margin-top:14px}
 .card.compact .pct .u{font-size:28px}
 .card.compact .pct-l{font-size:11px;margin-top:5px}
 .card.compact .sets{margin-top:14px;gap:7px}
 .card.compact .schip{font-size:12px;padding:3px 11px}
-.card.compact .qr{width:128px;height:128px;padding:11px}
+.card.compact .qr{width:142px;height:142px;padding:12px}
 .card.compact .keybox .k{font-size:17px}
-.card.compact .cfoot{margin:0 -44px;padding:11px 44px 14px}
+.card.compact .cfoot{margin:0 -44px;padding:9px 44px 11px}
 .card.compact .cfoot .url{font-size:12.5px}
 .card.compact .cfoot .hint{font-size:11px}
 </style>
@@ -173,7 +173,7 @@ body{background:#232028;color:var(--ink);font-family:var(--body);font-size:14px;
 
   <div class="cap">
     <h2>Variante compacte — 800×418</h2>
-    <p>Pour les embeds étroits (forum, messagerie) : même grammaire, phrase générée retirée — le trio
+    <p>Pour les embeds étroits (forum, messagerie) : même grammaire, description retirée — le trio
     <b>titre · % doré · clé</b> suffit à porter l'invitation. Le QR d'import reste : c'est lui qui convertit.</p>
   </div>
 
