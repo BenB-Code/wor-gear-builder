@@ -9,7 +9,7 @@ et ce qu'elles recyclent, puis recopie-les dans le builder in-game.
 
 [![Ouvrir l'app](https://img.shields.io/badge/▶_Ouvrir_l'app-benb--code.github.io-e2b04a?style=for-the-badge)](https://benb-code.github.io/wor-gear-builder/)
 
-[![Vanilla JS](https://img.shields.io/badge/vanilla_JS-un_seul_fichier-informational)](wor-regles-tri.html)
+[![Vanilla JS](https://img.shields.io/badge/vanilla_JS-un_seul_fichier-informational)](index.html)
 ![Zéro dépendance](https://img.shields.io/badge/dépendances-0-success)
 ![FR / EN](https://img.shields.io/badge/langues-FR_·_EN-blueviolet)
 ![100 % local](https://img.shields.io/badge/données-100%25_locales-important)
@@ -28,8 +28,8 @@ end game strict (36 règles) avec sa clé d'import in-game prête à copier.*
 Le builder de tri in-game est puissant mais aveugle : on saisit ses règles une à une, sans
 jamais savoir ce qu'elles vont réellement garder, ce qui fait doublon, ni ce qui part au
 recyclage par accident. Cet outil permet de concevoir son jeu de règles à tête reposée,
-de le **vérifier mathématiquement**, de **simuler son farm**, puis de tout ressaisir en jeu
-en cochant les règles au fur et à mesure.
+de le **vérifier mathématiquement**, de **simuler son farm**, puis de tout recopier en jeu
+grâce à la recopie guidée, règle par règle.
 
 ## 📖 Documentation
 
@@ -42,22 +42,28 @@ Un guide complet, partie par partie, vit dans [`docs/`](docs/README.md) :
 
 ## Fonctionnalités
 
+L'app s'organise en quatre vues : **Règles** (l'atelier et sa couverture), **Simulation**
+(le farm aux taux mesurés), **Session** (le verdict d'un drop réel) et **Référence**
+(doctrine et sets).
+
 ### ✍️ Des règles fidèles à la sémantique du jeu
 
 Sets ciblés, main(s), pool de subs avec ★ obligatoires, nombre requis — la logique de
 matching reproduit celle du builder officiel (confirmée in-game) : chaque ★ est obligatoire,
 le requis se compte sur toute la liste ★ incluses, et le main effectif d'une pièce est
 neutralisé de ses critères de subs. Sets classés par tier (T0 → T∞) avec sélection rapide,
-rôles libres pour filtrer, drag & drop pour ordonner.
+rôles libres pour filtrer, drag & drop pour ordonner, description libre par règle et par
+jeu, **édition en lot** (sélection Shift-clic, une seule commande d'annulation) — et
+Ctrl+Z couvre tout.
 
 <div align="center"><img src="docs/captures/editeur.png" width="850" alt="Éditeur de règle"></div>
 
 ### 🧪 Couverture exhaustive — les 172 410 profils possibles
 
-Le Testeur énumère **tous** les profils de pièces possibles (sets × slots × mains légaux ×
-combinaisons de 4 subs) et les passe dans tes règles. Tu sais ce que tu gardes, ce qui
-chevauche, quelles règles ne servent à rien — et quand une règle fait **doublon**, l'outil
-liste les règles qui la recouvrent, cliquables.
+La vue Règles énumère **tous** les profils de pièces possibles (sets × slots × mains
+légaux × combinaisons de 4 subs) et les passe dans tes règles. Tu sais ce que tu gardes,
+ce qui chevauche, quelles règles ne servent à rien — et quand une règle fait **doublon**,
+l'outil liste les règles qui la recouvrent, cliquables.
 
 <div align="center"><img src="docs/captures/couverture.png" width="850" alt="Couverture exhaustive"></div>
 
@@ -75,23 +81,23 @@ pièces anciennes comprises — et le résultat affiche la répartition par tier
 
 <div align="center"><img src="docs/captures/echantillon.png" width="850" alt="Échantillon pondéré par les taux de drop"></div>
 
-### 🔍 Pièce manuelle — le verdict d'un drop réel
+### 🔍 Session — le verdict d'un drop réel
 
 Un drop douteux en main ? Décris-le dans le **stepper** (slot → main → subs → set, sélection
-par pastilles avec filtre par tier) et l'outil rend son verdict : **gardée par telle règle**
-ou **recyclée**. En prime, dès 2-3 subs saisies :
+par pastilles avec filtre par tier) et le verdict tombe en direct sur la carte : **gardée
+par telle règle** ou **recyclée**. En prime, dès 2-3 subs saisies :
 
 - **Règles qui couvrent ces subs** — celles qui garderaient la pièce si son set était le bon,
   avec le détail de ce qui manque encore (sub du pool, ★ obligatoire) ;
 - **Règles proches** — celles qui la ratent de peu, et **pourquoi** exactement (chaque
   critère en échec est listé, la règle est cliquable).
 
-<div align="center"><img src="docs/captures/piece-manuelle.png" width="850" alt="Testeur de pièce manuelle"></div>
+<div align="center"><img src="docs/captures/piece-manuelle.png" width="850" alt="Verdict d'une pièce réelle"></div>
 
 ### 📚 Les 48 sets & leurs transformations
 
 Bonus, source de drop avec tranches de niveaux, destination de transformation T1, et pour
-chaque set : les règles de ton onglet qui le couvrent — ou l'avertissement qu'il part
+chaque set : les règles de ton jeu qui le couvrent — ou l'avertissement qu'il part
 intégralement au recyclage.
 
 <div align="center"><img src="docs/captures/sets.png" width="850" alt="Sets et transformations"></div>
@@ -99,32 +105,38 @@ intégralement au recyclage.
 ### 📄 Référence & doctrine
 
 Lexique, budgets saturants, doctrine par archétype, politique par tier, contraintes de
-mains par slot (éditables dans le Testeur si le jeu te contredit) — et les taux de drop
-mesurés avec leur provenance.
+mains par slot — et les taux de drop mesurés avec leur provenance.
 
 <div align="center"><img src="docs/captures/reference.png" width="850" alt="Référence et taux de drop"></div>
 
 ### 🔗 Partage
 
-- **Lien court** (`https://tinyurl.com/WoR-xxxxxx`) qui importe l'onglet complet chez le
-  destinataire — règles compressées dans le fragment d'URL, rien ne transite par un serveur
-  applicatif ;
-- **Clé d'import in-game** attachée à chaque onglet : elle voyage avec le lien, le
+- **Lien court** (`https://tinyurl.com/WoR-xxxxxx`) qui importe le jeu de règles complet
+  chez le destinataire — règles compressées dans le fragment d'URL, rien ne transite par
+  un serveur applicatif ;
+- **Image à partager (PNG)** : une carte 1200 × 630 prête à poster — nom du jeu, % de
+  profils gardés, ta description, clé in-game et **QR code du lien d'import**, généré
+  localement par un encodeur maison (aucune donnée envoyée à un service de QR) ;
+- **Aperçu avant d'adopter** : celui qui ouvre un lien voit d'abord le nom, l'auteur
+  (ex-libris), la description et la liste des règles — il importe s'il veut ;
+- **Clé d'import in-game** attachée à chaque jeu : elle voyage avec le lien, le
   destinataire n'a qu'à la copier-coller dans le jeu ;
 - **Export / import JSON** pour l'archivage ;
-- **Impression** propre du jeu de règles pour le ressaisir en jeu.
+- **Impression** propre du jeu de règles.
 
 ### 📱 Et aussi
 
 <img src="docs/captures/mobile.png" width="260" align="right" alt="Vue mobile">
 
 - Interface **FR / EN** (auto-détectée, choix mémorisé) ;
-- **Mobile** : tout fonctionne au pouce, tables adaptées ;
+- **Mobile** : tab bar dédiée, tout fonctionne au pouce ;
+- **Recopie guidée** : un téléprompteur plein écran présente chaque règle à
+  ressaisir dans le builder in-game — Entrée = cochée, suivante ; l'écran
+  reste allumé, la progression est reprise là où tu t'étais arrêté ;
+- **Palette Ctrl+K** : navigation, commandes et recherche de règles dans
+  tous les jeux ;
 - Thème clair / sombre, 5 accents de couleur, densité confort / compacte ;
-- Suivi « saisie en jeu » : coche chaque règle recopiée, la barre de
-  progression suit ;
-- **Clé d'import in-game** par onglet, copiable en un clic depuis la vue Règles ;
-- Plusieurs onglets = plusieurs jeux de règles indépendants.
+- Plusieurs jeux de règles indépendants, renommables, avec description.
 
 <br clear="right">
 
@@ -142,28 +154,41 @@ Mesures au **niveau 21**, appliquées à tous les niveaux par le générateur d'
 **Pièces anciennes** : ≈ 0,87 % des drops de raid — les seules à pouvoir porter la sub RR
 sur arme et torse ; simulées par le générateur.
 
-> 📊 **Tu as des relevés de drops ?** Ouvre une issue ! Plus l'échantillon grossit, plus
-> la simulation est fiable.
+> 📊 **Tu as des relevés de drops ?**
+> [Envoie un relevé de farm](https://github.com/BenB-Code/wor-gear-builder/issues/new?template=releve-farm.yml) —
+> stage, nombre de runs, butin par tier. Plus l'échantillon grossit, plus la simulation
+> est fiable.
+
+## Contribuer
+
+Trois formulaires guidés (aussi accessibles depuis l'app : aide `?`, vue Référence,
+palette Ctrl+K) :
+
+- [🐛 Signaler un bug](https://github.com/BenB-Code/wor-gear-builder/issues/new?template=bug.yml) —
+  joins le lien de partage du jeu concerné, le bug se reproduit alors avec tes règles exactes ;
+- [✦ Proposer une idée](https://github.com/BenB-Code/wor-gear-builder/issues/new?template=feature.yml) ;
+- [📊 Envoyer un relevé de farm](https://github.com/BenB-Code/wor-gear-builder/issues/new?template=releve-farm.yml).
+
+Issues libres et PR bienvenues aussi 🙌
 
 ## Données & vie privée
 
 Tout vit dans le navigateur (`localStorage`) : aucun compte, aucun serveur, aucune donnée
 envoyée. Seule exception, au clic « Partager » : l'appel au raccourcisseur d'URL
 (TinyURL, repli da.gd), avec repli automatique sur un lien long si le service est
-injoignable.
+injoignable. Le QR de la carte de partage est calculé localement.
 
 ## Développement
 
-Toute l'app tient dans **un seul fichier** ([`wor-regles-tri.html`](wor-regles-tri.html)) :
+Toute l'app tient dans **un seul fichier** ([`index.html`](index.html)) :
 vanilla JS/CSS, zéro dépendance, zéro build — on l'ouvre dans un navigateur et c'est tout.
 
 ```bash
 # vérifier la syntaxe après modification
-node --check <(sed -n '/<script>/,/<\/script>/p' wor-regles-tri.html | sed '1d;$d')
+node --check <(sed -n '/<script>/,/<\/script>/p' index.html | sed '1d;$d')
 ```
 
 Invariant de test du moteur : la couverture exhaustive doit toujours compter
-**172 410 profils**. Les conventions et pièges connus sont documentés dans les notes de
-dev du dépôt.
-
-Issues, PR, données de drops et retours de terrain bienvenus 🙌
+**172 410 profils**. L'encodeur QR embarqué a son banc de test dans
+[`dev/qr-bench/`](dev/qr-bench/README.md) ; les conventions et pièges connus sont
+documentés dans les notes de dev du dépôt.
