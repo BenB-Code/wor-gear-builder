@@ -26,11 +26,12 @@ body:
     id: butin
     attributes:
       label: Pièces obtenues
-      description: "Une ligne par sorte : set · qualité (rare / épique / légendaire) · nombre."
+      description: "Une ligne par sorte : Tiers · nombre."
       placeholder: |
-        Gardien astral · épique · 7
-        Gardien astral · légendaire · 1
-        Frappe sauvage · rare · 12
+        T1 · 7
+        T2 · 1
+        T~ · 12
+        T3 · 12
     validations:
       required: true
   - type: input
