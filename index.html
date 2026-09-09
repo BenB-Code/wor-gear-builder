@@ -1273,6 +1273,14 @@ fr:{
   c_bulk_req:"requis (lot)", c_bulk_set:"sets (lot)", c_bulk_role:"rôles (lot)", c_bulk_dup:"duplication (lot)", c_bulk_del:"suppression (lot)",
   t_bulk_del:n=>n+" règle"+(n>1?"s":"")+" supprimée"+(n>1?"s":"")+" — Ctrl+Z pour tout annuler.",
   hp_title:"Aide — raccourcis, légende, recherche", hp_close:"Fermer", hp_shortcuts_h:"Raccourcis",
+  pal_bug:"Signaler un bug (GitHub)", pal_idea:"Proposer une idée (GitHub)", pal_farm:"Envoyer un relevé de farm (GitHub)",
+  hp_contrib_h:"Contribuer",
+  hp_contrib_html:`<ul>
+    <li><a href="https://github.com/BenB-Code/wor-gear-builder/issues/new?template=bug.yml" target="_blank" rel="noopener">Signaler un bug</a></li>
+    <li><a href="https://github.com/BenB-Code/wor-gear-builder/issues/new?template=feature.yml" target="_blank" rel="noopener">Proposer une idée</a></li>
+    <li><a href="https://github.com/BenB-Code/wor-gear-builder/issues/new?template=releve-farm.yml" target="_blank" rel="noopener">Envoyer un relevé de farm</a></li>
+    <li>ouvre un formulaire GitHub (compte requis)</li>
+  </ul>`,
   hp_shortcuts_html:`<ul>
     <li><kbd>Ctrl+K</kbd> palette · <kbd>Ctrl+Z</kbd> annuler · <kbd>Ctrl+Shift+Z</kbd> rétablir · <kbd>?</kbd> cette aide</li>
     <li>Liste des règles, carte focalisée : <kbd>j</kbd>/<kbd>k</kbd> ou <kbd>↑</kbd><kbd>↓</kbd> naviguer · <kbd>o</kbd>/<kbd>Espace</kbd> déplier · <kbd>x</kbd> coche « saisie » · <kbd>+</kbd>/<kbd>−</kbd> requis · <kbd>d</kbd> dupliquer · <kbd>Alt+↑↓</kbd> déplacer · <kbd>Shift-clic</kbd>/<kbd>v</kbd> sélectionner (barre d'action en lot)</li>
@@ -1526,6 +1534,14 @@ en:{
   c_bulk_req:"required (batch)", c_bulk_set:"sets (batch)", c_bulk_role:"roles (batch)", c_bulk_dup:"duplication (batch)", c_bulk_del:"deletion (batch)",
   t_bulk_del:n=>n+" rule"+(n>1?"s":"")+" deleted — Ctrl+Z undoes it all.",
   hp_title:"Help — shortcuts, legend, search", hp_close:"Close", hp_shortcuts_h:"Shortcuts",
+  pal_bug:"Report a bug (GitHub)", pal_idea:"Suggest an idea (GitHub)", pal_farm:"Send a farm report (GitHub)",
+  hp_contrib_h:"Contribute",
+  hp_contrib_html:`<ul>
+    <li><a href="https://github.com/BenB-Code/wor-gear-builder/issues/new?template=bug.yml" target="_blank" rel="noopener">Report a bug</a></li>
+    <li><a href="https://github.com/BenB-Code/wor-gear-builder/issues/new?template=feature.yml" target="_blank" rel="noopener">Suggest an idea</a></li>
+    <li><a href="https://github.com/BenB-Code/wor-gear-builder/issues/new?template=releve-farm.yml" target="_blank" rel="noopener">Send a farm report</a></li>
+    <li>opens a GitHub form (account required)</li>
+  </ul>`,
   hp_shortcuts_html:`<ul>
     <li><kbd>Ctrl+K</kbd> palette · <kbd>Ctrl+Z</kbd> undo · <kbd>Ctrl+Shift+Z</kbd> redo · <kbd>?</kbd> this help</li>
     <li>Rule list, focused card: <kbd>j</kbd>/<kbd>k</kbd> or <kbd>↑</kbd><kbd>↓</kbd> navigate · <kbd>o</kbd>/<kbd>Space</kbd> expand · <kbd>x</kbd> “entered” tick · <kbd>+</kbd>/<kbd>−</kbd> required · <kbd>d</kbd> duplicate · <kbd>Alt+↑↓</kbd> move · <kbd>Shift-click</kbd>/<kbd>v</kbd> select (batch action bar)</li>
@@ -3025,6 +3041,9 @@ function palItems(){
   add("cmd", t("pal_redo"), "Ctrl+Shift+Z", redoCmd);
   add("cmd", t("pal_help"), "?", openHelp);
   add("cmd", t("pal_replace"), "", openReplaceSet);
+  add("cmd", t("pal_bug"), "", ()=>window.open("https://github.com/BenB-Code/wor-gear-builder/issues/new?template=bug.yml", "_blank", "noopener"));
+  add("cmd", t("pal_idea"), "", ()=>window.open("https://github.com/BenB-Code/wor-gear-builder/issues/new?template=feature.yml", "_blank", "noopener"));
+  add("cmd", t("pal_farm"), "", ()=>window.open("https://github.com/BenB-Code/wor-gear-builder/issues/new?template=releve-farm.yml", "_blank", "noopener"));
   for(const tb of TABS) for(const r of tb.rules)
     add("regles", r.id+" · "+r.name+(tb.id!==activeTabId ? " — "+tb.name : ""), "",
         ()=>{ activeTabId = tb.id; BULK.clear(); UI.open.clear(); scheduleSave(); goto("/regles/"+r.id); },
@@ -3077,7 +3096,8 @@ function openHelp(){
     <div class="hp-cols">
       <div><h4>${t("hp_shortcuts_h")}</h4>${t("hp_shortcuts_html")}</div>
       <div><h4>${t("hp_legend_h")}</h4>${t("hp_legend_html")}
-        <h4 style="margin-top:16px">${t("hp_search_h")}</h4>${t("hp_search_html")}</div>
+        <h4 style="margin-top:16px">${t("hp_search_h")}</h4>${t("hp_search_html")}
+        <h4 style="margin-top:16px">${t("hp_contrib_h")}</h4>${t("hp_contrib_html")}</div>
     </div>
     <div class="ap-actions" style="margin-top:16px"><button type="button" class="btn" id="help-close">${t("hp_close")}</button></div>`;
   d.showModal();
@@ -3352,6 +3372,16 @@ function refFR(){
         <li><a href="https://github.com/Mawldor/WoR-content/blob/main/HE-ATK.md" target="_blank" rel="noopener">HE vs ATK (Mawldor)</a> : le test des heals — arbitrer Effet de soin contre ATK.</li>
       </ul>
     </details>
+
+    <details class="panel">
+      <summary class="p-sum">Contribuer au builder</summary>
+      <ul class="clean">
+        <li><a href="https://github.com/BenB-Code/wor-gear-builder/issues/new?template=bug.yml" target="_blank" rel="noopener">Signaler un bug</a> : quelque chose ne marche pas — joins le lien de partage du jeu concerné, ça aide énormément.</li>
+        <li><a href="https://github.com/BenB-Code/wor-gear-builder/issues/new?template=feature.yml" target="_blank" rel="noopener">Proposer une idée</a> : une amélioration, une fonctionnalité qui manque.</li>
+        <li><a href="https://github.com/BenB-Code/wor-gear-builder/issues/new?template=releve-farm.yml" target="_blank" rel="noopener">Envoyer un relevé de farm</a> : tes observations de drop, pour affiner les taux du simulateur.</li>
+      </ul>
+      <p class="hint">Ces liens ouvrent un formulaire pré-rempli sur GitHub (compte GitHub requis).</p>
+    </details>
   </div>`;
 }
 
@@ -3491,6 +3521,16 @@ function refEN(){
         <li><a href="https://github.com/Mawldor/WoR-content/tree/main" target="_blank" rel="noopener">WoR-content (Mawldor)</a>: real-world tests of which stats to pick, and other very useful guides.</li>
         <li><a href="https://github.com/Mawldor/WoR-content/blob/main/HE-ATK.md" target="_blank" rel="noopener">HE vs ATK (Mawldor)</a>: the heal test — weighing Healing Effect against ATK.</li>
       </ul>
+    </details>
+
+    <details class="panel">
+      <summary class="p-sum">Contribute to the builder</summary>
+      <ul class="clean">
+        <li><a href="https://github.com/BenB-Code/wor-gear-builder/issues/new?template=bug.yml" target="_blank" rel="noopener">Report a bug</a>: something is broken — include the share link of the affected ruleset, it helps a lot.</li>
+        <li><a href="https://github.com/BenB-Code/wor-gear-builder/issues/new?template=feature.yml" target="_blank" rel="noopener">Suggest an idea</a>: an improvement, a missing feature.</li>
+        <li><a href="https://github.com/BenB-Code/wor-gear-builder/issues/new?template=releve-farm.yml" target="_blank" rel="noopener">Send a farm report</a>: your drop observations, to refine the simulator's rates.</li>
+      </ul>
+      <p class="hint">These links open a pre-filled form on GitHub (GitHub account required).</p>
     </details>
   </div>`;
 }
